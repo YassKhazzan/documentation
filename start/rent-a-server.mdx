@@ -1,0 +1,113 @@
+---
+title: "Step 1: Rent a server"
+sidebarTitle: "1. Rent a server"
+description: "Choose a hosting company, order a Linux server with the right settings, and find its IP address and password. For people who have never rented a server."
+---
+
+This is the first of four steps that take you from nothing to an app online. You need a computer (a phone alone is not enough for steps 2 and 3) and a payment card for the server. The four steps take about half an hour of your attention. Some hosting companies hand over a server in a minute; others take hours or a day, so you may have to stop here and come back.
+
+<Tip>
+The LiveHQ console has this same path as a guide that writes each line for you. [Create a free account](https://console.livehq.dev/signup): a new account opens on the guide. If you already have an account, sign in and press **Guide me, step by step** on Home. These pages follow the guide and add detail.
+</Tip>
+
+## What a server is
+
+A server is a computer in a data centre that never switches off and is always on the internet. You rent one by the month from a hosting company. Your apps run on it, so they stay online when your own computer is closed.
+
+LiveHQ does everything on that server for you. The server stays yours: it is rented in your name, at the company you choose, and LiveHQ can be disconnected at any time.
+
+## What it costs
+
+- **The server:** from about \$5 to \$25 a month, paid to the hosting company.
+- **LiveHQ:** the Free plan is enough to start. See [Plans](/account/plans).
+
+<Warning>
+**You pay until you delete it.** Switching a server off does not stop the bill, and a plan renews until you cancel it. To stop paying, delete or cancel the server at the hosting company.
+</Warning>
+
+## Steps
+
+<Steps>
+  <Step title="Choose a hosting company">
+    They all rent the same kind of server. Pick one you know, or the first one in the table if you have no preference. LiveHQ runs on all of them and earns nothing from your choice.
+
+    | Company | Plan to take | Price | You sign in as |
+    | --- | --- | --- | --- |
+    | [DigitalOcean](https://cloud.digitalocean.com/registrations/new) | Basic, Regular, 4 GiB / 2 vCPUs | \$24 a month, billed by the hour | `root` |
+    | [Hetzner](https://accounts.hetzner.com/login) | CPX22 (2 vCPU, 4 GB) | from €16.99 a month, billed by the hour | `root` |
+    | [OVHcloud](https://www.ovhcloud.com/en/vps/) | VPS-1 (2 vCores, 4 GB) | about \$5.35 a month, no commitment | `ubuntu` |
+    | [Contabo](https://contabo.com/en/vps/) | Cloud VPS 4 (4 vCPU, 8 GB) | about \$6.60 a month for a 1-month term, plus a setup fee | `root` |
+    | [Hostinger](https://www.hostinger.com/vps-hosting) | KVM 2 (2 vCPU, 8 GB) | \$10.99 the first month, then \$24.49 a month | `root` |
+    | [Vultr](https://www.vultr.com/register/) | Cloud Compute, 2 vCPU / 4 GB | \$20 a month, billed by the hour | `root` |
+    | [Akamai (Linode)](https://login.linode.com/signup) | Linode 4GB (2 vCPU, 4 GB) | \$24 a month, billed by the hour | `root` |
+    | [IONOS](https://www.ionos.com/servers/vps) | VPS M+ (2 vCores, 4 GB) | \$14 a month | `root` |
+
+    Plans and prices are before tax, as each company's site showed them on 23 November 2026, a sale week at some of them. They change: the company's own page is the reference. The guide in the console lists the exact choices to make on each company's order form.
+
+    Good to know before you choose:
+
+    - **DigitalOcean** is the easiest start: you choose your own password, and it is billed by the hour, so a server deleted after a day of trying costs under a dollar. It asks for a payment card when you create the account.
+    - **Hetzner** was limiting new servers for new customers on that date, and its cheapest plans showed as not available. It may ask a new customer to confirm their identity. If its form refuses, choose another company for now.
+    - **OVHcloud** may check a first order by hand, which can take one or two working days.
+    - **Contabo** may ask a new customer to confirm their identity, and its setup can take from minutes to a few hours.
+    - **Contabo, Hostinger and IONOS** are paid per term. Choose **1 month** to try: a longer term is charged in one go.
+    - **Vultr** switches paid **Automatic Backups** on by default: switch them off. It asks for a payment method before it creates anything.
+    - **Akamai** asks for a payment card and a phone number when you sign up.
+  </Step>
+  <Step title="Create the server">
+    Create an account at the company and start a new server. They may call it a VPS, a Droplet, an instance or a cloud server. Their form asks these things. Choose:
+
+    | Their form asks for | Choose |
+    | --- | --- |
+    | System (image) | **Ubuntu 24.04**. Ubuntu 22.04 and 26.04, and Debian 12 and 13, also work. |
+    | Size | 2 vCPU and 4 GB of memory is a comfortable start. You can take a bigger one later. |
+    | Location | The one closest to the people who will use your app. |
+    | Term | 1 month to try it, where the form asks. A longer term is charged in one go. |
+    | Sign-in | A **password**, if the form has a box for one. Type a long one and keep it somewhere safe: step 2 asks for it. |
+    | SSH keys | Leave them empty. A password is fine for a first server. |
+    | Extras | None. Skip paid backups, control panels and add-ons. |
+  </Step>
+  <Step title="Find the server's password">
+    Some forms have no password box: the company makes the password for you.
+
+    | Company | Where the password is |
+    | --- | --- |
+    | DigitalOcean, Akamai (Linode), Contabo | You typed it on the order form. Contabo never emails it and cannot show it again. |
+    | Hostinger | You choose it in the dashboard, after paying, when you finish the server's setup. |
+    | Hetzner | Hetzner emails it, if you added no SSH key. The server makes you choose a new one at your first sign-in. |
+    | OVHcloud | The delivery email has a link that shows a temporary password. The server makes you choose a new one at your first sign-in. |
+    | Vultr | Open the instance and copy it from its **Overview** tab. |
+    | IONOS | In the Cloud Panel, open the server. Under **Login Data**, press **Show password** beside **Initial Password**. |
+  </Step>
+  <Step title="Find the server's IP address">
+    When the server is ready, the company shows its **IP address**: four numbers separated by dots, like `203.0.113.10`. It may be named IPv4 or Public IP. Copy it. You need it in the next step.
+
+    Also note the **sign-in name**. It is `root` almost everywhere; OVHcloud uses `ubuntu`.
+  </Step>
+</Steps>
+
+## Questions people ask here
+
+<AccordionGroup>
+  <Accordion title="Which size should I take?">
+    A vCPU is a processor core: the server's thinking power. Memory, in GB, is how much it can hold in mind at once. The plan's name differs by company, so look at those two numbers.
+
+    The smallest plans, with 1 GB of memory, run a simple website. Building a larger project on them, such as a Next.js app, can need more memory than they have: the build then stops and says so. See [How memory is shared](/servers/memory).
+  </Accordion>
+  <Accordion title="What is an SSH key, and why skip it?">
+    An SSH key is a safer way to sign in to a server than a password, and a little more work to set up. For a first server a password is fine. Once LiveHQ is installed, the server's **Security** tab can switch password sign-in off and close the server to everyone but you. The last step of this path links to it.
+  </Accordion>
+  <Accordion title="The company is not in the table. Can I use it?">
+    Yes, if it rents a whole virtual server with its own public IPv4 address and one of the systems above. This path signs in with a password. A company that only accepts SSH keys also works with LiveHQ, but you need to know how to open the server with your key.
+  </Accordion>
+  <Accordion title="The server is not ready yet">
+    You can stop here and come back when the company's email arrives.
+  </Accordion>
+  <Accordion title="Do I need to buy a domain name?">
+    No. Every app gets a LiveHQ address such as `storefront.livehq.app`, with HTTPS. You can add [your own domain](/apps/custom-domains) later, on Pro and Teams.
+  </Accordion>
+</AccordionGroup>
+
+## Next
+
+[Step 2: Open your server](/start/open-your-server)

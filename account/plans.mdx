@@ -1,0 +1,96 @@
+---
+title: "Plans and limits"
+description: "What Free, Pro and Teams include, what counts toward each limit, and what the console does when a workspace reaches one."
+---
+
+A plan belongs to a workspace, not to a person. Prices are per workspace, in US dollars, each month. The server itself is rented from your hosting company and paid to them: it is not part of a LiveHQ plan.
+
+## The plans
+
+| | Free | Pro | Teams |
+| --- | --- | --- | --- |
+| Price | \$0 | \$15 a month | \$49 a month |
+| Servers | 1 | 3 included, \$3 a month for each extra, up to 10 | 10 included, \$3 a month for each extra, up to 50 |
+| Apps and background services | 3 | 30 | 100 |
+| Databases | 3 | 30 | 100 |
+| Custom domains | None | 5 included, \$3 a month for each extra, up to 30 | 10 included, \$3 a month for each extra, up to 100 |
+| Bandwidth | 10 GB a month, then apps pause | 2 TB a month, then \$0.01 per GB up to your spend limit | 5 TB a month, then \$0.01 per GB up to your spend limit |
+| Database backups | No | Scheduled and on demand | Scheduled and on demand |
+| Offsite backup storage | None | 200 GB, then \$0.03 per GB a month up to your spend limit | 1 TB, then \$0.03 per GB a month up to your spend limit |
+| Offsite copies kept per database | None | The latest 1 to 3, as the backup schedule says; 3 at most | The latest 1 to 3, as the backup schedule says; 3 at most |
+| Members | The owner | The owner | 5 included, \$5 a month for each extra, up to 50 |
+| Roles, invitations, ownership transfer, audit log | No | No | Yes |
+
+Sizes are decimal: 1 GB is 1,000,000,000 bytes. Both spend limits start at \$0, so nothing beyond the plan is billed until the owner raises one. See [Billing](/account/billing).
+
+## What counts toward each limit
+
+| Limit | What counts |
+| --- | --- |
+| Servers | Every server connected to the workspace, until you [remove it](/servers/remove). Installing LiveHQ again on the same server creates a new one, so remove the old entry first when the plan is full. |
+| Apps and background services | Every web app and every [background service](/apps/background-services) that is not deleted, stopped ones included. An app on [several servers](/apps/several-servers) counts once. |
+| Databases | PostgreSQL and Redis together, stopped ones included. A database's memory and disk are your server's: no plan sets them. |
+| Custom domains | Every domain you added. A domain you remove keeps its place until the removal is confirmed. A domain whose ownership is never verified is released 7 days after you added it or last checked it. |
+| Bandwidth | What LiveHQ's edge sends to visitors, plus what visitors upload. What LiveHQ saves by compressing, and the firewall's own answers to blocked requests, do not count. See [Bandwidth](/apps/bandwidth). |
+| Offsite backup storage | Offsite copies of database backups only. Backups kept on your servers do not count. |
+| Members | Active members, the owner included, plus invitations that are still pending. |
+
+Free counts bandwidth by calendar month. Pro and Teams count it by billing period.
+
+## At a limit
+
+When you try to add something the plan has no room for, the console opens a dialog that says what is full and what you can do. Nothing you already run is touched.
+
+| Where you are | The dialog | What it offers |
+| --- | --- | --- |
+| Free, at any limit | **Upgrade to Pro**, for example "The Free plan includes 3 apps and services, and all are in use. Upgrade to Pro for more." | **See plans** |
+| Pro or Teams, out of servers or custom domains; Teams, out of members | **Add a server**, **Add a custom domain** or **Add a member**, for example "All 3 servers on your plan are in use. Add one for \$3 a month." | The owner presses **Add one for \$3 a month** (\$5 for a member). The charge for today is prorated. Then try again. |
+| Pro, at 30 apps or 30 databases | **Move to Teams**: "The Pro plan includes 30 apps and services, and all are in use. Move to Teams for up to 100." | **See Teams** |
+| Pro, at the most extras can reach | **Move to Teams**, for example "Pro includes up to 10 servers. Move to Teams for more." | **See Teams** |
+| Teams, at its highest numbers | **Plan limit reached**: "That's the most Teams offers. Contact us to go further." | Write to [support](/help/support). |
+| A backup with offsite storage full | **Backup storage is full**: "The backup stays on its server. To keep offsite copies, raise the backup storage spend limit on the Billing page." | **Open billing**, for Owners and Admins. Only the owner raises the limit. |
+| You are not the owner | **Ask the workspace owner** | Only the owner buys extras or changes the plan. |
+
+Apps and databases have no extras: past 30 on Pro, the next step is Teams.
+
+### When bandwidth runs out
+
+- From 75% of the period's bandwidth, everyone in the workspace sees a banner. Owners and Admins get an email at 80% and when apps pause.
+- At 100%, the workspace's apps pause. Visitors see a page that says "This app is paused for now". The console says "Apps are paused: this period's 10 GB of bandwidth is used up."
+- From 75%, the workspace's public apps also lose their [outage protection](/help/outages), for as long as usage stays at 75% or more of the limit.
+- On Free, apps resume when the next month starts, or when you upgrade. After a move from a paid plan to Free, what the workspace already used earlier in that calendar month counts toward the 10 GB.
+- On Pro and Teams, the limit is what the plan includes plus what your bandwidth spend limit allows. Apps resume at the next period, or within seconds when the owner raises that limit.
+
+## Features by plan
+
+| Feature | Free | Pro and Teams |
+| --- | --- | --- |
+| Custom domains | No: apps use their `livehq.app` address | Yes |
+| Database backups | No. A schedule that was on waits; backups you already have stay restorable. | Yes |
+| Several servers, and the [private network](/network/overview) between them | No: both need a second server | Yes |
+| Buying more bandwidth or backup storage | No | Yes, through spend limits |
+
+Inviting people, roles, ownership transfer and the audit log are on Teams only. See [People and roles](/account/members-and-roles). Who can open an app is the same on every plan: see [Who can open an app](/apps/access).
+
+## Firewall sizes
+
+Every feature of the [app firewall](/apps/firewall/overview) is on every plan. Only the sizes of its lists differ.
+
+| | Free | Pro and Teams |
+| --- | --- | --- |
+| Rules per app | 10 | 100 |
+| Blocked and trusted IP entries per app, together | 100 | 2,000 |
+| Conditions per rule, or per group | 8 | 8 |
+| Groups per rule | 5 | 5 |
+| Values in one list condition | 100 | 500 |
+| Shared lists per workspace | 3 | 50 |
+| Entries per shared list | 1,000 | 10,000 |
+
+After a move to Free, a list that is already larger may stay as it is or shrink. It cannot grow.
+
+## Related
+
+- [Billing](/account/billing)
+- [People and roles](/account/members-and-roles)
+- [Known limits](/help/known-limits)
+- [Bandwidth](/apps/bandwidth)

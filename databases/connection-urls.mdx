@@ -1,0 +1,136 @@
+---
+title: "Get a connection URL"
+description: "Show a database's private URL for apps on LiveHQ or its public URL for your computer, and control who can connect from outside."
+---
+
+A connection URL is one line with everything a program needs to reach a database: user, password, host, port and database name. Every database has two: a **Private URL** for apps on LiveHQ and a **Public URL** for everything else.
+
+To give an app on LiveHQ its database, use [Connect an app](/databases/connect-an-app): it creates a user for the app and saves the URL in the app's variables. Use this page when you want the URL itself.
+
+A URL is not shown only once. You can show it again whenever you need it, and **Reveal password** on the [Users](/databases/users) tab shows a user's password by itself.
+
+## Which URL to use
+
+| | Private URL | Public URL |
+| --- | --- | --- |
+| For | Apps on LiveHQ | Your computer, a database tool, an app hosted somewhere else |
+| Host looks like | `pg-0a1b2c3d4e5f.internal` (PostgreSQL), `redis-0a1b2c3d4e5f.internal` (Redis) | A name that starts with `db-` and ends in `db.livehq.dev` |
+| Port | 5432 (PostgreSQL), 6379 (Redis) | 5432 or 6379 unless you change it |
+| Encryption | None in the URL: `sslmode=disable` or `redis://`. The traffic stays on your server or on LiveHQ's encrypted private network. | TLS, required: `sslmode=verify-full` or `rediss://` |
+| Needs external access | No | Yes |
+
+The private host works only inside LiveHQ: at once from an app on the database's own server, and from an app on another server after you connect that app with **Connect an app**. See [Connect across servers](/network/connect-across-servers).
+
+## Before you start
+
+- The database reads **Ready**. Otherwise the buttons say "Available once the database is running."
+- You are an **Owner**, **Admin** or **Developer**.
+- With two-factor sign-in on, the console may ask for your second factor first.
+
+## Show the private URL
+
+<Steps>
+  <Step title="Open Connections">
+    Open the database, then **Connections**.
+  </Step>
+  <Step title="Choose the user">
+    If the database has named users, **Connect as** appears above the **Private URL** card and applies to both URLs. Otherwise both URLs are for the default user, `livehq`.
+  </Step>
+  <Step title="Show and copy it">
+    Press **Show private URL**, then **Copy URL**, then **Hide**.
+  </Step>
+  <Step title="Give it to the app">
+    For an app on the database's own server, save it in the app's variables as `DATABASE_URL` (PostgreSQL) or `REDIS_URL` (Redis) and redeploy. See [Variables](/apps/variables). An app on another server must be connected with **Connect an app** first: a URL pasted by hand does not work there.
+  </Step>
+</Steps>
+
+## Show the public URL
+
+<Warning>
+**Show public URL** turns external access on if it is off. Read the note under the button first: it says what will be allowed.
+</Warning>
+
+The note reads one of:
+
+- "This turns external access back on for 203.0.113.10/32." You saved IP rules earlier, and they come back.
+- "This turns on encrypted connections from any IP address. Only clients with the password can sign in, and you can limit access to specific IPs below." No IP rules are saved, so any IPv4 address may try.
+
+<Steps>
+  <Step title="Show it">
+    In the **Public URL** card, press **Show public URL**. The URL appears at once.
+  </Step>
+  <Step title="Wait for Accepting connections">
+    The pill next to **Public URL** reads **Setting up** while your server gets a certificate, then **Accepting connections**. The first time takes about a minute.
+  </Step>
+  <Step title="Copy it">
+    Press **Copy URL**. If your tool wants the parts one by one, open **Host, port and user for GUI clients** (Redis: **Host, port, user and redis-cli**).
+  </Step>
+</Steps>
+
+Connect from your computer, with the values the console shows in place of the placeholders:
+
+```bash PostgreSQL
+psql "postgresql://livehq:YOUR_PASSWORD@db-EXAMPLE.db.livehq.dev:5432/app?sslmode=verify-full"
+```
+
+```bash Redis
+redis-cli --tls -u 'rediss://livehq:YOUR_PASSWORD@db-EXAMPLE.db.livehq.dev:6379/0'
+```
+
+The certificate is a public one from Let's Encrypt, and the client must verify it. If `psql` complains about a missing root certificate file, add `&sslrootcert=system` to the URL (libpq 16 or newer). Redis clients need `rediss://` or their TLS option: plain connections fail.
+
+## Limit access to IP addresses
+
+<Steps>
+  <Step title="Open the form">
+    In the **Access** card, press **Limit to specific IPs** (or **Change allowed IPs**).
+  </Step>
+  <Step title="Choose who can connect">
+    Under **Who can connect?** choose **Only specific IP addresses** and list them under **Allowed client IPs (CIDR, one per line)**, for example `203.0.113.10/32` (`/32` means that one address). Each line is an IPv4 address or range, and a database takes up to 32 of them. For an app hosted elsewhere, allow the address it connects from.
+
+    Or choose **Anyone with the password** and tick the confirmation.
+  </Step>
+  <Step title="Save">
+    Press **Save access rules** (**Turn on external access** if it was off).
+  </Step>
+</Steps>
+
+The card then reads "Only 203.0.113.10/32 can connect, over TLS." or "Anyone with the password can connect, over TLS."
+
+### Change the address or the port
+
+In the same form, open **Advanced network settings**. LiveHQ detects the server's public address on its own. Tick **Use a different server address** to type one under **Server public IPv4 address**, or change **Database port** (1024 to 65535).
+
+Each database with external access needs its own port on its server. Two PostgreSQL databases on one server cannot both use 5432.
+
+### Turn external access off
+
+Press **Turn off** in the **Access** card and confirm. Everything that uses the public URL stops connecting until you turn it back on. The private URL keeps working, and your IP rules are kept for next time.
+
+## What the status says
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| **Accepting connections** | The server listens on the public address. | Connect. If it fails, check your hosting company's firewall (below). |
+| "Your server is setting up a TLS certificate for this address. Connections work in about a minute." | The address is being prepared. | Wait. |
+| "Your server couldn't get a TLS certificate for this address yet. It retries automatically, and connections work as soon as it succeeds." | The certificate request failed for now. | Wait a few minutes. If it stays, [get help](/help/support). |
+| "Port 5432 is already used by another program on your server. Choose another port in the access settings." | Another database or program holds that port. | Change **Database port**. |
+| "Your server couldn't update its firewall for this address. It retries automatically." | The server could not open the port yet. | Wait. If it stays, [get help](/help/support). |
+| "Your server is waiting for LiveHQ to confirm access. It retries automatically." | The server is checking the change with LiveHQ. | Wait. |
+| "Your server hasn’t reported on this address for a few minutes. Check that it’s online." | The server is offline. | See [A server is offline](/help/server-offline). |
+| "External connections aren’t working yet. Your server retries automatically." | The server reported a problem it has no more precise words for. | Wait a few minutes. If it stays, [get help](/help/support). |
+| "Your server’s public address wasn’t detected. Enter it in Advanced network settings below." | LiveHQ could not tell which public IPv4 address the server has. | Type it under **Server public IPv4 address**. |
+
+## Limits
+
+- **Your hosting company's firewall can still block the port.** LiveHQ opens the port on the server itself. If your hosting company has a firewall in front of the server (often called a cloud firewall or security group), allow TCP on the database's port there too. The **Access** card shows the address and port.
+- **IPv4 only.** The public address and the IP rules are IPv4.
+- **Not behind LiveHQ's edge.** Clients connect straight to your server, so the app firewall does not apply.
+- **Connection limits.** By default 100 public connections at once and 20 from one IP address. See [CPU, memory and connection limits](/databases/sizes-and-limits).
+- **Saving access settings** is limited to 20 times an hour for one database.
+
+## Related
+
+- [Connect an app](/databases/connect-an-app)
+- [Database users and passwords](/databases/users)
+- [Database connection problems](/help/database-connection)

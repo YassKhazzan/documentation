@@ -1,0 +1,114 @@
+---
+title: "Redeploy an app"
+description: "Deploy the newest commit again, apply a changed setting without a new build, or let every push to GitHub deploy by itself."
+---
+
+A redeploy replaces an app's running release with a new one. The old release keeps serving until the new one is healthy.
+
+## Three ways to redeploy
+
+| You want | Use | Does it build? |
+| --- | --- | --- |
+| The newest code | **Redeploy** on the app's page | Yes, from the branch's newest commit. |
+| A changed variable or limit | **Review and redeploy** on the **Variables** or **Resources** tab | Usually not: the last image is reused. |
+| Every push to deploy | The **Deploy on push** switch | Yes, the pushed commit. |
+
+**Owners**, **Admins** and **Developers** can do all three.
+
+## Redeploy the newest commit
+
+<Steps>
+  <Step title="Open the app and press Redeploy">
+    The form is titled with the app's name, such as **Redeploy storefront**. It is filled in with the settings of the last deployment. The app's name, server, address and access cannot be changed here.
+  </Step>
+  <Step title="Change what you need">
+    You can change the branch, tag or commit, the limits, the variables and everything under **Build and health settings**. Saved variables are kept unless you press **Replace** beside one.
+  </Step>
+  <Step title="Press Deploy new release">
+    LiveHQ asks GitHub for the branch's newest commit at that moment and deploys it.
+  </Step>
+</Steps>
+
+A redeploy with nothing changed builds again. That is how a site that fetches its content while it builds gets new content. Steps that did not change come from the server's build cache.
+
+## Apply a setting without building again
+
+A deployment reuses an image instead of building when both of these are true:
+
+- This server built the same commit for the app in the last seven days, with the same project directory, build method, Dockerfile path and build variables. The server keeps the app's two newest builds for this.
+- The new deployment changes only how the app runs: a runtime variable, the memory or CPU limit, the app port, the health check path.
+
+The build output then says: "This source was built on this server with the same build settings, and this deployment changes only how the app runs: nothing is built again, it gets that image."
+
+For a variable or a limit:
+
+1. Change it. On the **Variables** tab, add or replace a variable: a banner reads **Saved changes aren't live yet**. On the **Resources** tab, pick a new memory or CPU limit under **Limits**.
+2. Press **Review and redeploy**.
+3. In **Apply and redeploy**, check the list of changes and press **Apply and redeploy**. The dialog says: "LiveHQ deploys the current release's exact source revision with these settings."
+4. A notice reads **Redeploy queued**. Press **Follow it** to watch.
+
+Under **Release options** in that dialog you can change the startup allowance and allow an automatic rollback: see [Roll back](/apps/rollback).
+
+For the app port or the health check path, press **Redeploy**, change it under **Build and health settings** and press **Deploy new release**. The image is reused when the branch has no newer commit.
+
+These always build: a new commit, a changed **Build** or **Build & runtime** variable, another project directory, build method or Dockerfile path, and an image older than seven days.
+
+## Deploy on push
+
+The switch is in three places: the **Deploy on push** card at the top of the app's **Deployments** tab, the **Push deployments** row on **Overview**, and **Deploy when I push** on the Deploy page.
+
+| Switch | What the card says |
+| --- | --- |
+| On | "Every push to `main` on `acme/storefront` deploys automatically." |
+| Off | "Pushes to `main` are ignored. Deploy changes with Redeploy." |
+
+A push deploys only when all of these are true:
+
+- The push is to the branch the app deploys. Tags and other branches are ignored.
+- The app has been deployed from GitHub once. Until then the card says "Pushes start deploying after this app's first deployment from Git."
+- The repository is still shared with LiveHQ. See [Connect GitHub](/apps/github).
+- The app is not stopped.
+
+A push deployment uses the pushed commit, the build settings and limits of the app's last deployment, and the variables saved at that moment. Automatic rollback is never on for it.
+
+## What visitors notice
+
+- The old release serves until the new one has passed its health check. Then the app's address switches to the new release.
+- Requests already in progress on the old release are given time to finish: up to 30 seconds, and up to five minutes for open WebSockets. After that they are closed, so long-lived connections must reconnect.
+- If the new release fails before the switch, the address never switches. The old release keeps serving.
+- Both releases run side by side for a short time, so the server needs memory for both. If the server runs out of memory, the build or the new release is what stops first, and the deployment says so.
+
+## The "Live after …" line
+
+When a web app's release goes live, the server writes one last line into the deployment's **Application startup & health** output:
+
+```text
+Live after … on this server: build …, loading the image …, start, health check and going live ….
+```
+
+It is the time spent on your server, step by step; some deployments list a planning step first. It leaves out the time the deployment was queued and the minute LiveHQ watches the release afterwards. Use it to see where a slow deployment spends its time: in the build, or in the app's own startup.
+
+## A second deployment of the same app
+
+- If the first is still queued, the second replaces it. The first reads **Cancelled**. Its **Copy logs** text gives the reason: "Replaced by a newer deployment before it started."
+- If the first has started, the second waits until the first is finished. That includes the minute LiveHQ watches a release after it goes live.
+- Deployments of different apps on one server also run one at a time.
+
+## If something goes wrong
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| No **Redeploy** button | The app was not deployed from GitHub, or you are a **Viewer**. | Ask an owner for another role. See [Members and roles](/account/members-and-roles). |
+| "Start the app first. A stopped app keeps its saved configuration." | The app is stopped. | Open **Settings & access** and press **Start app**, then redeploy. |
+| "Update this server's LiveHQ agent to apply configuration changes." | The server's agent is too old for **Apply and redeploy**. | See [Update the agent](/servers/update-agent). |
+| "This release has no recorded limits. Redeploy it from Deploy." | The running release has no saved limits to reuse. | Press **Redeploy** and set the limits in the form. |
+| A message that the repository is not in the current repository list | LiveHQ can no longer read it. | Share it again on the **GitHub** page, then **Sync repositories**. |
+| A push did not deploy | The switch is off, the push went to another branch, the app is stopped, or the repository is no longer shared. | Check the **Deploy on push** card, then press **Redeploy** once. |
+| The deployment fails | The build or the start failed. The old release keeps serving. | See [A build failed](/help/build-failed) or [An app builds but won't start](/help/app-wont-start). |
+
+## Related
+
+- [Follow a deployment](/apps/deployments)
+- [Roll back](/apps/rollback)
+- [Variables](/apps/variables)
+- [App resources](/apps/resources)

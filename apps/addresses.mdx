@@ -1,0 +1,103 @@
+---
+title: "An app's LiveHQ address"
+description: "How an app gets its livehq.app address, how to choose an exact one, and how to change it later in the Domains tab."
+---
+
+Every app gets an address on LiveHQ's domain, such as `storefront.livehq.app`. It works over HTTPS as soon as the first deployment is live, with nothing to set up, on every plan. You can also [use your own domain](/apps/custom-domains) beside it.
+
+A [background service](/apps/background-services) has no address: nothing on the internet can reach it.
+
+## How the address is chosen
+
+When you deploy a new app, the Deploy form shows the address it will get, under the app's name.
+
+- LiveHQ builds the name from the app's name: lower-case letters and digits are kept, everything else becomes a hyphen, and the result is cut at 40 characters. An app named `My Storefront` gets `my-storefront.livehq.app`.
+- If that name is taken, or is on the reserved list below, LiveHQ adds a short suffix, such as `my-storefront-3fa9c1.livehq.app`.
+- A name that leaves fewer than two usable characters becomes `app`.
+
+### Ask for an exact address
+
+<Steps>
+  <Step title="Open the address field">
+    On the Deploy form, next to the proposed address, press **Choose address**.
+  </Step>
+  <Step title="Type the name you want">
+    Type the part before `.livehq.app`. The rules are in the table below.
+  </Step>
+  <Step title="Deploy">
+    Press **Deploy application**. LiveHQ uses exactly that address. If someone already has it, the deployment stops so you can choose another.
+  </Step>
+</Steps>
+
+**Use automatic address** goes back to the proposed name.
+
+| Rule | Detail |
+| --- | --- |
+| Length | 2 to 40 characters |
+| Characters | Lower-case letters, digits and single hyphens. No hyphen at the start or the end. |
+| Reserved names | `www`, `api`, `auth`, `login`, `logout`, `admin`, `account`, `accounts`, `support`, `status`, `docs`, `download`, `downloads`, `releases`, `cdn`, `assets`, `mail`, `email`, `billing`, `livehq`, `localhost`, `preview`, and names starting with `xn--` |
+
+## Change the address later
+
+Owners, admins and developers can change it. No redeployment is needed.
+
+<Steps>
+  <Step title="Open the Domains tab">
+    Open the app, then **Domains**. The first card is **App address**.
+  </Step>
+  <Step title="Type the new name">
+    Change **Subdomain**. The console warns: "Saving replaces storefront.livehq.app; links to the old address stop working."
+  </Step>
+  <Step title="Save">
+    Press **Save address**. The console answers "Your address has been updated."
+  </Step>
+</Steps>
+
+<Warning>
+The old address stops working when you save. Bookmarks, links in emails, webhook addresses at other services and sign-in callback addresses that use it all break. Update them, or keep the address.
+</Warning>
+
+For 30 days after the change, no other app can take the old name, and you can change back to it.
+
+Your custom domains and the app's access setting are not affected by the change.
+
+## Open the app and copy its address
+
+At the top of the app's page:
+
+- **Open app** opens the app in a new browser tab. If the app is private, the console signs you in on the way, so you do not see a sign-in page. When a custom domain is connected, **Open app** goes to the first connected domain.
+- **Copy URL** copies the full address, such as `https://storefront.livehq.app/`.
+- The header lists the LiveHQ address, then up to two connected custom domains, each with a small button that opens that address.
+
+**Open app** appears once the app has a published release. Until then the header says "Your app is waiting for its first published release."
+
+## HTTPS
+
+LiveHQ's edge serves the address over HTTPS and looks after the certificate. Your app speaks plain HTTP on its port inside the server; it needs no certificate of its own.
+
+## Who can open the address
+
+The address is public on the internet, but who gets past it is your choice. A new app starts **Private** unless you chose **Public** on the Deploy form. See [Choose who can open an app](/apps/access).
+
+## If something goes wrong
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| "Use 2–40 lowercase letters, numbers or single hyphens, without a leading or trailing hyphen." | The name breaks a rule in the table above. | Fix the name. |
+| "This address is reserved. Choose another." | The name is on the reserved list. | Choose another name. |
+| "This address is already taken. Your current address has not changed." | Another app has it, or had it in the last 30 days. | Choose another name. |
+| "Allow pop-ups for LiveHQ to open your app in a new tab." | Your browser blocked the new tab. | Allow pop-ups for the console's address, then press **Open app** again. |
+| A page that says "There's no app at this address" | The address was changed or the app was deleted. | Check the app's current address in its header. |
+| A page that says "This app is offline" | The server that runs the app is not connected to LiveHQ. | See [The app is unavailable](/help/app-unavailable). |
+
+## Limits
+
+- One LiveHQ address per app. For more names, add [custom domains](/apps/custom-domains).
+- The part after the name is always LiveHQ's domain. You cannot nest names such as `shop.acme.livehq.app`.
+- Browsers treat every `livehq.app` app as part of one site. For your app's own session cookies, use names with the `__Host-` prefix and do not set a cookie `Domain`. LiveHQ removes the `Domain` attribute from cookies your app sets on a `livehq.app` address, so a cookie never reaches another customer's app.
+
+## Related
+
+- [Use your own domain](/apps/custom-domains)
+- [Choose who can open an app](/apps/access)
+- [Deploy an app](/apps/deploy)

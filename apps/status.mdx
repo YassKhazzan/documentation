@@ -1,0 +1,122 @@
+---
+title: "What an app's status means"
+description: "Every status word the console shows for an app or a background service, what each one rests on, and what to do next."
+---
+
+Every app carries one status word. This page lists each word, the sentence the console shows with it, and what LiveHQ knew when it chose that word.
+
+## Where you see it
+
+- **The pill** beside the app's name: in **Applications**, on a server's **Canvas** and at the top of the app's page.
+- **The banner** at the top of the app's **Overview**: a heading, then one sentence that gives the reason.
+- **A small line** under that sentence, such as `Desired: running · Agent: healthy`. It is explained [below](#the-desired-and-agent-line).
+- **A deployment badge** with a spinner while a deployment is on its way, such as "Building application · 42s". It sits beside the pill. During a first deployment it stands in for the pill.
+
+## Statuses of a web app
+
+| Status | The banner says | What it means | What to do |
+| --- | --- | --- | --- |
+| **Draft** | "Ready for a first deployment." | The app exists and has never gone live. | [Deploy it](/apps/deploy). |
+| **Deploying** | "A deployment is underway." | The first deployment is queued, building or starting. | Follow it under **Deployments**. |
+| **Failed** | "Your app needs attention." | The first deployment failed, so nothing is running. | Open **Deployments** and read the reason. See [A build failed](/help/build-failed). |
+| **Live** | "Your app is live." | Your server reports the release healthy, LiveHQ's edge is connected to the server, and the app's address points at that release. | Nothing. |
+| **Running** | "Your app is running." | The release is healthy on your server, but its address does not point at it yet. Normal for a moment after a deployment or an address change. | Wait a minute. If it stays, see [An app is Unavailable](/help/app-unavailable). |
+| **Recovering** | "Your app is recovering." | The agent is starting the release again, after it exited or stopped answering its health check. | Wait, then read [why it restarted](/apps/restarts). |
+| **Unavailable** | "Your app needs attention.", or "Your app is running, but its connection needs attention." | LiveHQ cannot say the app is serving: the server sent no recent report, the server reports the app unhealthy, or the edge is not connected to the server. | Follow [An app is Unavailable](/help/app-unavailable). |
+| **Stopping** | "Stopping your app." | You asked for a stop and the server has not confirmed it yet. | Wait a few seconds. |
+| **Stopped** | "Your app is stopped." | You stopped it and the server confirmed. It stays stopped after a server restart. | **Start app** under [Settings & access](/apps/settings). |
+| **Suspended** | "Your app needs attention." | The workspace's plan no longer covers this app, for example after a move to Free with more apps than Free allows: the apps over the limit are suspended. | Open **Billing**. See [Plans](/account/plans). |
+
+Two red banners replace the heading when the server reports why a release is not serving:
+
+- "Your app ran out of memory." See [Out of memory](/help/out-of-memory).
+- "Your app keeps stopping." LiveHQ paused its restarts after 5 in 10 minutes. See [Why LiveHQ restarted an app](/apps/restarts).
+
+A deployment that has to wait before it starts says what it waits for on its badge: **Waiting for disk space**, **Queued behind another build**, **Preparing the server**, **Waiting for the server’s clock** or **Waiting for capacity**. During a first deployment the banner adds the server's own sentence. See [Follow a deployment](/apps/deployments).
+
+## What Live rests on
+
+**Live** means three things are true together:
+
+1. Your server reports that the running release answers its health check.
+2. LiveHQ's edge is connected to your server.
+3. The app's address points at that release.
+
+The sentence under "Your app is live." tells you which facts LiveHQ had:
+
+| Sentence | When you see it |
+| --- | --- |
+| "Your server reports it healthy, and LiveHQ’s edge is connected to it." | The usual case. |
+| "Its release is active, and LiveHQ’s edge is connected to your server." | A release went live moments ago and the server's next report has not arrived yet. |
+| "At least one of its servers is serving it." | The app runs on [several servers](/apps/several-servers). |
+| "An independent check confirmed this release is reachable." | Only when a check from outside the server answered. LiveHQ runs none today, so you will not see this sentence. |
+
+Under "Your app is running." the sentence is: "Healthy on your server. LiveHQ has not yet confirmed that its address points at this release."
+
+<Note>
+LiveHQ runs no check of your app from outside your server today. **Live** rests on your server's own report and on what LiveHQ's edge knows about the connection and the address. An app can read **Live** while a visitor cannot use it: a custom domain with wrong DNS records, a firewall rule that blocks that visitor, or a page that fails while the health check path still answers. If you need an outside view, point an uptime checker of your choice at the app's address.
+</Note>
+
+## The Desired and Agent line
+
+The small line under the banner shows what was asked for and what was reported.
+
+- `Desired` is what you asked for: `running` or `stopped`.
+- `Agent` is what your server last reported for the running release.
+- `External check` appears only when a check from outside answered. LiveHQ runs none today.
+
+| Agent | Meaning |
+| --- | --- |
+| `healthy` | The release answers its health check. |
+| `recovering` | The agent is starting the release again. |
+| `transitioning` | One release is taking over from another. |
+| `unhealthy` | The release is failing its health check. |
+| `crash_loop` | The app stopped 5 times in 10 minutes and LiveHQ paused its restarts. |
+| `needs_attention` | The agent tried to start the release again and could not. |
+| `stopped` | The release is stopped, as you asked. |
+| `unknown` | LiveHQ has no current report for this release. |
+
+## How fresh the server's report is
+
+- The agent on your server checks a web app every 5 seconds: `GET` on its health check path, with a 3 second timeout.
+- The agent sends a report when something changes and checks in about once a minute when nothing does.
+- LiveHQ trusts a report for 150 seconds. After that, with no newer one, the app reads **Unavailable** and the line says `Agent: unknown`.
+- The console reads the workspace again every 15 seconds, so a status change shows without a reload.
+
+A server that stops reporting altogether reads **Offline** itself. See [A server is offline](/help/server-offline).
+
+## Statuses of a background service
+
+A [background service](/apps/background-services) has no address, so it is never **Live**. Its healthy word is **Running**, shown in green.
+
+| Status | The banner says | What it means |
+| --- | --- | --- |
+| **Running** | "Running." | Its health command passes, or, with no health command, it has not exited. |
+| **Starting** | "Starting." | A release started and LiveHQ waits for its health command, or for it to stay up. |
+| **Checking** | "Checking it stays healthy (60 s)." | The new release must run cleanly for a minute before it takes over. |
+| **Replacing** | "Replacing the old release." | The new release is taking over from the old one. |
+| **Waiting** | "Waiting.", or a sentence such as "Waiting for storefront to be healthy." | A push deployment waits for the app it deploys after. |
+| **Stopping** | "Stopping." | It was asked to stop and gets time to finish its work. |
+| **Stopped** | "Stopped." | You stopped it. It stays stopped after a server restart. |
+| **Unhealthy** | "Unhealthy.", with the time it began | Its health command is failing. LiveHQ restarts it, at most once every 5 minutes, unless you turned that off. |
+| **Keeps stopping** | "Keeps stopping: it exited 5 times in 10 minutes." | LiveHQ stopped restarting it. Fix the error and redeploy, or restart it. |
+| **Failed** | "It didn’t start." | The latest deployment failed. The previous release, if any, is kept. |
+| **Draft** | "Ready for a first deployment." | Never deployed. |
+| **Deploying** | "A deployment is underway." | The first deployment is on its way. |
+| **Suspended** | "Suspended." | The workspace's plan has paused it. Open **Billing**. |
+| **No report** | "No recent report from the server." | LiveHQ has no current health report for this service. Check the server's connection. |
+
+## Apps on several servers
+
+The app's **Overview** lists each server with its own word: **Serving**, **Deploying**, **Down** or **Removing**. The app reads **Live** while at least one server serves it. See [Run an app on several servers](/apps/several-servers).
+
+## In lists
+
+On **Applications**, the **Running** filter and count include web apps that are **Live** or **Running** and services that are **Running**. **Needs attention** includes any app whose latest deployment failed, web apps that are **Failed**, **Unavailable** or **Suspended**, and services that are **Failed**, **Keeps stopping**, **Unhealthy** or **Suspended**.
+
+## Related
+
+- [An app is Unavailable](/help/app-unavailable)
+- [Why LiveHQ restarted an app](/apps/restarts)
+- [Emails LiveHQ sends](/help/emails)
+- [Status words for AI agents](/agents/status-words)

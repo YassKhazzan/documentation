@@ -1,0 +1,65 @@
+---
+title: "Glossary"
+description: "Plain definitions of the words LiveHQ and its console use, from agent and build to tunnel and workspace."
+---
+
+Words are listed in alphabetical order. A word in **bold** inside a definition has its own entry.
+
+| Word | Meaning |
+| --- | --- |
+| **Access** | Who can open a web app: only you (**Private**), anyone with a password, or anyone with the link. See [App access](/apps/access). |
+| **Address** | Where a web app is reached. Every app has a LiveHQ address such as `storefront.livehq.app`; a **custom domain** can be added. |
+| **Agent** | The LiveHQ program on your server. It carries out what you ask in the console: builds, starts and stops apps, runs databases, reports health. |
+| **App** | Something built from a GitHub repository and run on a server. A web app has an address. A **background service** has none. |
+| **Attack mode** | A firewall switch that makes every visitor pass a quick browser check. See [Attack mode](/apps/firewall/attack-mode). |
+| **Background service** | An app with no public address: a worker, a bot, a queue consumer. See [Background services](/apps/background-services). |
+| **Bandwidth** | The data LiveHQ's edge sends to visitors and to your server for your apps, counted per workspace for each billing period (each calendar month on Free). See [Bandwidth](/apps/bandwidth). |
+| **Build** | The step of a **deployment** that turns your code into an **image**. It runs on your own server. |
+| **Canvas** | A server's first view in the console: a drawing of the edge, the tunnel and each app and database. |
+| **Connection URL** | The line an app or a tool uses to reach a database, such as `postgresql://…`. The **private URL** works from your apps; the **public URL** works from anywhere you allow. |
+| **Console** | LiveHQ's website for managing everything, at `console.livehq.dev`. |
+| **Container** | An isolated box in which Docker runs one app or database. |
+| **Custom domain** | Your own domain name for an app, such as `www.example.com`. Needs Pro or Teams. |
+| **Deployment** | One attempt to put a version of an app online: fetch the code, build, start, check health, go live. |
+| **Docker** | The standard tool that runs each app in its own **container**. The installer adds it to your server. |
+| **Dockerfile** | A file in your repository that says exactly how to build your app. Optional: without one, LiveHQ works it out. |
+| **Edge** | LiveHQ's servers that receive every visitor's request, check access and the firewall, and pass the request to your server through the **tunnel**. |
+| **Enrollment code** | A single-use code from the console that the installer asks for. It connects a server to your workspace and lasts 30 minutes. |
+| **Extras** | More servers, custom domains or members than a plan includes, bought one at a time. See [Billing](/account/billing). |
+| **Firewall** | Rules at LiveHQ's edge that block, check or limit visitors of one app before they reach your server. See [App firewall](/apps/firewall/overview). |
+| **Health check** | A request LiveHQ sends a new release, `GET /` unless you set another path. The release goes live once it answers. |
+| **HTTPS** | The secure form of a web address. LiveHQ provides the certificate for every address. |
+| **Image** | A packaged copy of your app with everything it needs to run. A build produces one. |
+| **IP address** | The number that identifies a server on the internet, like `203.0.113.10`. |
+| **Limit** | The most memory or CPU an app or database may use. A cap, not a reservation. |
+| **Live** | A web app's status when its server reports the release healthy, the edge is connected to the server and the app's address points at that release. |
+| **Lock** | Closing a server so that no port answers from the internet. See [Close the server to the internet](/servers/lock-down). |
+| **OriginLink** | The console's name for the connection between your server and LiveHQ's edge: the **tunnel**. |
+| **Passkey** | A way to sign in with your device's fingerprint, face or PIN instead of a password. |
+| **Plan** | Free, Pro or Teams. It sets how many servers, apps, databases and how much bandwidth a workspace has. |
+| **Port** | A numbered door through which a program accepts connections. Your app listens on one; LiveHQ tells it which through the `PORT` variable. |
+| **Private SSH** | Reaching your server's SSH through LiveHQ, with your own keys, while port 22 is closed to the internet. |
+| **Private URL / public URL** | A database's two **connection URLs**: one for your apps, one for the outside. |
+| **Redeploy** | Deploy an app again from its branch's newest commit. |
+| **Release** | The running result of a successful deployment. |
+| **Replica** | The console's word for a copy of an app on another server. |
+| **Repository** | A project on GitHub. |
+| **Rollback** | Going back to the previous **release**. |
+| **Rollout** | A deployment of an app that runs on several servers: one server at a time, stopping at the first failure. |
+| **Root** | A Linux server's main account, which may do anything on it. |
+| **Sealed** | Encrypted in your browser for your server's key. LiveHQ stores sealed variables and cannot read them. |
+| **Server** | A Linux computer you rent from a hosting company, always on and connected to the internet. Hosting companies also call it a VPS, a Droplet or an instance. |
+| **Spend limit** | The most a workspace may spend in a period on bandwidth or backup storage beyond its plan. \$0 unless the owner raises it. |
+| **SSH** | The standard way to open a terminal on a remote server. |
+| **Step-up** | Being asked for your second factor again before a risky action, such as removing a server. |
+| **Studio** | The console's built-in browser for a database's data. |
+| **Terminal** | A window in which you type commands. Your computer has one. |
+| **Tunnel** | The encrypted connection your server opens outward to LiveHQ's edge. Visitors' requests travel through it. |
+| **Two-factor sign-in** | Signing in with your password and a second proof, such as a code from an authenticator app. |
+| **Variables** | Named values your app reads when it builds or runs, such as `DATABASE_URL`. |
+| **Workspace** | The place that holds your servers, apps, databases, people and plan. |
+
+## Related
+
+- [How LiveHQ works](/start/how-livehq-works)
+- [For AI agents: status words](/agents/status-words)

@@ -1,0 +1,68 @@
+---
+title: "What server you need"
+description: "The systems, sizes and access LiveHQ needs on a server you rent, what the installer adds, and what LiveHQ changes on the server afterwards."
+---
+
+LiveHQ runs on a Linux server that you rent from a hosting company, often sold as a VPS, an instance or a cloud server. This page says which servers work, how big one should be, and what LiveHQ puts on it. Never rented one? Start with [Rent a server](/start/rent-a-server).
+
+## What LiveHQ needs
+
+| | Requirement |
+| --- | --- |
+| System | Ubuntu 22.04, 24.04 or 26.04, or Debian 12 or 13 |
+| Processor | 64-bit Intel/AMD (x86-64) or ARM64. The installer detects which |
+| Kind of server | A whole virtual server or a dedicated one that starts with systemd. Container-type plans that cannot limit memory, CPU and processes per app are refused |
+| Access | SSH as `root`, or as a user who can run `sudo` |
+| Network | The server must reach the internet. Your apps need no open port: visitors arrive through LiveHQ's edge over a connection the server opens outward |
+| Docker | Not needed beforehand. An existing Docker Engine is reused if it is version 28.3.3 or newer |
+
+On any other system the installer stops with `Use Ubuntu 22.04/24.04/26.04 or Debian 12/13. No host changes were made.`
+
+## How much memory and disk
+
+- **2 vCPU and 4 GB of memory** is a comfortable start for a first app and a database.
+- **A 1 GB server can deploy.** It runs a simple website or a small app. Builds run on your own server, one deployment at a time, so the build is the hard part. On a server with less than 2 GiB of memory and no swap of its own, LiveHQ adds a swap file that only builds use. A larger project, such as a big Next.js app, can still need more than the server has: the build then stops and the deployment says it ran out of memory. See [How memory is shared](/servers/memory).
+- **Disk.** LiveHQ keeps the larger of 2 GiB or 10% of the disk free, and a deployment waits while less is free. Each deployment builds a new image, often over 1 GiB for a framework app. See [Disk space](/servers/disk-cleanup).
+
+## What the installer adds
+
+The [install command](/servers/connect) changes these things and removes nothing:
+
+- **Docker Engine and Buildx**, from Docker's own package repository, if the server has no Docker.
+- **A few small tools** if they are missing: Python 3, curl, CA certificates, iproute2 and iptables.
+- **The LiveHQ agent**, the LiveHQ program on the server. It lives in `/opt/livehq-agent` and keeps its state in `/var/lib/livehq-agent`.
+- **Services that start with the server:**
+
+| Service | What it does |
+| --- | --- |
+| `livehq-agent` | Carries out what you ask in the console: deployments, databases, reports |
+| `livehq-traffic` | Keeps the encrypted tunnel to LiveHQ's edge that carries visitors to your apps |
+| `livehq-updater` | Installs new versions of the agent |
+| `livehq-lock` | Puts a confirmed [server lock](/servers/lock-down) back when the server starts |
+
+The installer opens no port from the internet, and your LiveHQ password is never typed on the server. It leaves your own firewall rules, packages and containers as they are.
+
+## What LiveHQ changes afterwards
+
+<Note>
+LiveHQ does change the system after the install. It installs the system's security updates, and it may restart the server at a planned weekly time. You can change both.
+</Note>
+
+| Change | When | You control it |
+| --- | --- | --- |
+| Installs the system's security updates, and only those. The system's own automatic installer is switched off while LiveHQ does this | Every day, during the server's maintenance window, 03:00 to 04:00 UTC unless you change it | [Security updates](/servers/system-updates): **Automatic**, **I approve restarts** or **Off** |
+| Restarts the server when an update needs it | At most once a week, Sunday at 03:00 UTC by default, with an email at least a day before | Same page: change the day, postpone, approve each restart, or turn it off |
+| Adds a boot setting so a new system core (kernel) that fails to start falls back to the previous one | With security updates on, where the server boots with GRUB | Removed when you turn security updates **Off** |
+| Keeps a swap file for builds, `/var/lib/livehq-swap/swapfile`: 2 GiB, or 1 GiB on a small disk | Only on a server with less than 2 GiB of memory and no swap of its own | Delete the file to opt out. LiveHQ does not put it back |
+| Collects old releases, images and build cache it created | Every 15 minutes, when automatic collection is on | [Disk space](/servers/disk-cleanup) |
+
+Three more changes happen only when you ask for them on the [Security tab](/servers/security): turning SSH password logins off, locking the server, and updating Docker.
+
+LiveHQ never upgrades the system to a new release, such as Ubuntu 24.04 to 26.04.
+
+## Related
+
+- [Connect a server](/servers/connect)
+- [How memory is shared on a server](/servers/memory)
+- [Security updates and planned restarts](/servers/system-updates)
+- [Install problems](/help/install-problems)

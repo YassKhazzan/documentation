@@ -1,0 +1,142 @@
+---
+title: "Browse and edit data in PostgreSQL Studio"
+sidebarTitle: "PostgreSQL Studio"
+description: "Use PostgreSQL Studio in the console to browse tables, filter rows, edit data with a confirmation, run SQL and import or export CSV."
+---
+
+PostgreSQL Studio is a table browser and SQL editor inside the console. It reaches the database through your server's agent, so it works with external access off and needs nothing installed on your computer.
+
+Studio is for looking at data and making small, careful changes. It is not a tool for bulk imports, large exports or long migrations: see [Limits](#limits).
+
+## Open Studio
+
+Open the database, then **Studio**. Or press **Open Studio** on the database's Overview.
+
+- The database must read **Ready** and its server must be online.
+- **Owner**, **Admin** and **Developer** see the tab. Viewers do not.
+- The full-screen button at the top right of Studio gives it the whole window. Press Esc to leave.
+
+<Frame caption="PostgreSQL Studio on the Data tab, in read-only mode.">
+  <img src="/images/console/database-studio.webp" alt="PostgreSQL Studio for the database shop-db. On the left, the Explorer lists eight tables in the public schema, with orders selected, and Saved queries below. On the right, the tabs Data, SQL editor, Structure and History; the Data tab shows 50 rows of the orders table with the columns id, number, customer_email, status and created_at, the buttons Filters, Insert row, Import CSV, Columns, CSV and JSON, and paging with Previous and Next. The top bar reads Connected and Read only, and the status bar reads 15s statement timeout." />
+</Frame>
+
+## Browse tables
+
+The **Explorer** on the left lists tables and views by schema. Type in **Find a table…** to narrow the list, and press **Load more tables** if the database has more than 200. On a phone, the Explorer opens from the menu button at the top left.
+
+Click a table to open it on the **Data** tab.
+
+| To | Do this |
+| --- | --- |
+| Filter rows | Press **Filters**, then **Add condition**. Choose a column, an operator (equals, does not equal, contains, starts with, greater than, at least, less than, at most, is NULL, is not NULL) and a value, then **Apply filters**. Rows must match every condition. Up to 12 conditions. |
+| Sort | Click a column header. Click again to reverse, and a third time to clear. Shift-click adds a second sort, up to five. |
+| Page | Use **Previous** and **Next**. **Rows** sets 25, 50 or 100 rows a page. The total is an estimate ("approximately 18,420 total"). |
+| Hide columns | Press **Columns**. |
+| See one row in full | Click the row. The **Row inspector** opens with every column, its type and a **Copy** button. |
+| Reload | Press the refresh button next to **Filters**. |
+
+## Read only, and turning editing on
+
+Studio opens **Read only**: it connects with a database role that cannot write, and SQL runs in a read-only transaction.
+
+To change data, press **Read only** at the top, then **Enable for 10 minutes**. The button then counts down ("Editing · 9 min left"). Editing applies to this browser tab only and turns itself off after 10 minutes. Press the button again to return to read only sooner.
+
+With editing on, Studio still shows you each change and waits for your confirmation before it runs. If your account has two-factor sign-in on, changes need a second factor from the last 15 minutes, and the console asks for it. See [Two-factor sign-in](/account/two-factor).
+
+## Insert, edit and delete rows
+
+<Steps>
+  <Step title="Turn editing on">
+    Press **Read only**, then **Enable for 10 minutes**.
+  </Step>
+  <Step title="Open the row">
+    Click a row to edit it, or press **Insert row** for a new one.
+  </Step>
+  <Step title="Set the values">
+    For each column choose **Value**, **NULL** or, for a new row, **Database default**. Generated IDs are filled in by PostgreSQL.
+  </Step>
+  <Step title="Review">
+    Press **Review changes** (or **Review insert**, or **Delete row…**). A dialog lists exactly what will change.
+  </Step>
+  <Step title="Confirm">
+    Press **Confirm changes** or **Confirm delete**.
+  </Step>
+</Steps>
+
+A change applies only if the row and the table's structure still match what you loaded. If someone else changed the row meanwhile, nothing is written: refresh and try again. Foreign-key actions and triggers still run on a confirmed change.
+
+Rows can be edited only in tables that have a primary key. Views are read-only in the row editor. To change a primary key's value, use SQL.
+
+## The SQL editor
+
+Open the **SQL editor** tab.
+
+- **Run** runs the statement (⌘ or Ctrl + Enter). Select part of the text to run only the selection.
+- **Explain** shows PostgreSQL's estimated query plan. The statement is not executed.
+- **Save query** stores the statement under a name. See below.
+- **Limit** caps the rows returned: 50, 100, 250 or 500.
+- The **+** button opens another tab. Up to eight tabs stay open.
+
+One statement runs at a time, and Studio manages the transaction: `BEGIN`, `COMMIT` and similar commands are not accepted. Each statement has 15 seconds to finish. You can cancel a read from the status bar; a write always returns its result.
+
+With editing off, statements that change data fail. With editing on, a dialog titled "Run SQL with write access" shows the statement and waits for **Confirm and run**. Tables you create this way belong to the default user `livehq`.
+
+Unsaved text and results live in this browser tab. Closing the page discards them.
+
+## Structure
+
+The **Structure** tab shows the selected table's columns, defaults, indexes, constraints and its foreign keys as a small map you can click through.
+
+**Draft an index** and the Explorer's **+** button (create a table) do not change anything by themselves. They write the SQL into a new SQL editor tab (**Review SQL**), where you read it and run it with editing on.
+
+## Import and export
+
+**Import CSV** (editing on) adds rows to the open table:
+
+- The file is UTF-8 with a header row, at most 512 KiB and 100 rows. The rows together must also fit in one request of about 60 KB, so import wide tables in smaller files.
+- Column headers must match the table's column names. Leave generated columns out.
+- Tick **Treat empty cells as NULL** if empty cells should be NULL, not empty text.
+- Press **Review import**, then **Confirm changes**. All rows are added in one transaction: one invalid row and nothing is imported.
+
+**CSV** and **JSON** above the grid download the rows currently loaded, with the visible columns. That is one page of a table or one query result, not the whole table. The CSV is safe to open in a spreadsheet: text that looks like a formula is escaped.
+
+## Saved queries and History
+
+**Saved queries**, at the bottom of the Explorer, is your own library for this database. Queries are stored encrypted on the database's server and only you see yours. A database holds up to 50, each up to 32 KiB. Deleting the database deletes them.
+
+**History** lists your recent SQL runs, row changes and imports, with **Open SQL** and **View result**. It is private to you, shows the latest 20, and results and SQL expire after 24 hours.
+
+## If something goes wrong
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| "Start your database to open Studio" | The database is not running and healthy. | Start it on Overview. |
+| "Reconnect your server" | Studio connects through your server's agent, and the server is offline. | See [A server is offline](/help/server-offline). |
+| "Your Studio update is ready" | The server's agent is too old for Studio. | If the console says **Update this server's agent**, see [Update the agent](/servers/update-agent). |
+| "This table needs a primary key for safe row editing." | Studio cannot tell rows apart without one. | Add a primary key, or change the data with SQL. |
+| "Preview only. Use SQL for this value." | The cell is too large to load in full, so it cannot be edited or exported here. | Query it with SQL, selecting less. |
+| "The result reached the interactive row or size limit. Add a LIMIT clause or select fewer columns." | The result is over 500 rows or about 200 KiB. | Narrow the query. |
+| "This request is too large. Use fewer import rows or smaller values." | An import or a change is over about 60 KB. | Split the CSV into smaller files. |
+| "The outcome is uncertain. Review History and refresh your data before repeating the write." | The connection dropped while a change was being saved. It may or may not have been applied. | Check the data before you repeat it. Studio does not retry a write on its own. |
+| A statement stops after 15 seconds | It hit the statement timeout. | Run long statements from your own computer with `psql`. See [Get a connection URL](/databases/connection-urls). |
+
+## Limits
+
+| | Limit |
+| --- | --- |
+| One SQL statement | 32 KiB |
+| Rows in a query result | 500 |
+| Result size | about 200 KiB; larger cells are shown as previews |
+| Statement timeout | 15 seconds (3 seconds waiting for a lock) |
+| Editing one cell | 16 KiB |
+| CSV import | 512 KiB file, 100 rows, about 60 KB of rows per import |
+| SQL editor tabs | 8 |
+| Saved queries | 50 per database, 32 KiB each |
+| History | latest 20, kept 24 hours |
+| Editing mode | 10 minutes, then back to read only |
+
+## Related
+
+- [Get a connection URL](/databases/connection-urls)
+- [Database users and passwords](/databases/users)
+- [Redis Studio](/databases/redis-studio)

@@ -1,0 +1,113 @@
+---
+title: "Connect your AI tool to these docs"
+sidebarTitle: "Connect your AI tool"
+description: "Give Claude, ChatGPT, Cursor, VS Code or another AI tool the LiveHQ docs through MCP, llms.txt, Markdown pages or the skill file."
+---
+
+Your AI tool gives better answers about LiveHQ when it reads these docs instead of guessing. There are four ways, from quickest to most thorough.
+
+<Note>
+This connects your tool to the **documentation**. It does not connect it to your LiveHQ account: LiveHQ has no API, so no tool can deploy or change anything for you.
+</Note>
+
+## 1. From any page
+
+Open the menu beside a page's title:
+
+- **Copy page** copies the page as Markdown, ready to paste into a chat.
+- **Open in Claude**, **Open in ChatGPT** or **Open in Perplexity** starts a conversation with the page as context.
+- **Connect to Cursor** and **Connect to VS Code** add the docs' MCP server to your editor.
+
+## 2. Add the docs as an MCP server
+
+The docs have a search server that speaks the Model Context Protocol (MCP). Your tool can then search these docs and read whole pages while it answers.
+
+The server's address is this site's address followed by `/mcp`:
+
+```text
+https://docs.livehq.dev/mcp
+```
+
+<Tabs>
+  <Tab title="Claude">
+    1. Open **Settings**, then **Connectors**.
+    2. Press **Add custom connector**.
+    3. Name it `LiveHQ docs` and paste the address above.
+    4. In a chat, open the attachments menu and select the connector.
+  </Tab>
+  <Tab title="Claude Code">
+    ```bash
+    claude mcp add --transport http livehq-docs https://docs.livehq.dev/mcp
+    ```
+  </Tab>
+  <Tab title="Cursor">
+    Open the command palette, search for **Open MCP settings**, press **Add custom MCP** and add:
+
+    ```json
+    {
+      "mcpServers": {
+        "livehq-docs": {
+          "url": "https://docs.livehq.dev/mcp"
+        }
+      }
+    }
+    ```
+  </Tab>
+  <Tab title="VS Code">
+    Create `.vscode/mcp.json` with:
+
+    ```json
+    {
+      "servers": {
+        "livehq-docs": {
+          "type": "http",
+          "url": "https://docs.livehq.dev/mcp"
+        }
+      }
+    }
+    ```
+  </Tab>
+  <Tab title="Codex">
+    Add to `~/.codex/config.toml`:
+
+    ```toml
+    [mcp_servers.livehq-docs]
+    url = "https://docs.livehq.dev/mcp"
+    ```
+  </Tab>
+</Tabs>
+
+## 3. Point the tool at the index
+
+Tools that read web pages can start from one of these:
+
+| Address | What it is |
+| --- | --- |
+| `https://docs.livehq.dev/llms.txt` | A list of every page with a one-line description. |
+| `https://docs.livehq.dev/llms-full.txt` | The whole documentation in one file. |
+| Any page's address followed by `.md` | That page as Markdown. |
+
+A prompt that works well:
+
+<Prompt description="Give your AI tool the LiveHQ docs before you ask for help.">
+Read https://docs.livehq.dev/llms.txt, then the pages /agents/reference, /agents/order-of-operations, /agents/status-words and /agents/limits. LiveHQ has no API and no CLI: I do everything in its web console. Use the exact button and tab names from the docs, and tell me when you are not sure. Do not ask me for passwords, codes, connection URLs or variable values.
+</Prompt>
+
+## 4. Install the skill
+
+The docs publish a skill file that describes what a person can do with LiveHQ and how. Coding agents that support skills can install it:
+
+```bash
+npx skills add https://docs.livehq.dev
+```
+
+## Working safely with an AI tool
+
+- Paste a deployment's **Copy logs** output or a restart's **Copy summary**. Both are made for this, and common credentials are removed from build output.
+- Never paste a password, an enrollment code, a recovery code, a private SSH command, a connection URL or a variable's value.
+- An AI tool can be wrong about a button's name. If you cannot find what it names, search these docs for the job instead.
+
+## Related
+
+- [For AI agents](/agents/overview)
+- [Get help](/help/support)

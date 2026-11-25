@@ -1,0 +1,119 @@
+---
+title: "Use your own domain"
+description: "Connect a domain such as www.example.com to an app: add it in the Domains tab, create one DNS record, and wait for Connected."
+---
+
+A custom domain is a name you own, such as `www.example.com`, that opens your app. You add it in the app's **Domains** tab and create one DNS record at the company where you manage the domain. LiveHQ gets the HTTPS certificate and renews it.
+
+Custom domains need **Pro** or **Teams**. See [Plans](/account/plans).
+
+<Note>
+LiveHQ cannot serve a bare domain: `example.com` with nothing in front. Use a name with something in front, usually `www.example.com`, and forward the bare name to it. [Why, and how](#bare-domains).
+</Note>
+
+## Before you start
+
+- The app has been deployed at least once. Before that the tab says "Publish your first release before connecting a custom domain."
+- You can sign in at your domain company (the registrar or DNS provider) and add records.
+- You are an owner, an admin or a developer of the workspace.
+
+## Steps
+
+<Steps>
+  <Step title="Add the domain in the console">
+    Open the app, then **Domains**. In the **Custom domains** card, type the name under **Add a domain**, for example `www.example.com`, without `https://` and without a path. Press **Add domain**.
+  </Step>
+  <Step title="Copy the DNS record">
+    A card for the domain appears with the status **Waiting for DNS** and one record to create:
+
+    | Type | Name | Target |
+    | --- | --- | --- |
+    | `CNAME` | `www.example.com` | The value in the **Target** column. Copy it with the button beside it. |
+
+    Always take the target from the console, not from this page.
+  </Step>
+  <Step title="Create the record at your domain company">
+    In your domain company's DNS settings, add a record of type `CNAME` with that name and that target.
+
+    - Many companies add the domain to the name themselves. There, enter only the part in front: `www`. The console says so under the record: "If your provider adds the domain to the name itself, enter only `www`."
+    - Delete any other record with the same name (an `A`, `AAAA` or older `CNAME` record for `www`). Two records on one name conflict.
+    - General DNS advice, not a LiveHQ rule: if the company offers a proxy or CDN switch on the record, turn it off so the record answers with the target itself.
+  </Step>
+  <Step title="Wait for Connected">
+    The card follows three steps: **DNS record**, **Certificate**, **Live**. LiveHQ checks a new domain about every half minute during its first hour, so it normally goes to **Connected** by itself a few minutes after your DNS record is visible. **Check status** asks at once.
+  </Step>
+</Steps>
+
+## What happens next
+
+When the status is **Connected**, the domain serves your app over HTTPS.
+
+- The app's header lists the domain beside the LiveHQ address, and **Open app** now opens the custom domain.
+- The LiveHQ address keeps working. Both addresses show the same app.
+- The domain uses the app's [access setting](/apps/access). A sign-in on one address does not carry over to another: each address keeps its own session.
+
+## Status words
+
+| Status on the card | What it means | What to do |
+| --- | --- | --- |
+| **Waiting for DNS** | LiveHQ has not seen your DNS record yet. | Create or correct the record, then wait or press **Check status**. |
+| **Issuing certificate** | The record is verified and the HTTPS certificate is on its way. | Wait. The **Certificate** step shows "Waiting for validation", "Being issued" or "Being deployed", then "Issued". |
+| **Connected** | The domain serves your app. The **Live** step says "Serving traffic". | Nothing. |
+| **Needs attention** | The provider that verifies the domain and issues its certificate reported a problem. Its message is shown in red on the card. | Read the message, then see [A custom domain does not go live](/help/domain-not-live). |
+| **Paused** | The domain is set up but held back by something outside its own setup, such as a billing pause on the workspace. | Owners and admins: open the [Billing page](/account/billing). The domain itself needs nothing. |
+| **Removing** | The domain is being removed. It keeps its place in your plan until it is gone, usually within a few minutes. | Wait. |
+
+Each card also shows **Last checked** and, until the domain is connected, a **Retry certificate validation** link. It asks for a new validation only while the certificate is waiting for validation or its validation timed out, and at most once every 15 minutes. At any other moment it does the same as **Check status**.
+
+## Bare domains
+
+A bare domain is the name you registered with nothing in front: `example.com`, or `example.co.uk`.
+
+A custom domain is connected with a `CNAME` record, and DNS allows no `CNAME` on a bare domain, because that name already holds the domain's own records. Most domain companies refuse the record.
+
+What to do:
+
+1. When you type a bare domain, the console says so and offers **Add the www domain**. Press it: LiveHQ adds `www.example.com`.
+2. At your domain company, forward `example.com` to `https://www.example.com`. The setting is usually called forwarding, URL redirect or redirect rule. Choose a permanent (301) redirect if asked.
+
+**Add anyway** adds the bare name as typed. It can only work where your DNS company offers `ALIAS`, `ANAME` or CNAME flattening for a bare domain, and LiveHQ has not confirmed that it goes live even then. Prefer the `www` name.
+
+## Remove a domain
+
+1. On the domain's card, press the bin.
+2. Type the domain to confirm and press **Remove domain**.
+
+The domain stops opening your app. The LiveHQ address and the app stay available. Afterwards, delete the `CNAME` record at your domain company.
+
+## If something goes wrong
+
+The full list is on [A custom domain does not go live](/help/domain-not-live). The most common cases:
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| "Custom domains are part of Pro." | The workspace is on Free. | Owners and admins can press **See plans**. |
+| Your domain company refuses the record | The name is a bare domain. | Use the `www` name. See [Bare domains](#bare-domains). |
+| **Waiting for DNS** for more than an hour | The record is missing, has a typing error, or another record uses the name. | Compare the record with the card, character by character. |
+| "This domain is already connected somewhere else." | Another workspace already uses this domain. | Remove it there first. If you do not know that workspace, write to [support](/help/support). |
+| "This domain is still being removed. Try again in a minute." | You removed it moments ago. | Wait a few minutes and add it again. |
+
+## Limits
+
+| | Free | Pro | Teams |
+| --- | --- | --- | --- |
+| Custom domains included | None | 5 | 10 |
+| Extra domains | Not available | \$3 a month each, up to 30 in all | \$3 a month each, up to 100 in all |
+
+- The workspace's owner buys extra domains on the [Billing page](/account/billing).
+- **7 days to verify.** A domain whose DNS record LiveHQ has never verified is removed 7 days after you added it or last pressed **Check status**. Add it again when the record is ready.
+- **30 days reserved.** When you remove a verified domain, it stays reserved for your workspace for 30 days. You can add it again; another workspace cannot until that time has passed.
+- A domain being removed still counts toward your plan until it is gone.
+- Moving the workspace to Free removes its custom domains. Apps keep their LiveHQ addresses.
+- No bare domains and no wildcard names such as `*.example.com`. A domain belongs to one app at a time.
+
+## Related
+
+- [A custom domain does not go live](/help/domain-not-live)
+- [An app's LiveHQ address](/apps/addresses)
+- [Choose who can open an app](/apps/access)
+- [Plans](/account/plans)

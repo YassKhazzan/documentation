@@ -1,0 +1,117 @@
+---
+title: "Back up a database"
+description: "Turn on scheduled backups for a PostgreSQL or Redis database, back up on demand, keep offsite copies and download one."
+---
+
+A backup is an encrypted copy of a whole database at one moment. On Pro and Teams you can take one on a schedule or on demand, and keep copies away from your server. See [Plans](/account/plans).
+
+<Warning>
+A new database has no backups until you turn a schedule on or press **Back up now**. Backups are scheduled copies: there is no point-in-time recovery. A restore gives you the database as it was at a backup, and everything that changed after that backup is lost. With an hourly schedule that can be up to an hour of changes.
+</Warning>
+
+## What you get on each plan
+
+| | Free | Pro | Teams |
+| --- | --- | --- | --- |
+| Scheduled backups and **Back up now** | No | Yes | Yes |
+| Offsite copies | None | Up to the latest 3 of each database | Up to the latest 3 of each database |
+| Offsite backup storage included | None | 200 GB for the workspace | 1 TB for the workspace |
+| Restore a backup you already have | Yes | Yes | Yes |
+
+On Free, the **Backups** tab says "Database backups are part of Pro." A workspace that moves from a paid plan to Free keeps its backups and can still restore them, but its schedules stop running and its offsite copies are deleted 30 days after the move. LiveHQ emails the Owner at the move and 7 days before the deletion.
+
+## Where backups live
+
+- **On the server.** Every backup is written to your server first, encrypted. Its row reads **On this server**. This copy is on the same disk as the database: it protects you from a mistake, not from losing the server.
+- **Offsite.** With offsite copies on, the encrypted backup is also copied to LiveHQ's offsite storage. Its row reads **Offsite + local**, and it can be restored on any of your servers.
+
+A PostgreSQL backup is a dump of the database. A Redis backup is a snapshot of every key, TTL, stream and JSON document. The database keeps serving while a backup runs.
+
+## Turn on scheduled backups
+
+Owners, Admins and Developers can do this.
+
+<Steps>
+  <Step title="Open Backups">
+    Open the database, then **Backups**. The schedule is under **Automatic backups**.
+  </Step>
+  <Step title="Turn the schedule on">
+    Tick **Scheduled backups** and set the fields in the table below.
+  </Step>
+  <Step title="Turn on offsite copies">
+    Tick **Copy encrypted backups to offsite storage**.
+  </Step>
+  <Step title="Save">
+    Press **Save backup schedule**. The page then shows "Next scheduled backup:" with the date and time.
+  </Step>
+</Steps>
+
+| Field | Choices | Default |
+| --- | --- | --- |
+| **Frequency** | **Hourly**, **Daily**, **Weekly** | Daily |
+| **Time** | The time of day. For **Hourly** the field reads **Minute of each hour**. | 02:00 |
+| **Time zone** | A time zone name such as `UTC` or `Europe/Paris` | UTC |
+| **Weekday** | Monday to Sunday, for **Weekly** only | Monday |
+| **Local backups to retain** | 1 to 365 | 3 |
+| **Offsite copies to keep** | 1 to 3. The oldest is removed when a new one arrives. | 3 |
+
+Saving the schedule also removes backups beyond the two counts. The newest verified backup is always kept. There is no button to delete one backup: backups leave by these counts, or when you delete the database.
+
+## Back up now
+
+Open **Backups** and press **Back up now**. The database must read **Ready**. Do this before a risky change, such as a migration.
+
+If **Copy encrypted backups to offsite storage** is ticked and saved, this backup is copied offsite too, even when **Scheduled backups** is off.
+
+Each row of the list shows when the backup finished, its size, its status and where it is. From a row you can **Restore** or **Restore as new**: see [Restore a database](/databases/restore).
+
+## Download an offsite copy
+
+Owners and Admins can press **Download** on a row that reads **Offsite + local**. The console shows the file's name, size and SHA-256, and the browser saves it.
+
+The file stays encrypted. To open it you need the agent's `backup open` command and the backup keys (`backups/keys.json`) from a server export. See [Take your data with you](/help/export). Without the keys the file cannot be opened, and a backup made after an export needs a newer export, so export again from time to time.
+
+The program is on every LiveHQ server at `/opt/livehq-agent/current/livehq-agent`. It is not a command the terminal finds by name, so type the full path. It needs no root.
+
+```bash
+/opt/livehq-agent/current/livehq-agent backup open --keys backups/keys.json BACKUP_FILE
+```
+
+It writes the plain dump beside the backup file: `.pgdump` for PostgreSQL, `.rdb` for Redis.
+
+You do not need **Download** to restore in the console. It is for keeping a copy of your own.
+
+## When backup storage is full
+
+The offsite copies of every database in the workspace count toward the plan's backup storage. Beyond it, storage costs \$0.03 per GB a month, up to a spend limit that the Owner sets and that is \$0 at first. See [Billing](/account/billing).
+
+When the next copy would not fit:
+
+- The backup still runs and is kept on the server, but it is not copied offsite. The tab says "Offsite copy skipped: backup storage is full. The backup was kept on the server."
+- If the workspace is above its limit, LiveHQ emails its Owner, and on Teams its Admins too. After 7 days each database keeps fewer offsite copies (3, then 2, then 1) until the workspace is under the limit. The newest copy always stays.
+
+## If something goes wrong
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| "Database backups are part of Pro." | The workspace is on Free. | See [Plans](/account/plans). Backups you already have stay restorable. |
+| **Back up now** is greyed out | The database is not **Ready**. | Start it, or wait until it is ready. |
+| "Offsite copy skipped: backup storage is full." | The workspace's offsite storage is at its limit. | The Owner raises the backup storage spend limit on Billing, or you lower **Offsite copies to keep** on large databases. |
+| "The newest offsite copy is from …, older than two scheduled backups." | Recent scheduled backups did not reach offsite storage. | Read the statuses in the list. Check that the server is online and its disk is not full. |
+| A backup reads **Failed** | The server could not finish it. | Read the reason in **Recent operations** on Overview. A full disk is the usual cause. See [A full disk](/help/disk-full). |
+| Backups of a large database fail | A backup may be at most twice the database's storage budget and must finish within one hour. | PostgreSQL: raise **Storage budget (GB)** in **Settings**. Redis: the budget follows **Memory for data**. |
+
+LiveHQ sends no email when a backup fails. Look at **Latest backup** on the database's Overview from time to time.
+
+## Limits
+
+- Scheduled backups only, hourly at most. No point-in-time recovery.
+- At most 3 offsite copies of each database.
+- A backup may be at most twice the storage budget and must finish within one hour.
+- Backups run on your server. While it is offline, none are taken.
+
+## Related
+
+- [Restore a database](/databases/restore)
+- [Take your data with you](/help/export)
+- [Plans](/account/plans)

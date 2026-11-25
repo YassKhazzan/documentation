@@ -1,0 +1,90 @@
+---
+title: "A build failed"
+description: "Read the build output of a failed deployment, find the cause among the common ones and deploy again."
+---
+
+A deployment that fails while it builds changes nothing for visitors: the previous release keeps serving. LiveHQ records why, and this page helps you read it.
+
+## Find the reason
+
+<Steps>
+  <Step title="Open the failed deployment">
+    Open the app, then **Deployments**, and select the deployment marked **Failed**.
+  </Step>
+  <Step title="Read the reason">
+    The red box under the steps is LiveHQ's own sentence about what failed.
+  </Step>
+  <Step title="Read the card that failed">
+    Under **Build output**, find the card marked **Failed**:
+
+    - **Prepare build**: LiveHQ could not read the project or work out how to build it.
+    - **Build application**: one of your install or build commands failed.
+
+    The cause is usually in the last lines. A line that begins with `ERROR:` names the command that failed and its exit code.
+  </Step>
+</Steps>
+
+Build output is kept for 24 hours.
+
+### While it is still retrying
+
+LiveHQ tries a failed step again, up to three attempts. During that time a notice reads, for example, "Attempt 1 failed: … LiveHQ is retrying; attempt 2 of 3 is running." A new attempt replaces the card's earlier output. A build that ran out of memory is not tried again, and neither is a start that fails for a reason a new attempt cannot fix: see [An app builds but won't start](/help/app-wont-start).
+
+## Common causes
+
+| The reason says | Cause | What to do |
+| --- | --- | --- |
+| "Application image build failed … (process "…" did not complete successfully: exit code: 1)" | A command of your build failed: a compile error, a failing install, a missing build variable. | Read **Build application**. Fix the code or add the variable with **Available during** set to **Build**, then deploy again. |
+| "Build preparation failed before the application image was built" | LiveHQ could not plan the build. Most often no start command, or the wrong project directory. | See the two sections below. |
+| "the selected Dockerfile does not exist in the project root" | **Dockerfile path** points at no file. | Correct it. The path is read from inside **Project directory**. Or set **Build method** to **Railpack**. |
+| "selected project directory is empty or does not exist" | **Project directory** names no folder in the repository. | Correct it. `.` is the repository root. |
+| "the Dockerfile does not expose one HTTP port; add EXPOSE or set port explicitly" or "the image exposes multiple TCP ports; select the application's HTTP port" | LiveHQ cannot tell which port your app serves on. | Set **App port**. |
+| "The build ran out of memory" or "The server ran out of memory during the build" | The server had too little memory for the build. | See [Out of memory](/help/out-of-memory). |
+| "The build stopped at Node.js's own memory limit (JavaScript heap out of memory)" | Node's own limit, not the server's. | See "Node's heap limit" below. |
+| "Git source exceeds its size bound", "Git archive is too large" or "Git archive contains too many entries" | The repository is larger than LiveHQ fetches. | See the size limits in [How LiveHQ builds an app](/apps/builds). |
+| "Git submodules need a complete source checkout" | The project uses Git submodules, which are not fetched. | Copy the code into the repository. |
+| "Build storage on this server is full of files left by earlier deployments" | The server's build storage is full. | See [Free disk space](/servers/disk-cleanup), then deploy again. |
+| A file your build needs is "not found", though it is in the repository | LiveHQ leaves some names out of the build, such as `.env` files, `.npmrc` and folders named `build` or `dist`. | See "What is left out of the build" in [How LiveHQ builds an app](/apps/builds). |
+
+### No start command
+
+Without a Dockerfile, LiveHQ must be able to tell how to start your app. If it cannot, the **Prepare build** card says that no start command was found.
+
+- For a Node project, add a `start` script to `package.json`.
+- For any project, add a Dockerfile that ends with a `CMD` line. LiveHQ uses a Dockerfile whenever it finds one.
+
+### Wrong project directory
+
+Signs: the **Prepare build** card does not recognise your framework, or LiveHQ builds something other than your app.
+
+Set **Project directory** to the folder that holds the app's `package.json`, `requirements.txt` or other project file. If the app imports sibling packages of a monorepo, keep `.` and use a Dockerfile: only files inside the project directory reach the build.
+
+### Out of memory during a build
+
+A build uses the server's memory, not the app's **Memory limit**, so raising that limit does not help. When the server runs out, LiveHQ stops the build to keep your running apps and databases, and the deployment fails once. [Out of memory](/help/out-of-memory) lists what to do.
+
+### Node's heap limit
+
+Node sets a limit for itself from the server's memory. A large framework build can reach it while the server still has room. The reason names the value to use. Do what it says:
+
+- **Without a Dockerfile:** add the variable `NODE_OPTIONS` with the value from the reason, such as `--max-old-space-size=1536`, and set **Available during** to **Build**. Not **Runtime**: the running app's heap must stay within its own memory limit.
+- **With a Dockerfile:** set `ENV NODE_OPTIONS=--max-old-space-size=…` in the stage that builds, not the one that runs the app.
+
+If the reason says "Node already had about as much heap as a build can use on this server", the build needs a server with more memory.
+
+## Deploy again
+
+After the fix, push to the branch if **Deploy on push** is on, or press **Redeploy** and then **Deploy new release**. See [Redeploy an app](/apps/redeploy).
+
+## What to copy when you ask for help
+
+On the failed deployment, press **Copy logs**. It copies the deployment's ID, its status and times, the reason and the output of every step.
+
+Send it to [support@livehq.dev](mailto:support@livehq.dev) with the app's name and what changed since the last deployment that worked. Read it first: LiveHQ hides common credential formats, not everything a build can print.
+
+## Related
+
+- [How LiveHQ builds an app](/apps/builds)
+- [Follow a deployment](/apps/deployments)
+- [An app builds but won't start](/help/app-wont-start)
+- [Out of memory](/help/out-of-memory)

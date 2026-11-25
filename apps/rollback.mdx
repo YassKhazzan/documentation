@@ -1,0 +1,91 @@
+---
+title: "Roll back to the previous release"
+description: "Return an app to the release before the current one, with that release's variables and limits, without building anything."
+---
+
+A rollback puts the previous release of an app back in service. Nothing is built: LiveHQ keeps the current release and exactly one previous release on your server for this.
+
+## Before you start
+
+- The app has had two successful deployments. Until then the console says "Available after a second successful deployment."
+- You are an **Owner**, an **Admin** or a **Developer**.
+
+<Warning>
+A rollback never changes a database. If the newer release changed the database's structure, the older code now runs against the new structure. Roll back only when the older release works with the database as it is today.
+</Warning>
+
+## Steps
+
+<Steps>
+  <Step title="Open the app, then Deployments">
+    The **Roll back** card names the release it returns to by its short commit and when it was deployed: "Return to the release before the current one … Its variables and resource limits come back with it." In **History** that release carries the tag **Previous**.
+  </Step>
+  <Step title="Press Roll back">
+    The box **Roll back to the previous release?** explains: "LiveHQ brings back the release before the current one, with its original environment variables and resource limits."
+  </Step>
+  <Step title="Confirm with Roll back">
+    The card reads "Waiting for the server to complete this action…" and then "Action completed."
+  </Step>
+</Steps>
+
+The same action is on the app's **Settings & access** tab, under **App controls**, as the **Roll back** tile.
+
+## What comes back and what does not
+
+| Part of the app | After a rollback |
+| --- | --- |
+| Code | The image built for the previous release. Nothing is built again. |
+| Variables | The values that release ran with. The values saved on the **Variables** tab are not changed, so the tab may then read **Saved changes aren't live yet**. |
+| Limits and startup settings | That release's memory and CPU limits, port and health check settings. |
+| Databases | Not changed. No data and no structure is undone. |
+| Address and access | Not changed. |
+| **Deploy on push** | Not changed. |
+
+If **Deploy on push** is on, the next push to the branch deploys the newest commit again. Switch it off while you fix the code: see [Redeploy an app](/apps/redeploy).
+
+Requests in progress on the release you leave are given time to finish before it stops: up to 30 seconds, and up to five minutes for open WebSockets.
+
+## One step back only
+
+A rollback goes back exactly one release. The release you left then becomes the previous one, so **Roll back** a second time returns to it. That needs the release you left to have finished its first minute live: one that was rolled back during that minute is not kept. To reach an older version, deploy it:
+
+1. Press **Redeploy** on the app's page.
+2. In **Branch, tag or commit**, type the commit or tag you want. Leave the branch to get its newest commit.
+3. Press **Deploy new release**.
+
+That deployment usually builds again, as a deployment of another commit does.
+
+## Automatic rollback
+
+You can let LiveHQ roll back by itself when a new release fails during its first minute live. It is off unless you switch it on, and it is decided for one deployment at a time:
+
+- In the Redeploy form, under **Build and health settings**: **Allow automatic rollback for this deployment**.
+- In **Apply and redeploy**, under **Release options**: **Allow automatic rollback**.
+
+By ticking it you confirm that the previous release works with the current database: "If this release fails during its first minute live, LiveHQ can restore the healthy previous release. The database is never rewound."
+
+It is not offered for an app's first deployment, for a deployment started by a push, or for a [background service](/apps/background-services).
+
+Without it, a release that stops answering during that minute stays in service while LiveHQ restarts it, and the previous release stays ready. Roll back yourself if you want it back. See [Follow a deployment](/apps/deployments).
+
+## Apps on several servers and background services
+
+- An app that runs on several servers goes back on every server. See [Run an app on several servers](/apps/several-servers).
+- A background service rolls back the same way, using its own replacement setting.
+
+## If something goes wrong
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| No **Roll back** card, or "Available after a second successful deployment." | There is no previous release to return to. | Deploy the commit you want with **Redeploy**. |
+| "Update this server's LiveHQ agent to roll back." | The server's agent is too old. | See [Update the agent](/servers/update-agent). |
+| "Wait for an active release before using this action." | No release is serving yet. | Wait for the running deployment to end, then try again. |
+| "Action cancelled because the resource changed." | Another change to the app, such as a deployment, came first. | Check the **Deployments** tab and roll back again if you still need to. |
+| "Action failed. Check the server and retry.", or a reason from the server | The server could not bring the previous release back. | Check that the server is online, read the app's **Logs**, then try again. |
+
+## Related
+
+- [Follow a deployment](/apps/deployments)
+- [Redeploy an app](/apps/redeploy)
+- [App settings](/apps/settings)
+- [Back up a database](/databases/backups)

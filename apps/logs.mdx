@@ -1,0 +1,89 @@
+---
+title: "Read an app's logs"
+description: "Open the Logs tab to read the latest 200 lines your running app wrote, filter them, and copy or download them."
+---
+
+The **Logs** tab shows what your app printed while it runs: its standard output and its errors. Use it to see why a request failed or why the app restarted. The output of a build is somewhere else: open **Deployments** and the deployment.
+
+Any member of the workspace can read logs, viewers included.
+
+## Steps
+
+<Steps>
+  <Step title="Open the app, then Logs">
+    The console asks your server for the latest lines at once. You see "Asking your server for the latest lines…" and, a moment later, the lines with **Received** and the time.
+  </Step>
+  <Step title="Narrow down what you see">
+    Type in **Filter lines** to keep only the lines that contain your text. The match is highlighted and upper or lower case does not matter. Choose **All**, **Warnings** or **Errors** to filter by level; each shows its count.
+  </Step>
+  <Step title="Get fresh lines">
+    Press **Refresh**, or turn on **Auto-refresh**: the console then asks again 15 seconds after each answer, for as long as the tab stays open.
+  </Step>
+  <Step title="Take the lines with you">
+    **Copy** puts all the lines on your clipboard. **Download** saves them as a file named after the app and the time, such as `storefront-2026-11-25-10-27-38.log`. Both give every line received, not only the filtered ones.
+  </Step>
+</Steps>
+
+## What each control does
+
+| Control | What it does |
+| --- | --- |
+| **Refresh** | Reads the latest 200 lines again. |
+| **Auto-refresh** | Reads again 15 seconds after each answer. Off by default. |
+| **Filter lines** | Keeps lines that contain the text you type and highlights it. |
+| **All** / **Warnings** / **Errors** | Filters by level, with a count on each. **Warnings** shows warnings and errors together. |
+| **Wrap** | Wraps long lines. On by default; turn it off to scroll sideways. |
+| **Copy** | Copies every received line. |
+| **Download** | Saves every received line as a `.log` file. |
+| **Run a command** | Opens the [Run tab](/apps/run-commands) to run a command inside the app's container. |
+
+### How levels are decided
+
+Your app does not have to use a log format. LiveHQ reads each line for common words:
+
+- **Error**: the line contains `error`, `err`, `fatal`, `panic`, `exception`, `uncaught`, `unhandled`, `traceback`, `failed`, `failure` or `critical`.
+- **Warning**: the line contains `warn`, `warning`, `deprecated` or `deprecation`.
+- Everything else is plain.
+
+A line such as "0 errors found" does not count, because the word must stand alone. A line such as "error rate: 0" does. Treat the counts as a guide.
+
+## What is kept, and for how long
+
+- **200 lines.** The tab shows the latest 200 lines of the running container, each with the time it was written. The console says so: "The latest 200 lines from the running container."
+- **Read when you ask.** LiveHQ does not collect your logs. Each read is fetched from your server at that moment, and LiveHQ clears its copy 10 minutes later.
+- **On your server**, Docker keeps each container's output in at most three files of 10 MB. Older output is dropped.
+- **Per release.** A new deployment starts a new container, so the tab then shows the new release's lines only. A restart of the same release keeps its earlier lines.
+- **Two streams.** The tab lists what the app wrote to standard output first, then what it wrote to standard error. When an app writes to both, the order on screen is not the order in time: compare the time at the start of each line.
+- **Redacted.** The values of the app's variables and common credential patterns are removed on your server before the lines leave it. Every web address (`http://…` or `https://…`) reads `[url withheld]`, and colour codes are removed.
+- **Build output** is kept for 24 hours, under **Deployments**.
+
+<Note>
+If you need more than 200 lines, or a history, send your app's logs to a log service of your choice from inside the app. LiveHQ has no log search and no log export besides **Download**.
+</Note>
+
+## If something goes wrong
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| "Logs appear once the first release is running." | The app has never gone live. | [Deploy it](/apps/deploy), or read the failed deployment under **Deployments**. |
+| "Logs are available while the app is running." | The viewer is empty because there is no release to read from. A notice above it says why. | Follow the notice. |
+| "These logs were read moments ago. They refresh again in a few seconds." | An app's logs are read at most once every 10 seconds, also across tabs and people. | Wait. The console asks again by itself. |
+| "The server did not return logs in time. Check its connection and try again." | The server did not answer within 45 seconds. | Check that the server is **Connected**. See [A server is offline](/help/server-offline). |
+| "The request was canceled because the app changed. Try again." | A deployment or an action changed the app while the read was waiting. | Press **Refresh**. |
+| "The container has not written any output yet." | The app is running and has printed nothing. | Make sure the app logs to standard output, not to a file. |
+| "No lines match this filter." | The filter or the level hides every line. | Clear **Filter lines** or choose **All**. |
+| "Update this server’s LiveHQ agent to read logs here." | The agent on the server is too old. | [Update the agent](/servers/update-agent). |
+
+## Limits
+
+- The latest 200 lines per read, and at most the last 32,768 characters of them: very long lines leave fewer than 200. No paging further back.
+- One read per app every 10 seconds.
+- For an app on several servers, the tab reads the first server (the primary).
+- No live stream: lines arrive when the tab reads, not as they are written.
+
+## Related
+
+- [Run a command in an app](/apps/run-commands)
+- [Why LiveHQ restarted an app](/apps/restarts)
+- [Follow a deployment](/apps/deployments)
+- [What an app's status means](/apps/status)

@@ -1,0 +1,70 @@
+---
+title: "A disk is full"
+description: "What the console shows when a server's disk is nearly full, how to free space safely, and which files and Docker commands to leave alone."
+---
+
+A nearly full disk does not stop the apps that already run. It stops new work first: deployments wait, security updates wait, and agent updates wait. This page shows how to make room without deleting anything you need.
+
+## What you see
+
+| Where | What it says | Meaning |
+| --- | --- | --- |
+| A deployment | **Waiting for disk space**, with "It starts by itself once the server has room." | Less than the larger of 2 GiB or 10% of the disk is free. LiveHQ keeps that much free for the server itself |
+| **Health**, tabs **Capacity** and **Maintenance** | "Disk 72% full · automatic collection is off", with **Enable automatic collection** | The disk is at least 70% full and LiveHQ is keeping every old release |
+| **Health**, **Overview** tab | "Disk 72% full, and automatic collection is off, so every retired release is kept." | The same, with a link to **Review collection →** |
+| **Monitor** | The **Disk** chart's **Used** line close to **Capacity** | The disk is filling |
+| **Security updates** card | "Less than 1 GB is free on this server, so updates wait until there is room." | Security updates cannot install. After a week LiveHQ emails "Security updates haven't installed on prod-eu-1 for a week" |
+| **Updates** tab | "Update waiting", with a sentence that starts "Waiting for disk headroom:" and figures in bytes | An agent update is waiting. It needs the larger of 2 GiB or 10% of the disk free |
+
+A waiting deployment is not lost. It starts by itself when there is room, and nothing that runs is affected.
+
+## What to do
+
+<Steps>
+  <Step title="Turn on automatic collection">
+    Open the server, then **Health**, then **Maintenance**. If **Collection** reads **Dry run**, press **Enable automatic collection**, then **Enable for this server**. LiveHQ then keeps each app's current release and one to roll back to, and removes the older ones.
+
+    Already **Automatic**? Press **Collect eligible resources** to run a pass now.
+  </Step>
+  <Step title="See what uses the disk">
+    On the **Capacity** tab, press **Inspect storage** on the **Storage** card. It shows the free space of each disk and a figure for **Images**, the build cache, **Database data**, **Backup spool**, **Container writes** and **Container logs**.
+  </Step>
+  <Step title="Remove what you no longer need">
+    Delete apps and databases you do not use. Deleting one removes everything it left on the server. A deleted database cannot be brought back: see [Stop or delete a database](/databases/stop-and-delete).
+  </Step>
+  <Step title="Deal with what LiveHQ did not create">
+    LiveHQ only collects what it created. Files you uploaded, and containers or images you started yourself, stay until you remove them yourself.
+  </Step>
+  <Step title="Get a bigger disk">
+    If the space is taken by your database's data or by apps you need, the server is too small. Resize the disk at your hosting company, or move to a larger server.
+  </Step>
+</Steps>
+
+After you free space, the waiting deployment starts on its own. You do not need to deploy again.
+
+## What never to delete by hand
+
+It is tempting to open a terminal and clear things. These are the ones that cost you data or break the server:
+
+| Do not | Why |
+| --- | --- |
+| Run `docker system prune`, `docker container prune`, `docker image prune` or `docker volume prune` | They remove whatever Docker counts as unused. To Docker, an app or database you stopped is an unused container, and the release kept for rollback can be an unused image. Database data and app variables live in Docker volumes, which become "unused" once their container is gone |
+| Delete anything under `/var/lib/docker` | The same data, removed behind Docker's back |
+| Delete `/var/lib/livehq-agent` | It holds the server's identity and LiveHQ's record of what runs on it. Without it LiveHQ can no longer manage what runs on the server |
+| Delete `/opt/livehq-agent` | The agent itself and the version it falls back to |
+
+One file you may delete knowingly: `/var/lib/livehq-swap/swapfile`, the swap file LiveHQ creates for builds on servers with less than 2 GiB of memory. It frees up to 2 GiB. LiveHQ does not put it back, and builds then have only the server's free memory. See [How memory is shared](/servers/memory).
+
+If you are not sure whether something is safe to delete, ask [support](/help/support) first.
+
+## Keep it from happening again
+
+- Leave collection on **Automatic**.
+- Watch the **Disk** chart on [Monitor](/servers/monitor). LiveHQ sends no email when a disk passes a level.
+- Backups kept on the server use its disk. See [Backups](/databases/backups).
+
+## Related
+
+- [Disk space on a server](/servers/disk-cleanup)
+- [Read the Monitor charts](/servers/monitor)
+- [Security updates and planned restarts](/servers/system-updates)

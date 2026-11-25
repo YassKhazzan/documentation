@@ -1,0 +1,123 @@
+---
+title: "Frequently asked questions"
+sidebarTitle: "FAQ"
+description: "Short answers about what LiveHQ is, what it costs, what you can deploy, what LiveHQ can see, and what happens when something breaks."
+---
+
+## The basics
+
+<AccordionGroup>
+  <Accordion title="What is LiveHQ, in one sentence?">
+    LiveHQ turns a Linux server you rent into your own cloud: you deploy apps from GitHub and run databases from a web console, and visitors reach them through LiveHQ's edge so the server itself stays closed.
+  </Accordion>
+  <Accordion title="Do I need to know how to manage a server?">
+    No. You open the server once, paste one line and enter a code. After that you work in the console. The [step-by-step path](/start/rent-a-server) explains each screen.
+  </Accordion>
+  <Accordion title="What does it cost?">
+    Two bills. The server is rented from a hosting company and paid to them, from about \$5 to \$25 a month for a first server. LiveHQ has a Free plan, Pro at \$15 a month and Teams at \$49 a month, per workspace. See [Plans](/account/plans).
+  </Accordion>
+  <Accordion title="Is the server really mine?">
+    Yes. It is rented in your name at the company you choose. Your code, containers and databases are on it. LiveHQ works on it for you and can be disconnected at any time. See [Take your data with you](/help/export).
+  </Accordion>
+  <Accordion title="Do I need a Cloudflare or S3 account, or a domain?">
+    No. LiveHQ runs the edge, issues the certificates and, on Pro and Teams, stores your database backups. Every app gets a `livehq.app` address. You bring a server and a GitHub repository.
+  </Accordion>
+</AccordionGroup>
+
+## Servers
+
+<AccordionGroup>
+  <Accordion title="Which servers does LiveHQ support?">
+    Ubuntu 22.04, 24.04 or 26.04, or Debian 12 or 13, on Intel/AMD or ARM, from any hosting company. The installer sets up Docker if it is missing. 2 vCPU and 4 GB of memory is a comfortable start. See [What server you need](/servers/requirements).
+  </Accordion>
+  <Accordion title="Can LiveHQ get into my server?">
+    You run the installer yourself and type a single-use enrollment code from your console, so your LiveHQ password never reaches the server. LiveHQ never holds or adds an SSH key. It sends the agent typed, exact commands, such as deploying a commit or installing waiting security updates, never a shell on your server. A command you run from an app's **Run** tab runs inside that app's container, as the app. See [How LiveHQ keeps your server safe](/start/security-model).
+  </Accordion>
+  <Accordion title="Will LiveHQ restart my server?">
+    Only when an update needs it, and only the way you choose. Security updates install in the server's nightly window. Restarts go in a weekly slot with a day's notice by email, or wait for your approval, and you can pause or turn patching off. See [Security updates and restarts](/servers/system-updates).
+  </Accordion>
+  <Accordion title="Can I close SSH too?">
+    Yes. Locking a server closes every port, SSH included if you choose, starting with a five-minute trial that reopens on its own unless you keep it. You then reach SSH through LiveHQ with a one-time command and your own keys. See [Close the server to the internet](/servers/lock-down).
+  </Accordion>
+  <Accordion title="Can I keep using the server for other things?">
+    Yes. A healthy Docker installation is reused and what already runs on the server is left alone. Remember that LiveHQ installs the system's security updates and may restart the server at a planned time.
+  </Accordion>
+</AccordionGroup>
+
+## Apps
+
+<AccordionGroup>
+  <Accordion title="What can I deploy?">
+    Web apps and APIs that speak HTTP, server-sent events or WebSockets: Next.js, React, Vue and Vite, Python, Rust, static sites, or anything with a Dockerfile. Background services with no public address, for queue workers, bots and consumers. Scheduled jobs, persistent disks for apps and raw TCP or UDP services are not supported. See [Known limits](/help/known-limits).
+  </Accordion>
+  <Accordion title="How fast is a deployment?">
+    It depends on your build and your server. LiveHQ builds on your own server, reuses what did not change, and switches traffic as soon as the new release answers its health check. Each deployment's log ends with a line that says where the time went: "Live after … on this server: build …, loading the image …, start, health check and going live …". See [Follow a deployment](/apps/deployments).
+  </Accordion>
+  <Accordion title="Do visitors notice a deployment?">
+    For a web app, the previous release keeps serving until the new one is healthy, then traffic moves to it. If the new release never becomes healthy, nothing changes for visitors. LiveHQ does not promise zero downtime.
+  </Accordion>
+  <Accordion title="Why is my new app asking visitors to sign in?">
+    A new app starts **Private**: only you can open it, after signing in with LiveHQ. Change it under **Settings & access**. See [App access](/apps/access).
+  </Accordion>
+  <Accordion title="Can I use example.com without www?">
+    No. LiveHQ serves names like `www.example.com`, not the bare `example.com`. Redirect the bare name to `www` at your domain company. See [Custom domains](/apps/custom-domains).
+  </Accordion>
+  <Accordion title="Can an app run on more than one server?">
+    Yes, once your workspace has more than one server, so from Pro. Deployments roll through the servers one at a time and stop at the first failure. There is no autoscaling. See [Several servers](/apps/several-servers).
+  </Accordion>
+  <Accordion title="Can I run a command inside my app?">
+    Yes. The app's **Run** tab runs one command inside its running container, such as a migration, and shows the output. It is not an interactive terminal. See [Run a command](/apps/run-commands).
+  </Accordion>
+</AccordionGroup>
+
+## Databases
+
+<AccordionGroup>
+  <Accordion title="Which databases can I run?">
+    PostgreSQL 17 and Redis 8, on your own server, each with a Studio in the console. See [Databases](/databases/overview).
+  </Accordion>
+  <Accordion title="Are my databases backed up?">
+    On Pro and Teams you can schedule backups and run one on demand, with encrypted copies kept offsite. There is no point-in-time recovery, so after a failure you can lose what changed since the last backup. The Free plan has no backups. See [Backups](/databases/backups).
+  </Accordion>
+  <Accordion title="Can an app use a database on another server?">
+    Yes. Connect the app to the database and LiveHQ links the two servers privately. See [Private network](/network/overview).
+  </Accordion>
+  <Accordion title="Can something outside LiveHQ connect to my database?">
+    Yes. A database has a public URL that you can turn on, with TLS, a password and optional IP rules. See [Connection URLs](/databases/connection-urls).
+  </Accordion>
+</AccordionGroup>
+
+## Trust
+
+<AccordionGroup>
+  <Accordion title="Can LiveHQ read my variables?">
+    No. Your browser encrypts each value to your server's own key before it is sent. LiveHQ stores and delivers the encrypted value but holds no key that opens it. The other side of that: LiveHQ cannot show a saved value back to you, so keep your own copy. See [How variables are protected](/apps/sealed-variables).
+  </Accordion>
+  <Accordion title="Can LiveHQ see my traffic?">
+    Yes, as any edge does. HTTPS ends at LiveHQ's edge so that requests can be routed and access can be checked, then requests travel to your server through its tunnel. Your code, builds, containers and databases stay on your server.
+  </Accordion>
+  <Accordion title="What happens if LiveHQ has an outage?">
+    Your apps and data are on your server and keep running there. If LiveHQ's control plane goes down, the edge keeps serving your public apps for up to 72 hours; private apps pause, and deployments and the console wait. While the edge itself is unreachable, visitors cannot load your apps. See [What happens during a LiveHQ outage](/help/outages).
+  </Accordion>
+  <Accordion title="Can I leave?">
+    Yes. Your apps are built from your own repository into containers on your server, and your databases are standard PostgreSQL and Redis. **Export everything** downloads your settings and data, encrypted to your browser. See [Take your data with you](/help/export).
+  </Accordion>
+  <Accordion title="What happens when I reach my bandwidth limit?">
+    Owners and admins get an email at 80% and at 100%, and everyone in the workspace sees a banner from 75%. On Free, apps pause at 10 GB until the next month or an upgrade. On Pro and Teams you can set a spend limit that buys more at \$0.01 per GB. It starts at \$0, and apps pause when the limit is reached. See [Bandwidth](/apps/bandwidth).
+  </Accordion>
+</AccordionGroup>
+
+## Working with AI assistants
+
+<AccordionGroup>
+  <Accordion title="Can an AI agent operate LiveHQ for me?">
+    Not by itself. LiveHQ has no public API and no command-line tool, so an agent cannot deploy or change settings. It can read these docs, tell you exactly which buttons to press, and help you read a build log or a restart summary. See [For AI agents](/agents/overview).
+  </Accordion>
+  <Accordion title="How do I give my AI tool these docs?">
+    Add this site as an MCP server, or point the tool at `/llms.txt`. See [Connect your AI tool](/agents/connect).
+  </Accordion>
+</AccordionGroup>
+
+## Still have a question?
+
+Write to [support@livehq.dev](mailto:support@livehq.dev).

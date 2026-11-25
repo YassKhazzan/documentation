@@ -1,0 +1,139 @@
+---
+title: "Connect an app to a database"
+description: "Give an app its own database user and a private connection URL in one step, from the database's page or from the app's."
+---
+
+**Connect an app** does three things at once: it creates a database user for the app, seals that user's private connection URL into the app's variables, and deploys the app. It works for PostgreSQL and Redis, and for a web app or a background service.
+
+## Before you start
+
+- The database is running (**Ready**), and the app has been deployed once.
+- You are an Owner, Admin or Developer. If your account has [two-factor sign-in](/account/two-factor), the console asks you to confirm with it.
+- The app and the database may be on different servers. That path is explained in [Connect across servers](/network/connect-across-servers).
+- If the console says **Update this server's agent**, see [Update the agent](/servers/update-agent).
+
+<Note>
+In PostgreSQL, the user that **Connect an app** creates can change rows, not tables. An app that creates or alters its own tables when it starts (it "runs migrations") fails with that user. Read [If your app runs migrations](#if-your-app-runs-migrations) before you connect it.
+</Note>
+
+## Steps
+
+<Steps>
+  <Step title="Open the dialog">
+    Start from either side. The dialog is the same.
+
+    - **From the database:** open the database, then **Connections**. In the **Apps** card, press **Connect an app**.
+    - **From the app:** open the app. On **Overview**, in the **Databases** card, press **Connect a database**. The same button is on the **Variables** tab.
+  </Step>
+  <Step title="Pick the app or the database">
+    Each row names the server it is on. A row that reads "Connected", "Not on a server yet" or "Not running" cannot be picked.
+  </Step>
+  <Step title="Choose the variable name">
+    **Variable name** is filled with `DATABASE_URL` for PostgreSQL and `REDIS_URL` for Redis. Change it only if your code reads the connection URL from another name.
+
+    If the app already has a variable with that name, the dialog warns "storefront already has DATABASE_URL; connecting replaces it."
+  </Step>
+  <Step title="Connect and deploy">
+    Under the name, **User** shows the database user LiveHQ will create, and **Sealed for** the servers the URL is encrypted for. Press **Connect and deploy**.
+  </Step>
+</Steps>
+
+## What happens next
+
+The dialog shows four steps as they complete:
+
+| Step | What LiveHQ does |
+| --- | --- |
+| **Database user** | Creates a user for this app alone, such as `app_storefront_4f2a9c`, with **Read & write** access. In PostgreSQL that covers rows, not the structure of tables. A second try reuses the same user. |
+| **Private URL** | Gets that user's private connection URL from the database's server. It is the same from every server. |
+| **Encrypted in your browser** | Seals the URL for the app's servers. LiveHQ stores it but cannot read it. See [Sealed variables](/apps/sealed-variables). |
+| **Connected · deploying** | Saves the variable, records the connection and deploys the app. |
+
+Press **Follow the deployment** to watch it. The app reads the new variable once that deployment is running.
+
+If the app is not running a release, because it is stopped for example, the dialog ends with **Connected** and no deployment. The app reads the variable when it next deploys or starts.
+
+After that, the **Apps** card on the database and the **Databases** card on the app both list the connection with its variable, its user and its path, such as **Same server** or **Private network · direct**.
+
+## If your app runs migrations
+
+The app's user has **Read & write** access. In PostgreSQL it can read, insert, update and delete rows in every table, and use sequences. It cannot create, alter, drop or truncate tables, create indexes or create schemas, and it does not own the schema.
+
+So an app that creates or changes its own tables when it starts fails as that user. PostgreSQL answers with an error such as "permission denied for schema public" or "must be owner of table orders".
+
+Schema changes must run as the default user, `livehq`, which owns the schema:
+
+<Steps>
+  <Step title="Connect the app first">
+    Use **Connect an app** as above. For an app on another server this is what opens the private path. The path is opened for the app, not for one database user.
+  </Step>
+  <Step title="Show the default user's private URL">
+    Open the database, then **Connections**. Under **Connect as**, keep `livehq (default user)`, press **Show private URL** and copy it.
+  </Step>
+  <Step title="Give it to the migrations">
+    Open the app, then **Variables**. Either save the URL in a second variable that only your migration command reads, or save it as the value of `DATABASE_URL` so that the whole app runs as `livehq`.
+  </Step>
+  <Step title="Redeploy">
+    [Redeploy the app](/apps/redeploy) so the running release gets the variable.
+  </Step>
+</Steps>
+
+Tables that `livehq` creates can be read and written by the app's own user at once, so with a second variable the app itself stays on its limited user. If you put the `livehq` URL in `DATABASE_URL`, the app's own user is no longer used. **Disconnect** still revokes it and, for an app on another server, closes the path.
+
+You can also make schema changes yourself as `livehq`: from your computer over the [public URL](/databases/connection-urls), or in the SQL editor of [PostgreSQL Studio](/databases/postgresql-studio) with editing on.
+
+Redis has no schema. There the app's user runs every data command except `FLUSHALL`, `FLUSHDB` and `SWAPDB`.
+
+## Disconnect an app
+
+In either card, press **Disconnect** next to the connection, then confirm.
+
+- **The app's database user is revoked at once**, on every server. Its open connections close and new ones are refused.
+- **The database and its data stay as they are.**
+- The console then asks whether to remove the variable too. **Remove variable** deletes it from the app's saved variables; **Keep it** leaves it. Either way the running release keeps the old value until the next deployment, and that URL no longer works.
+
+The database must be running to disconnect, because only its server can revoke the user. Deleting an app removes its connections and revokes its user on every database that is running. On a database that is stopped at that moment the user stays: revoke it under **Users** once the database runs again.
+
+## Connect by hand instead
+
+You can skip the dialog and set the variable yourself. This works for an app on the database's own server.
+
+<Steps>
+  <Step title="Show the private URL">
+    Open the database, then **Connections**. In the **Private URL** card, press **Show private URL** and copy it. The URL contains a password: keep it secret.
+  </Step>
+  <Step title="Save it as a variable">
+    Open the app, then **Variables**. Press **Add variable** and save `DATABASE_URL` (or `REDIS_URL`) with the URL as its value. See [Variables](/apps/variables).
+  </Step>
+  <Step title="Redeploy">
+    [Redeploy the app](/apps/redeploy) so the running release gets the variable.
+  </Step>
+</Steps>
+
+By hand, the app uses whichever database user you showed the URL for, and no connection is listed in the **Apps** card. For an app on another server, use **Connect an app**: the private network carries only connected apps. To connect from outside LiveHQ, see [Get a connection URL](/databases/connection-urls).
+
+## If something goes wrong
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| "Available once the database is running." | The database is stopped or not ready. | Start it on its **Overview** tab. |
+| "Update prod-eu-1's LiveHQ agent to connect apps." | The agent on the database's server is too old. | [Update the agent](/servers/update-agent). |
+| "Update prod-eu-1's agent first: its variables are encrypted in your browser for the server, and its current agent can't open them." | The agent on the app's server is too old for sealed variables. | [Update the agent](/servers/update-agent). |
+| A step fails with "Your server didn't answer in time. Check that it's online, then try again." | The database's server did not answer within 90 seconds. | Check the server, then press **Try again**. Nothing is created twice. |
+| The connection is refused while the app is deploying | LiveHQ does not connect an app during another deployment of it. Nothing is saved. | Wait for the deployment to finish, then connect. |
+| "The server couldn't revoke app_storefront_4f2a9c, so storefront is still connected. Check that the server is online, then disconnect again." | The disconnect did not finish. | Bring the server online and press **Disconnect** again. |
+| The app's logs show a PostgreSQL error such as "permission denied for schema public" or "must be owner of table" | The app changes tables as its own user, which can only change rows. | See [If your app runs migrations](#if-your-app-runs-migrations). |
+| The app is connected but cannot reach the database | The path may be down, or the app may not read the variable. | Read the path in the card, then see [Database connection problems](/help/database-connection). |
+
+## Limits
+
+- One connection per app and database. An app gets one user on each database it connects to.
+- No connection between apps: an app can connect to a database, not to another app.
+- A connected app counts toward the database's connection limit like any client. See [Database sizes and limits](/databases/sizes-and-limits).
+
+## Related
+
+- [Connect an app to a database on another server](/network/connect-across-servers)
+- [Database users](/databases/users)
+- [Get a connection URL](/databases/connection-urls)
+- [Sealed variables](/apps/sealed-variables)

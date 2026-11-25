@@ -2,6 +2,12 @@
 # .git, .github, .claude, .agents, .idea, node_modules,
 # README.md, LICENSE.md, CHANGELOG.md, CONTRIBUTING.md
 
+# The check script is for people who edit the docs; it is not part of the site
+scripts/
+
+# The owner's list of things to confirm before publishing
+BEFORE_PUBLISHING.md
+
 # Draft content
 drafts/
 *.draft.mdx

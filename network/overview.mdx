@@ -1,0 +1,72 @@
+---
+title: "How the private network works"
+description: "The private network links your own servers with encrypted connections so an app on one server can reach a database on another."
+---
+
+The private network is a set of encrypted links between the servers of one workspace. It lets an app on one server use a database on another without opening the database to the internet.
+
+You do not set it up. It appears when you [connect an app to a database](/databases/connect-an-app) on another server, or [run an app on several servers](/apps/several-servers).
+
+## What it does
+
+- **It links only the servers that need each other.** Two servers get a link when an app on one uses a database on the other. A workspace with nothing connected across servers has no private network.
+- **It carries database traffic only**, and only for the apps you connected. One exception: an app that [runs on several servers](/apps/several-servers) also reaches the databases on its first server (its **Primary**) from its other servers. Every other port, SSH included, is closed on it.
+- **It is encrypted from server to server** with WireGuard. The keys are made on your servers and the private ones never leave them.
+- **The connection URL is the same from every server.** An app reads the same `DATABASE_URL` or `REDIS_URL` wherever it runs. The URL names a private host ending in `.internal`. It uses no TLS of its own (for PostgreSQL it ends in `sslmode=disable`), because the link is already encrypted.
+
+## The paths
+
+The console shows the path of every connection: on the database's **Connections** tab, in the **Apps** card, and on the app's **Overview**, in the **Databases** card. An app on several servers has one line per server.
+
+| The console says | What it means |
+| --- | --- |
+| **Same server** | The app and the database are on one server. The traffic never leaves it and the private network is not involved. |
+| **Private network · direct** | The two servers talk to each other directly. |
+| **Private network · through LiveHQ (slower)** | The two servers cannot reach each other directly, so their encrypted traffic passes through LiveHQ's edge. |
+| **Private network · connecting** | The servers are setting up the link. This takes about a minute. |
+| **Private network · not connected** | The servers have not reached each other in the last few minutes. |
+| **Waiting for prod-eu-2's agent update** | That server's agent is too old for the private network. |
+| **Waiting for a LiveHQ update** | The direct path is closed and LiveHQ's relay is not ready yet. |
+| **Waiting for the app's first deploy** | The app is not on a server yet. |
+| **Unavailable: IPv6 is turned off on prod-eu-2** | The server cannot join. Other reasons can follow "Unavailable:", such as a kernel with no WireGuard module. |
+
+What to do for each one is in [Connect across servers](/network/connect-across-servers#if-something-goes-wrong).
+
+## What "through LiveHQ" means
+
+Each server first tries to reach the other one directly, over UDP. When a firewall drops those packets, both servers send them through LiveHQ's edge instead. The packets stay encrypted between the two servers: the edge passes them on and cannot read them.
+
+It works, but it is slower. The traffic takes a longer road, and LiveHQ limits each pair of servers to about 20 Mbit/s on this path.
+
+To get a direct path, follow the hint the console prints under the path. It names both servers, their public addresses and the port:
+
+> prod-eu-1 (203.0.113.10) and prod-eu-2 (203.0.113.20) can't reach each other directly, so their encrypted traffic goes through LiveHQ. Open UDP port 51820 between them for a direct path.
+
+On each server, allow incoming UDP on that port from the other server's public address. Do it in your hosting company's firewall and in any firewall on the server itself. Then press **Check again** next to the path, in the **Apps** card on the database's **Connections** tab. The port is 51820 unless something else on the server uses it (then it is the next free one, up to 51829); the hint always names the right one.
+
+<Note>
+A server you [locked down](/servers/lock-down) with LiveHQ already lets this one port in while the private network is in use. A firewall at your hosting company can still block it.
+</Note>
+
+## What each server needs
+
+- An agent recent enough. If the console says **Update this server's agent**, see [Update the agent](/servers/update-agent).
+- IPv6 turned on in the operating system. The private network uses IPv6 addresses inside the link; the server does not need a public IPv6 address.
+- WireGuard in the kernel. The standard kernels of current Ubuntu and Debian releases include it.
+
+## What it is not
+
+- **Not a network between your apps.** An app cannot call another app, or a background service, over it. LiveHQ has no names between apps.
+- **Not a way into your servers.** You cannot use SSH over it. For that, see [Private SSH](/servers/private-ssh).
+- **Not for databases outside LiveHQ**, and not between two workspaces.
+
+## Plan and cost
+
+The private network needs two servers, so it is for Pro and Teams: Free includes one server. See [Plans](/account/plans). It has no price of its own, and its traffic does not count toward your plan's bandwidth.
+
+## Related
+
+- [Connect an app to a database on another server](/network/connect-across-servers)
+- [Connect an app to a database](/databases/connect-an-app)
+- [Run an app on several servers](/apps/several-servers)
+- [The security model](/start/security-model)

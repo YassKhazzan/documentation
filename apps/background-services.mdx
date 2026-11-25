@@ -1,0 +1,117 @@
+---
+title: "Run a background service"
+description: "Deploy a worker, a queue consumer or a bot as an app that runs on your server with no public address."
+---
+
+A background service is an app with no public address. LiveHQ builds it from GitHub and runs it on your server like a web app, but nothing on the internet can send it a request. Use it for workers, queue consumers and bots.
+
+A service is one long-running process. When it exits, even without an error, LiveHQ starts it again.
+
+## Before you start
+
+- A connected server and a GitHub repository you have granted to the workspace. A service builds from GitHub only.
+- Owners, Admins and Developers can deploy a service. Only Owners and Admins change its **Run and health** settings; for anyone else the form says "This deploy uses the saved settings."
+- A service counts toward your plan's limit of apps and services: 3 on Free, 30 on Pro, 100 on Teams. See [Plans](/account/plans).
+- If the console says **Update this server's agent**, see [Update the agent](/servers/update-agent).
+
+## Steps
+
+<Steps>
+  <Step title="Start a new service">
+    Press **New**, then **Background service**, and pick the repository. You can also press ⌘K (Ctrl+K on Windows and Linux) and choose **Deploy a background service**.
+  </Step>
+  <Step title="Check the source">
+    Under **Source**, **Background service** is selected instead of **Web app**. The choice is locked once the service is created, like its name. Set **Branch, tag or commit** and the **App name**. Leave **Deploy when I push** on to redeploy on every push to the branch.
+  </Step>
+  <Step title="Choose the server, resources and variables">
+    **Server**, **Resources** and **Environment variables** work as they do for a web app: see [Deploy an app](/apps/deploy). The form has no address, access, port or health path for a service.
+  </Step>
+  <Step title="Set Run and health">
+    Step 5, **Run and health**, decides how a new release takes over and how LiveHQ knows it is healthy. The defaults suit most workers. Each setting is explained below.
+  </Step>
+  <Step title="Deploy">
+    Press **Deploy service**.
+  </Step>
+</Steps>
+
+## Run and health settings
+
+| Setting | What it does | Default | Allowed |
+| --- | --- | --- | --- |
+| **Replacement**: **Stop first** | Stops the old release, then starts the new one. Two copies never run at once. For bots, schedulers and anything that must be the only copy. If the new release fails, the old one starts again. | Default | |
+| **Replacement**: **Overlap** | Starts the new release, waits until it is healthy, then stops the old one. The server needs memory for both. | | |
+| **Health command** | Optional. One line that runs inside the container with `/bin/sh`, with the same access as your service. Do not put secrets in it. Left blank, LiveHQ keeps the service running and restarts it if it exits. | Blank | Up to 512 characters |
+| **Interval** | How often the health command runs. | 30 seconds | 5 to 300 |
+| **Timeout** | How long one run may take. Shorter than the interval. | 5 seconds | 1 to 60 |
+| **Retries** | Failures in a row before the service counts as unhealthy. | 3 | 1 to 10 |
+| **Start period** | Failures while the service starts do not count. | 30 seconds | 0 to 600 |
+| **Restart when unhealthy** | LiveHQ restarts an unhealthy service, at most once every 5 minutes. Turn it off when a restart cannot help; the console then shows **Unhealthy**. | On | |
+| **Deploy after** | Push deployments wait until another app's deployment of the same commit is healthy. The other app must deploy from the same repository and branch. A chain holds at most three apps. Manual deployments do not wait. | Nothing: deploy on every push | |
+| **Soak time** | An extra wait after that other deployment is healthy. | None | 5 minutes to 24 hours |
+| **Stop grace** | Time to finish work between the stop signal and a forced stop. | 15 seconds | 5 to 300 |
+| **Startup grace** | Without a health command, the service must keep running this long. | 15 seconds | 5 to 300 |
+| **Open files** | The container's open-file limit. | 1,024 | 1,024 to 65,536 |
+| **Processes** | The container's process and thread limit. | 256 | 64 to 4,096 |
+
+The timing fields sit under **Health check timing**, and the last four under **Stop grace, open files, processes**.
+
+A new release takes over only after it has stayed healthy for one more minute. A release gets at most 1,800 seconds to prove itself; the form refuses settings that add up to more.
+
+<Note>
+The health command runs inside your container, so the program it calls must exist in your image. The form's example, `curl -fsS http://127.0.0.1:8080/healthz`, works only if your image contains `curl`.
+</Note>
+
+## What the console shows
+
+The service's page reads "Background service · no public address". Its tabs are **Overview**, **Deployments**, **Variables**, **Resources**, **Logs**, **Run** (see [Run a command](/apps/run-commands)) and **Settings**.
+
+A service is never **Live**, because nothing serves visitors. During a deployment the last step reads **Taking over** (stop first) or **Switching over** (overlap), and the deployment ends at **Running**.
+
+| Status | Meaning |
+| --- | --- |
+| **Draft**, **Deploying** | Before the first release: nothing deployed yet, or the first deployment is in progress. |
+| **Running** | Healthy. With a health command, the Overview says when it last passed. |
+| **Starting** | A release is waiting for its health command, or to stay up for the startup grace. |
+| **Checking** | "Checking it stays healthy (60 s)." |
+| **Replacing** | The new release is replacing the old one. |
+| **Waiting** | A push deployment waits for the app it deploys after. |
+| **Stopping**, **Stopped** | A stopped service stays stopped after a server restart. Start it from **Settings**. |
+| **Unhealthy** | The health command is failing. |
+| **Keeps stopping** | It exited 5 times in 10 minutes, and LiveHQ stopped restarting it. |
+| **Failed** | It did not start. The previous release, if any, is kept. |
+| **Suspended** | The workspace's plan has paused it. See [Billing](/account/billing). |
+| **No report** | LiveHQ has had no health report from the server in the last minute. |
+
+## Change the settings later
+
+Open the service, then **Settings**. In the **Service** card, change what you need and press **Save settings**.
+
+Saved settings apply at the next deployment. To use them now, press **Apply now**: LiveHQ deploys the running release again, at the same commit, with the new settings. The same tab has **Service controls** to stop, restart or roll back the service.
+
+## Limits
+
+- **No scheduled jobs.** LiveHQ has no cron. A job that finishes and exits is started again, and after 5 exits in 10 minutes it shows **Keeps stopping**. For timed work, run a scheduler inside a service that stays up.
+- **Nothing can connect to it.** A service has no address, custom domains, access setting, firewall or **Bandwidth** tab. Your other apps cannot call it either: LiveHQ has no names between apps.
+- **It connects outward only**: to the internet, and to a database through a connection URL. See [Connect an app to a database](/databases/connect-an-app).
+- **No `PORT` variable** is set. Files are ephemeral: persistent volumes are not supported.
+- **Several servers:** a service can run one copy on each of several servers, with no load balancing. See [Run an app on several servers](/apps/several-servers).
+
+## If something goes wrong
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| **Background service** cannot be chosen: "Update this server's agent to run background services." | The agent on the server is too old. | [Update the agent](/servers/update-agent). |
+| "Your workspace's allowance of apps and services is full. Existing ones can still be redeployed." | The plan's limit is reached. | Delete an app you no longer need, or see [Plans](/account/plans). |
+| **Keeps stopping** | The process exits soon after it starts. | The Overview shows its last log lines. Fix the error and redeploy, or press **Restart**. |
+| **Unhealthy** | The health command fails. | Press **View logs**. Check that the command works inside your image. |
+| **Failed**: "It didn't start." | The new release never became healthy. | Open the latest deployment under **Deployments**. See [The app won't start](/help/app-wont-start). |
+| "Waiting for storefront to be healthy." | **Deploy after** is holding this push deployment. | Wait, or press **Cancel deploy**. |
+| "storefront's deploy didn't finish, so this one won't start." | The other app's deployment failed, so LiveHQ cancels this one. | Fix the other app, then push again. |
+| An out-of-memory failure with **Overlap** | The server has no room for two copies. | Choose **Stop first**, or see [Out of memory](/help/out-of-memory). |
+
+## Related
+
+- [Deploy an app](/apps/deploy)
+- [App status words](/apps/status)
+- [Logs](/apps/logs)
+- [Known limits](/help/known-limits)

@@ -1,0 +1,152 @@
+---
+title: "Browse and edit keys in Redis Studio"
+sidebarTitle: "Redis Studio"
+description: "Use Redis Studio in the console to search keys, view and edit every data type, set expiries, run commands and listen to pub/sub channels."
+---
+
+Redis Studio is a key browser and command console inside the console. It reaches Redis through your server's agent, so it works with external access off.
+
+## Open Studio
+
+Open the Redis database, then **Studio**. Or press **Open Studio** on its Overview.
+
+- The database must read **Ready** and its server must be online.
+- **Owner**, **Admin** and **Developer** see the tab. Viewers do not.
+
+Studio has four parts: **Keys**, **Console**, **Insights** and **Pub/Sub**. On a wide screen the key list stays on the left and the other parts are tabs on the right (the first tab reads **Key**). On a phone they are four buttons, and a key opens as a full-screen sheet.
+
+## Find keys
+
+| To | Do this |
+| --- | --- |
+| Choose a database | Use the picker at the top left: `db0` to `db15`, each with its key count. Connection URLs use `db0`. |
+| Search | Type in **Search keys** and press Enter. Plain text finds keys that contain it. Text with `*`, `?` or `[` is a Redis pattern, such as `user:*`. |
+| Filter by type | Press a chip: **All**, **String**, **Hash**, **List**, **Set**, **Sorted set**, **Stream**, **JSON**. |
+| See more | Press **Load more** at the bottom of the list. Keys load about 100 at a time. |
+| Search again | Press the refresh button next to the search box. |
+
+Each row shows the key's type, its name, the time it has left to live (a countdown) and its size in memory. Searching uses Redis's `SCAN`, which does not block Redis.
+
+## Look at a key
+
+Click a key. The top of the view shows its type, its expiry ("No expiry" or a countdown), its size in memory, how many items it holds, and **Copy name**.
+
+A value can be shown as **Text**, **JSON** (when it parses) or **Hex**. A JSON document opens as a **Tree** you can expand, or **Raw**. Long collections load in pages.
+
+## Read only, and turning editing on
+
+Studio opens **Read only**: it connects with a Redis user that cannot write, so Redis itself refuses changes.
+
+To change data, press **Read only** at the top, then **Enable for 10 minutes**. A banner reads "Editing is on" with a countdown. Editing applies to this browser tab only and ends after 10 minutes, or when you press **Return to read only**.
+
+<Warning>
+With editing on, a change is written to the database as soon as you save it, and there is no undo. Take a backup first if the data matters.
+</Warning>
+
+If your account has two-factor sign-in on, changes need a second factor from the last 15 minutes. See [Two-factor sign-in](/account/two-factor).
+
+## Edit keys
+
+With editing on:
+
+| Type | What you can do |
+| --- | --- |
+| Any key | Create one (the **+** next to the search box opens **New key**), rename, delete, **Set expiry** or **Change expiry**, **Keep forever** |
+| String | **Edit** the value as text or hex. Its expiry is kept. |
+| Hash | **Add field**, edit a field, delete a field |
+| List | **Push** to the head or the tail, edit an element, remove an element |
+| Set | **Add member**, remove a member |
+| Sorted set | **Add member** with a score, change a score, remove a member |
+| Stream | **Add entry**, delete an entry. Consumer groups are shown, not edited. |
+| JSON | **Edit document**, or edit and delete one path in the tree |
+
+**Set expiry** offers 1 minute, 1 hour, 1 day and 7 days, or a number of seconds. Redis deletes the key when the time runs out.
+
+Every edit checks that the key has not changed since you opened it. If it has, nothing is written and you see "This key changed since you opened it. Reload it." Renaming is refused if a key already has the new name.
+
+## The console
+
+The **Console** runs one Redis command at a time. Type a command and press Enter.
+
+- Each command runs on its own connection, in the database chosen in the picker, with a 15-second limit.
+- ↑ brings back earlier commands. Tab completes command names and key names.
+- Replies are printed as `redis-cli` prints them.
+- Commands that change data need editing on: "SET changes data. Turn on editing to run it."
+
+### Guards
+
+| Commands | What happens |
+| --- | --- |
+| `FLUSHDB`, `FLUSHALL` | A dialog says what will be deleted. You must type the database's name (the one shown in the console, such as `shop-cache`), then press **Run FLUSHDB**. It cannot be undone; a backup can bring the data back. |
+| `SWAPDB`, `KEYS` | A dialog asks you to confirm. `KEYS` is refused above 10,000 keys: use the key search. |
+| Blocking commands (`BLPOP`, `BRPOP`, `BLMOVE`, `BZPOPMIN`, `XREAD … BLOCK`, `WAIT` and the like) | Need a timeout above 0 and at most 10 seconds. |
+| `CONFIG` | Blocked. LiveHQ manages Redis's configuration. Memory and the full-memory rule are in the database's **Settings**. |
+| `ACL` (except `ACL WHOAMI` and `ACL CAT`) | Blocked. Manage users in the **Users** tab. |
+| `SHUTDOWN` | Blocked. Stop the database from its Overview. |
+| `SAVE`, `BGSAVE`, `BGREWRITEAOF` | Blocked. Use **Backups** for a copy. |
+| `MONITOR` | Blocked: it slows Redis down. **Insights** shows the slow log and latency. |
+| `SLOWLOG`, `LATENCY`, `CLIENT LIST` | Blocked by your server. **Insights** shows the slow log, latency and the connected clients. |
+| `SUBSCRIBE`, `PSUBSCRIBE` and their relatives | Blocked. Use **Pub/Sub**. |
+| `MULTI`, `EXEC`, `DISCARD`, `WATCH`, `UNWATCH` | Blocked: each command runs on its own connection, so a transaction cannot span commands. |
+| `SELECT` | Blocked. Choose the database with the picker. |
+| `DEBUG`, `MODULE`, `MIGRATE`, `CLIENT KILL`, `CLIENT PAUSE`, `CLIENT UNPAUSE`, `CLIENT NO-EVICT`, `SYNC`, `PSYNC`, `REPLICAOF`, `SLAVEOF`, `FAILOVER`, `CLUSTER`, `AUTH`, `HELLO`, `RESET`, `QUIT` | Blocked. The console says why. |
+
+A blocked command never reaches Redis: the console refuses most of them before anything is sent, and your server checks every command again.
+
+## Insights
+
+**Insights** reads how Redis is doing. Nothing here changes data.
+
+| Tab | What it shows |
+| --- | --- |
+| **Overview** | Memory used against the limit, commands per second, hit rate, clients, evicted and expired keys, the append-only file, the Redis version and keys per database |
+| **Slow log** | Commands that took more than 10 ms |
+| **Latency** | Events slower than 100 ms, and Redis's own latency report |
+| **Clients** | Who is connected: address, user, database, age, idle time and last command |
+| **Memory** | Redis's memory report and the biggest keys in the chosen database, with a link to each |
+
+The biggest keys come from a bounded check. On a large database the heading says how many keys were checked.
+
+## Pub/Sub
+
+Type one or more **Channels** (separated by spaces) or **Patterns** (such as `orders.*`), choose **10 s** or **30 s**, and press **Listen**. Messages appear when the window ends. Tick **Keep listening** to start the next window automatically, up to 20 in a row.
+
+To send a message, turn editing on, fill in **Channel** and **Message** under **Publish** and press **Publish**. The console answers with how many subscribers received it.
+
+Pub/Sub here is for checking what your apps publish. It is not a live stream: a message published between two windows can be missed, and a window holds at most 200 messages.
+
+## If something goes wrong
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| "Start your database to open Studio" | Redis is not running and healthy. | Start it on Overview. |
+| "Reconnect your server" | Studio connects through your server's agent, which isn't reachable right now. | See [A server is offline](/help/server-offline). |
+| "Update the agent to open Redis Studio" | The server's agent is too old for Redis Studio. | If the console says **Update this server's agent**, see [Update the agent](/servers/update-agent). |
+| "Studio is read only. Turn on editing to run this." | The command changes data. | Press **Enable editing**. |
+| "This key no longer exists" | It expired or was deleted after the list loaded. | Press **Remove from the list**. |
+| "Too long to edit here" | The value is larger than Studio loads in full. | Change it from your app or with `redis-cli`. |
+| "The reply was long, so it was cut." | The reply was over Studio's size limit. | Ask for less: a smaller range or `SCAN` with a `COUNT`. |
+| "… The change may or may not have been made: reload before trying again." | The connection dropped while a change was being sent. | Reload the key and check before repeating. Studio does not retry a write. |
+| "A command changed data; the list may be out of date." | You ran a write in the console. | Press **Refresh**. |
+
+## Limits
+
+| | Limit |
+| --- | --- |
+| Editing mode | 10 minutes, then back to read only |
+| One command | 15 seconds, 256 arguments, 32 KiB |
+| One change | about 60 KiB |
+| A value shown or returned | cut at 64 KiB; arrays cut at 1,000 items |
+| Items loaded at once | 500 |
+| Key name | 16 KiB |
+| Search pattern | 1 KiB |
+| Pub/Sub | windows of 10 or 30 seconds, 200 messages a window, the last 500 kept on screen |
+| Command history | this session's commands, plus your last 20 from the past 24 hours |
+
+There is no viewer for Redis types other than the seven listed. Use the console for those.
+
+## Related
+
+- [Create a Redis database](/databases/create-redis)
+- [Database users and passwords](/databases/users)
+- [PostgreSQL Studio](/databases/postgresql-studio)

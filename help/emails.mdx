@@ -1,0 +1,154 @@
+---
+title: "Emails LiveHQ sends"
+description: "A reference of every email LiveHQ sends about your servers, apps, bandwidth, billing and account, with who gets it, how often, and what to do."
+---
+
+LiveHQ emails you when something needs your attention. This page lists every email, the subject it arrives with, who receives it and what to do. The examples use a server named `prod-eu-1`, an app named `storefront` and a workspace named `Acme Studio`.
+
+**Who "owners and admins" are:** the workspace's **Owner**, and on the Teams plan its **Admins** too. **Developers** and **Viewers** receive no alerts, only emails about their own actions and account, such as a failed deployment they started.
+
+## All emails at a glance
+
+| Subject | Sent when | To |
+| --- | --- | --- |
+| "prod-eu-1 stopped responding" | LiveHQ has not heard from the server for 5 minutes | Owners and admins |
+| "prod-eu-1 didn't come back after its restart" | A restart from the console has not reconnected after 10 minutes | Owners and admins |
+| "prod-eu-1 is back online" | The server reconnects after a "stopped responding" email | Owners and admins |
+| "Deployment failed: storefront" (also "Redeploy failed", "Rollback failed") | A deployment fails | The person who started it |
+| "storefront keeps stopping on prod-eu-1" | LiveHQ has stopped restarting the app | Owners and admins |
+| "storefront is not healthy on prod-eu-1" | The server has reported the app unhealthy for 5 minutes | Owners and admins |
+| "storefront is healthy again on prod-eu-1" | The app recovers after one of the two emails above | Owners and admins |
+| "prod-eu-1 restarts Sunday, November 29 at 03:00 (UTC)" | A day before a planned restart for security updates | Owners and admins |
+| "prod-eu-1 needs a restart to finish its security updates" | Updates wait for a restart you chose to approve yourself | Owners and admins |
+| "prod-eu-1 returned to its previous kernel" | A restart's new kernel did not start and the server fell back | Owners and admins |
+| "An update keeps failing on prod-eu-1" | A security update failed twice and is held | Owners and admins |
+| "Security updates haven't installed on prod-eu-1 for a week" | Something on the server has blocked updates for 7 days | Owners and admins |
+| "prod-eu-1 is locked", "prod-eu-1 is unlocked" | Someone keeps a server's lock after its five-minute trial, or removes the lock. Starting the trial sends nothing | Owners and admins |
+| "prod-eu-1 accepts SSH keys only", "prod-eu-1 accepts SSH passwords again" | Someone changes password logins | Owners and admins |
+| "Private SSH is on for prod-eu-1" (or "off") | Someone switches private SSH | Owners and admins |
+| "(person) opened an SSH session on prod-eu-1" | Someone connects through private SSH | Owners and admins, except that person |
+| "Your LiveHQ servers this week: all good" (or "2 things to look at") | Every Monday | Owners and admins |
+| "Attack mode turned on for storefront" | Automatic attack mode turns on | Owners and admins |
+| "storefront is under attack: 3,480 requests refused in 5 minutes" | The firewall refuses or checks far more than usual | Owners and admins |
+| "Acme Studio has used 80% of its bandwidth" | Usage reaches 80% of the period's limit | Owners and admins |
+| "Acme Studio's apps are paused: bandwidth used up" | Usage reaches the limit and apps pause | Owners and admins |
+| "Acme Studio has used its included bandwidth" | Pro and Teams: the included amount is used up | Owners and admins |
+| "Acme Studio: a usage invoice couldn't be collected" | A usage invoice stays unpaid after the retries | Owners and admins |
+| "Acme Studio's offsite backups are above its storage limit" | Offsite backup copies exceed the storage limit | Owners and admins |
+| "Acme Studio's offsite backups will be deleted on (date)" | The workspace moves to Free. A week before the date the same subject follows, starting with "Reminder:" | Owners and admins |
+| "Acme Studio has a new owner" | Ownership is transferred | The old and the new owner |
+| "Acme Studio now pays with its new owner's card" | The new owner confirms a card | The old and the new owner |
+| "Join Acme Studio on LiveHQ" | Someone invites you to a workspace | The invited address |
+| "(person) shared storefront with you" | Someone shares an app with you | The invited address |
+| "Sign in to LiveHQ" | A visitor of a shared app asks for a sign-in link | That visitor |
+| "An authenticator app was added to your LiveHQ account" and the other sign-in changes | Your sign-in methods change | You |
+
+## Server emails
+
+### Stopped responding and back online
+
+The agent on your server checks in with LiveHQ all the time. After 5 minutes of silence from a server that was alive during the last day, LiveHQ sends one email for that silence, and one more when the server reconnects.
+
+- A restart you start from the console is not reported for its first 10 minutes. After that the subject is "prod-eu-1 didn't come back after its restart".
+- When servers in many workspaces go silent in the same 15 minutes, the cause is LiveHQ or a hosting provider, and these emails are held back.
+- **What to do:** open your hosting provider's control panel and check that the server is running and its network is up. See [A server is offline](/help/server-offline).
+
+### Security updates and restarts
+
+LiveHQ installs your server's security updates and restarts it when an update needs that. See [System updates](/servers/system-updates).
+
+- **Restart notice.** Sent at least 24 hours before the restart, with its day and time. To choose another time, postpone it a week or restart now on the server's **Security** tab.
+- **Restart to approve.** Sent once for each restart that waits for your approval, when you chose to approve restarts yourself.
+- **Previous kernel.** Nothing to repair: the server is running, and LiveHQ does not try that kernel there again.
+- **An update keeps failing** and **haven't installed for a week.** The **Security** tab shows the error or what the server is waiting for.
+
+### Lock, SSH and private SSH
+
+Each of these changes is emailed once, with the address of the person who made it. A lock's five-minute trial is not emailed; keeping the lock is. A private SSH session is emailed to everyone but the person who opened it. If you did not expect one, turn private SSH off on the server's **Security** tab and check who can manage the server. See [Server security](/servers/security).
+
+### The weekly report
+
+One email per workspace that has a server, every Monday from 08:00 UTC. For each server it lists: online or offline, its system and security support, updates installed and CVEs closed that week, restarts, how often it stopped responding, and what answers from the internet.
+
+An **Owner** or **Admin** can get the current report at once: open a server, then **Health**, **Security**, and in the **Operating system** card press **Email it to me now**. That copy goes to you alone, at most once a minute.
+
+## App emails
+
+### A deployment failed
+
+Sent once per failed deployment, with the first line of the reason and a link to the log. It goes to the person who started the deployment. A deployment started by a push to GitHub counts as started by the person who last deployed that app from the console; if that person is no longer in the workspace, it goes to the owners and admins. Only failures of the last 24 hours are sent. See [A build failed](/help/build-failed) and [An app won't start](/help/app-wont-start).
+
+### An app is failing
+
+LiveHQ reads what your server reports about each app's running release.
+
+- **"keeps stopping"** is sent at once: the app did not stay up after several restarts, so LiveHQ stopped restarting it. It stays down until you restart it or deploy a fix.
+- **"is not healthy"** is sent after the server has reported the app unhealthy for 5 minutes without a gap.
+- **"is healthy again"** follows when the server reports it healthy, if that is within four weeks. A failure that ends another way (you stop or delete the app) gets no second email.
+
+You get one email per failure, however long it lasts. Nothing is sent for an app you stopped, for a first deployment that never worked (that is the deployment email), or while the app's whole server is silent (the server's email covers it). See [An app is unavailable](/help/app-unavailable).
+
+### Firewall alerts
+
+Two kinds, each at most once every 6 hours per app: automatic attack mode turned on, and a spike of at least 3,000 refused or checked requests in 5 minutes that is 10 times the app's usual. The email lists the top cause, IP addresses, countries and paths.
+
+This is the one email you can turn off: the **Email alerts** switch on the app's **Firewall** tab. It is a firewall setting, so it applies when you publish the change. See [Attack mode](/apps/firewall/attack-mode).
+
+## Bandwidth, billing and backup emails
+
+- **80% and paused.** Each is sent once per billing period. If usage jumps past 100% before the 80% email went out, only the paused email is sent. At 100% apps pause until the next period; the email says the date. See [Bandwidth](/apps/bandwidth).
+- **Included bandwidth used** (Pro and Teams). Once per period, with your spend limit and what happens when that is used too.
+- **Usage invoice not collected.** Both spend limits go back to \$0, so apps pause at the included bandwidth and new offsite copies stop at the included storage. Nothing else changes. Update the payment method and pay the invoice from **Billing**. See [Billing](/account/billing).
+- **Backups above the storage limit.** Sent once each time the workspace goes over. Seven days later LiveHQ starts removing the oldest offsite copies until they fit, keeping each database's newest one. Raise the backup storage spend limit or delete copies you do not need.
+- **Backups after a move to Free.** Offsite copies stay 30 days, then LiveHQ deletes them. You are told at the move and again a week before. Backups kept on your servers are not affected. See [Backups](/databases/backups).
+
+## Account and invitation emails
+
+- **Workspace invitation.** Expires in 7 days.
+- **Shared app.** Expires in 7 days.
+- **Sign-in link** for a visitor of a shared app. Works once, for 15 minutes.
+- **Sign-in changes.** Sent to your own address when an authenticator app or a passkey is added or removed, when new recovery codes are made, and when Google or GitHub is connected or disconnected. If it was not you, open **Settings**, **Sign-in security**: remove any method you do not know and press **Sign out other sessions**. See [Two-factor sign-in](/account/two-factor).
+
+## What LiveHQ does not email about
+
+- **An app that runs but cannot be reached from the internet.** LiveHQ runs no check of your app from outside your server. If the server finds the app healthy, no email is sent, even when visitors cannot open it.
+- **A database that fails or stops.** There is no database email. Check the database's page.
+- **A disk or memory that is filling up.** Watch the server's **Monitor**.
+- **A deployment that succeeds.**
+- **A failure that lasted more than four weeks** does not get a "healthy again" email.
+
+## Daily ceilings
+
+A workspace cannot make LiveHQ send without limit. Once a ceiling is reached, further emails of that kind are skipped, not sent later, until the next day (UTC). Most alerts count once for each person they go to.
+
+| Kind | Emails per workspace per day |
+| --- | --- |
+| Server stopped responding | 60 |
+| Server back online | 60 |
+| App failing | 60 |
+| App healthy again | 60 |
+| Deployment failed | 40 |
+| Security updates and restarts | 30 |
+| Lock, SSH and private SSH | 100 |
+| Firewall alerts | 30 |
+| Bandwidth and usage invoice | 20 |
+| Workspace invitations | 100 |
+| Shared app invitations | 300 |
+
+An alert that could not be delivered to someone is tried three times in all.
+
+## If an email does not arrive
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| Admins get nothing | The workspace is not on Teams | Only the **Owner** is emailed on Free and Pro |
+| A developer got no failure email | Someone else started the deployment, or it came from a push | The email went to that person. For a push, that is whoever last deployed the app from the console |
+| No "back online" email | The "stopped responding" email was never sent, for example the server returned within 5 minutes | Nothing to do |
+| No firewall emails | **Email alerts** is off for that app, or one of that kind went out in the last 6 hours | Check the app's **Firewall** tab |
+| Nothing at all | The message may be in spam | Check the spam folder, then write to `support@livehq.dev` |
+
+## Related
+
+- [What happens during an outage](/help/outages)
+- [App status words](/apps/status)
+- [Members and roles](/account/members-and-roles)

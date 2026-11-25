@@ -1,0 +1,141 @@
+---
+title: "Manage your plan and billing"
+description: "Upgrade, buy extras, set spend limits and read invoices on the Billing page, and know what a move to a smaller plan suspends or deletes."
+---
+
+The **Billing** page holds the workspace's plan, its usage and its payments. Open **Billing** in the sidebar.
+
+## Who can use it
+
+| Role | Billing |
+| --- | --- |
+| **Owner** | Sees everything and is the only one who changes the plan, extras, spend limits and payment. |
+| **Admin** | Sees everything, changes nothing. |
+| **Developer**, **Viewer** | Have no **Billing** in the sidebar. Each app's own usage is on its **Bandwidth** tab. |
+
+Payments are taken by Stripe. You enter your card on Stripe's pages, never in the console.
+
+## What the page shows
+
+| Tab | What is there |
+| --- | --- |
+| **Plan** | What the plan includes and how much you use, the **Plans** cards, and **Extras**. |
+| **Usage** | **Bandwidth** for the period with a daily chart, **By app**, **Usage beyond your plan**, and **Backup storage**. |
+| **Payments** | **Subscription** with the renewal date, **Next charges** and **Usage charges**; **Invoices**, each with a PDF; and **Billing portal**, which opens Stripe for your card and receipts. |
+
+## Upgrade
+
+<Steps>
+  <Step title="Choose the plan">
+    On **Plan**, under **Plans**, press **Upgrade to Pro** or **Upgrade to Teams**.
+  </Step>
+  <Step title="Check the monthly total">
+    The dialog shows the plan's price and the **Monthly total**. If the workspace already uses more than the plan includes, the extras it needs are added and listed.
+  </Step>
+  <Step title="Pay on Stripe's page">
+    Press **Continue to payment**. You confirm the payment on Stripe's page and come back to the console.
+  </Step>
+</Steps>
+
+The page first says "Thanks. Pro starts as soon as Stripe confirms the payment, usually within seconds.", then "Welcome to Pro. Your new limits apply now."
+
+From Pro, **Change to Teams**, then **Change to Teams now** in the dialog, takes effect at once. With [two-factor sign-in](/account/two-factor) on, the console asks you to confirm it is you first. The charge for today is prorated: you pay the difference for the rest of the period.
+
+## Extras
+
+On Pro and Teams the owner can buy more than the plan includes, in the **Extras** card.
+
+| Extra | Price | Most you can reach |
+| --- | --- | --- |
+| Server | \$3 a month each | 10 servers on Pro, 50 on Teams |
+| Custom domain | \$3 a month each | 30 domains on Pro, 100 on Teams |
+| Member (Teams) | \$5 a month each | 50 members |
+
+Use the plus and minus buttons, press **Review change**, read the **New monthly total**, then **Confirm**.
+
+- A change applies at once. An addition is charged today, prorated for the rest of the period, to the card on file. With two-factor sign-in on, the console asks you to confirm it is you first.
+- A removal comes back as credit on your next invoice.
+- You cannot go below what is in use: remove the server, domain or member first.
+- Extras cannot change while a move to a smaller plan is scheduled.
+
+## Usage beyond your plan
+
+Bandwidth and offsite backup storage above what the plan includes are billed only if the owner allows it. On **Usage**, under **Usage beyond your plan**, there are two **Monthly spend limits**:
+
+| Limit | Price | What an amount allows |
+| --- | --- | --- |
+| **Extra bandwidth** | \$0.01 per GB | \$1 allows 100 GB more |
+| **Extra backup storage** | \$0.03 per GB a month | 3 cents allow 1 GB more |
+
+Both are \$0 by default. With \$0 nothing extra is billed: apps pause at the included bandwidth, and new offsite copies stop at the included storage. A limit can be any amount up to \$10,000. Press **Save spend limits**.
+
+- Changing spend limits needs [two-factor sign-in](/account/two-factor) on the owner's account, because raising one commits money without another confirmation.
+- Lowering a limit applies at once. Usage you already allowed in this period is still billed.
+- The card says the most a period can cost: "A period costs at most \$20 beyond your plan".
+
+### How usage is billed
+
+After each period ends, LiveHQ counts what went beyond the plan and bills it on an invoice of its own, to the card on file. Bandwidth is billed in whole GB. Backup storage is billed for the time each offsite copy was kept.
+
+A total under 50 cents is added to the next renewal instead. A correction can follow a few days later, when late traffic reports arrive. **Payments** lists every charge under **Usage charges**.
+
+## When a payment fails
+
+| What failed | What happens | What to do |
+| --- | --- | --- |
+| The plan's renewal | "Payment failed. Pro stays active until" a date 7 days later. After that date the workspace is treated as Free, as described below. | Press **Billing portal** and pay the invoice or change the card. The plan comes back when it is paid. |
+| An invoice for usage beyond the plan | Once Stripe's retries end, both spend limits go to \$0 and Owners and Admins get an email. The plan stays, and nothing is suspended. With the limits at \$0, apps pause at the included bandwidth, at once if the period has already used it up, and new offsite copies stop at the included storage. The limits cannot be raised until the invoice is paid. | Pay it from **Billing portal**. |
+
+## Move to a smaller plan
+
+A move happens at the end of the period you paid for. Until then nothing changes, and you can undo it. After a move to Free, press **Resume Pro** (or **Resume Teams**) in the **Subscription** card on **Payments**. After a move from Teams to Pro, press **Keep Teams** in the notice at the top.
+
+### To Free
+
+Press **Move to Free…**, read the dialog, then **Move to Free at period end**. At the end of the period:
+
+| What | What happens |
+| --- | --- |
+| Apps and databases above 3 and 3 | They are suspended, not deleted. A suspended app stops serving and reads **Suspended**; a suspended database is stopped. Back on a paid plan they run again without a new deployment. |
+| Custom domains | Removed. Apps keep their `livehq.app` address. |
+| Database backups | No new backups. Backups on your servers stay and can be restored. |
+| Offsite backup copies | **Deleted 30 days after the move.** You get an email at the move and 7 days before. Returning to a paid plan before then keeps them. |
+| Spend limits | Back to \$0. |
+| Bandwidth | 10 GB a calendar month. What the workspace already used earlier in that month, on the paid plan, counts: if that is more than 10 GB, apps pause until the next month. |
+| Servers above 1 | They stay connected. You cannot connect another. |
+| Members (from Teams) | Everyone but the owner loses access and keeps their membership. Pending invitations are revoked. |
+
+<Warning>
+The dialog says "you choose which stay active". The console has no screen for that choice today. LiveHQ keeps the apps you created first, up to 3, together with the databases those apps are connected to, then fills up to 3 databases in the order you created them. An app whose databases would not fit in the 3 is passed over. To keep others, delete the ones you do not need before the period ends, or write to [support](/help/support).
+</Warning>
+
+### From Teams to Pro
+
+Press **Move to Pro…**. The move is refused while the workspace does not fit Pro: at most 30 apps, 30 databases, 10 servers and 30 custom domains. The dialog lists what to remove first. On Pro, members other than the owner lose access and keep their membership; pending invitations are revoked. Apps and servers keep running.
+
+## Backup storage
+
+The **Backup storage** card counts the encrypted offsite copies of your database backups: the latest ones of each database, 3 at most. It shows **Used**, **Included** and **Limit** (included plus your spend limit), then each database.
+
+- "Offsite copy skipped: backup storage is full" means the last backup stayed on its server only. Raise the backup storage spend limit to copy the next one offsite.
+- If storage is above the limit, the page warns you. After 7 days each database keeps fewer offsite copies (3, then 2, then 1) until usage is under the limit. The newest copy always stays.
+
+## If something goes wrong
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| "Only the workspace owner can change the plan." | You are an Admin. | Ask the owner. |
+| A plan card reads **Not yet**, with **Unavailable** | That plan cannot be bought yet. | Write to [support](/help/support). |
+| "Stripe hasn't confirmed the payment yet. This page updates when it does." | Stripe is still processing. | Wait. Do not pay a second time. |
+| "This workspace's subscription still has an unpaid invoice. Update the card in the billing portal: once it's paid, the plan comes back." | An earlier renewal failed. | Press **Update your card**. |
+| "A plan change is already scheduled." | A move to a smaller plan is waiting for the period's end. | Undo it first, or wait. |
+| **Confirm the workspace's card** | Ownership changed. Renewals still go to the previous owner's card, and upgrades, extras and higher spend limits wait. | The new owner presses **Confirm your card**. |
+| "A usage invoice is unpaid. Pay it on the Billing page before raising a spend limit." | An invoice for usage beyond the plan could not be collected. | Pay it from **Billing portal**. Lowering a limit still works. |
+| "The new owner must confirm a payment method on the Billing page first: the card on file still belongs to the previous owner." | Ownership changed, and an upgrade, an extra or a higher spend limit was tried before the new owner confirmed a card. | The new owner presses **Confirm your card**. |
+
+## Related
+
+- [Plans and limits](/account/plans)
+- [Bandwidth](/apps/bandwidth)
+- [Back up a database](/databases/backups)
+- [People and roles](/account/members-and-roles)

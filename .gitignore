@@ -1,0 +1,6 @@
+# The owner's working notes: kept on the owner's computer, not published
+BEFORE_PUBLISHING.md
+
+# Local tools
+.DS_Store
+node_modules/

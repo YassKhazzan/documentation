@@ -1,0 +1,98 @@
+---
+title: "Database users and passwords"
+sidebarTitle: "Users and passwords"
+description: "Create read-only and read-write database users, reveal or reset a password, and revoke a user's access."
+---
+
+Each database has a default user, and you can add up to 32 named users so that every app or person has their own password. LiveHQ generates every password; nobody chooses one.
+
+## The users of a database
+
+| User | What it may do | Where it comes from |
+| --- | --- | --- |
+| `livehq`, the default user | PostgreSQL: schema and data, so it can create and change tables. Redis: every data command. | Created with the database. It cannot be revoked. |
+| A named user, **Read & write** | PostgreSQL: read, insert, update and delete rows in every table, and use sequences. It cannot create, alter, drop or truncate tables. Redis: every data command except flushing databases. | You create it under **Users**, or [Connect an app](/databases/connect-an-app) creates one for the app. |
+| A named user, **Read only** | PostgreSQL: query tables and views. Redis: read commands only, no writes and no publishing. | You create it under **Users**. |
+
+<Note>
+In PostgreSQL, run migrations and other schema changes as `livehq`. A named user, the one **Connect an app** creates included, gets an error such as "permission denied for schema public" when it tries to create a table. See [If your app runs migrations](/databases/connect-an-app#if-your-app-runs-migrations).
+</Note>
+
+Named users belong to one database. A backup restored as a new database starts with the default user only: create the named users again there.
+
+## Before you start
+
+- The database reads **Ready**. Otherwise the tab says "Start this database before managing its users."
+- The role **Owner**, **Admin** or **Developer**.
+- If your account has two-factor sign-in on, the console may ask for your second factor. See [Two-factor sign-in](/account/two-factor).
+
+## Create a user
+
+<Steps>
+  <Step title="Open Users">
+    Open the database, then **Users**, and press **Create user**.
+  </Step>
+  <Step title="Name it">
+    Under **Username**, type a name such as `reporting`: lowercase letters, digits and underscores, starting with a letter, at most 32 characters.
+  </Step>
+  <Step title="Choose the access">
+    Under **Access**, choose **Read & write** or **Read only**.
+  </Step>
+  <Step title="Create it">
+    Press **Create user & generate password**. When the server answers, a card titled **Password for reporting** appears.
+  </Step>
+  <Step title="Take the password or the URL">
+    Press **Copy password**, or go to **Connections**, choose the user under **Connect as** and show its URL. See [Get a connection URL](/databases/connection-urls).
+  </Step>
+</Steps>
+
+Each action on this tab is carried out by your server, so the page says "Waiting for your server…" for a moment.
+
+## See a password again
+
+A password is not shown only once. Press **Reveal password** on the user's row to get the same card again, with **Show password**, **Copy password** and **Dismiss**. The password is stored on your server, and the console fetches it each time you ask. A revoked user's password cannot be revealed until you enable the user again.
+
+## Reset a password
+
+Resetting (also called rotating) replaces the password with a new generated one.
+
+- **A named user:** press **Reset password** on its row, then **Confirm**.
+- **The default user:** press **Reset password** on its row, then **Confirm**. Or open **Connections** and press **Reset password…** in the **Password** card, then **Rotate password**.
+
+What it affects:
+
+- New connections need the new password. Connections that are already open can continue until they disconnect.
+- Every app and tool that uses this user needs the new URL. For an app on LiveHQ, update its variable and redeploy. See [Variables](/apps/variables).
+- Other users are not affected. An app connected with **Connect an app** has its own user, so resetting `livehq` does not break it.
+
+## Revoke a user
+
+Press **Revoke access** on the user's row, then **Confirm**. Existing sessions are disconnected and new sign-ins are blocked. The user and the database's data are preserved, and the row reads **Revoked**.
+
+Press **Enable access**, then **Confirm**, to let the user in again with the same password. To change what a user may do, change the list on its row between **Read only** and **Read & write**, then **Confirm**.
+
+## Redis users
+
+Redis users work the same way, with these differences:
+
+- They are Redis ACL users. LiveHQ manages them: the `ACL` commands that change users are blocked in [Redis Studio](/databases/redis-studio).
+- The names `default` and anything starting with `livehq` are reserved. Redis's built-in `default` user is switched off, so a client must send a user name and a password.
+- **Read & write** users cannot run `FLUSHALL`, `FLUSHDB` or `SWAPDB`. The default user can.
+
+## If something goes wrong
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| "Start this database before managing its users." | The database is not **Ready**. | Start it, or wait until it is ready. |
+| "default is reserved in Redis. Choose another name." or "That username is reserved for the database platform." | The name is one LiveHQ or the database engine uses, such as `postgres`, `default` or a name starting with `livehq` or `pg_`. | Choose another name. |
+| "User exists or the 32-user limit was reached." | The name is taken, or the database already has 32 named users. Revoked users count: a user cannot be deleted, only revoked. | Use another name, or enable and reuse a revoked user. |
+| "User changed; refresh before continuing." | Someone else changed this user since the page loaded it. | Press **Refresh** and try again. |
+| "This response expired. Request it again." | The password was fetched a while ago and is no longer held. | Press **Reveal password** again. |
+| "User list unavailable. Refresh to try again." | The server did not return the list. | Press **Refresh**. If it stays, check that the server reads **Connected**. |
+| An app stops connecting after a reset | It still has the old password. | Show the user's URL again, update the app's variable and redeploy. |
+
+## Related
+
+- [Get a connection URL](/databases/connection-urls)
+- [Connect an app](/databases/connect-an-app)
+- [Database connection problems](/help/database-connection)

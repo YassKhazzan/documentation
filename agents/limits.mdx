@@ -1,0 +1,219 @@
+---
+title: "Limits and numbers"
+sidebarTitle: "Limits"
+description: "Every number in LiveHQ in one place: plan limits and prices, sizes, time limits, retention and rate limits, each linked to its page."
+---
+
+One page of numbers, for agents and for anyone who wants them together. Each table links to the page that explains it. What LiveHQ does not do at all is on [Known limits](/help/known-limits).
+
+## Plans
+
+Prices are per workspace, in US dollars, each month. Detail: [Plans and limits](/account/plans).
+
+| | Free | Pro | Teams |
+| --- | --- | --- | --- |
+| Price | \$0 | \$15 | \$49 |
+| Servers | 1 | 3, up to 10 at \$3 each extra | 10, up to 50 at \$3 each extra |
+| Apps and background services | 3 | 30 | 100 |
+| Databases (PostgreSQL and Redis together) | 3 | 30 | 100 |
+| Custom domains | None | 5, up to 30 at \$3 each extra | 10, up to 100 at \$3 each extra |
+| Bandwidth a period | 10 GB, then apps pause | 2 TB, then \$0.01 per GB up to the spend limit | 5 TB, then the same |
+| Database backups | No | Yes | Yes |
+| Offsite backup storage | None | 200 GB, then \$0.03 per GB a month up to the spend limit | 1 TB, then the same |
+| Offsite copies per database | None | Up to 3 (the newest) | Up to 3 (the newest) |
+| Members | The owner | The owner | 5, up to 50 at \$5 each extra |
+
+| Rule | Value |
+| --- | --- |
+| Spend limits (bandwidth, backup storage) | \$0 by default; \$1 allows 100 GB of bandwidth; 3 cents allow 1 GB of backup storage |
+| Bandwidth banner | From 75% of the period's limit |
+| Bandwidth emails | At 80%, and when apps pause at 100% |
+| Bandwidth period | Calendar month on Free; billing period on Pro and Teams |
+| Sizes | Decimal: 1 GB is 1,000,000,000 bytes |
+
+## Who and what an action needs
+
+| Action | Needs |
+| --- | --- |
+| Connect, remove, lock, patch, restart or update a server | Owner or Admin |
+| Connect GitHub | Owner or Admin |
+| Deploy, redeploy, stop a deployment | Owner, Admin or Developer |
+| Run a command in an app | Owner or Admin, and the second factor again when two-factor sign-in is on |
+| See Billing and People | Owner or Admin |
+| Change the plan, extras, spend limits | Owner. Spend limits need two-factor sign-in turned on. |
+| Custom domains, database backups, a second server | Pro or Teams |
+| Invite people, roles | Teams |
+
+Detail: [People and roles](/account/members-and-roles), [Two-factor sign-in](/account/two-factor).
+
+## Servers
+
+| What | Value |
+| --- | --- |
+| Systems | Ubuntu 22.04, 24.04, 26.04; Debian 12, 13; x86-64 or ARM64 |
+| Comfortable start | 2 vCPU, 4 GB of memory |
+| Server name | Up to 120 bytes, not starting with a dash |
+| Enrollment code | Works once, for 30 minutes |
+| Disk reserve | The larger of 2 GiB and 10% of the disk. Deployments wait below it. |
+| Swap for builds | On servers under 2 GiB of memory with no swap: a 2 GiB file, 1 GiB on a smaller disk, none when the disk has no room |
+| Deployments at once | 1 per server |
+| Build maximum | 512 to 65,536 MiB and 0.1 to 16 cores, or **Use spare resources** |
+| Build cache | The smaller of 10 GiB and 10% of the disk |
+| Monitor history | 24 hours |
+| Server silent before an email | 5 minutes |
+| Security updates | Daily, 03:00 UTC by default. Restart at most weekly, Sunday 03:00 UTC by default, with an email at least 24 hours before. |
+| Private SSH command | Works once, for 60 seconds |
+| Private SSH sessions | 4 per server; 12 hours at most, 60 minutes idle |
+| Lock test | 5 minutes, then it undoes itself unless kept |
+| Agent update request | Expires after 1 hour |
+
+Detail: [What server you need](/servers/requirements), [How memory is shared](/servers/memory), [The Security tab](/servers/security).
+
+## Apps
+
+| What | Value |
+| --- | --- |
+| App name | 2 to 120 characters |
+| Exact LiveHQ address | 2 to 40 lowercase letters, numbers or single hyphens |
+| Memory limit | 128 MiB to 64 GiB; a new app starts at 512 MiB |
+| CPU limit | 0.1 to 16 cores; a new app starts at 1 core |
+| Health check | `GET` on the path (`/` by default); passes on two answers in a row with status 200 to 399, each within 3 seconds |
+| Startup allowance | 120 seconds by default, 15 to 1,800 |
+| Step retries | Up to 3 attempts. Not retried: the server ran out of memory, wrong port, listening on localhost only, a health check answered with a status from 400 to 499. |
+| Source download (compressed) | 64 MiB |
+| Source unpacked | 256 MiB; one file 64 MiB; 50,000 files and folders |
+| Build output kept | 24 hours |
+| Watch after going live | About 1 minute, previous release kept for rollback |
+| Stopping a deployment | Takes effect within about 25 seconds |
+| Restarts paused | After 5 restarts in 10 minutes |
+| A server's report trusted for | 150 seconds |
+| Restart history | 14 days |
+| Usage charts | 15 minutes to 24 hours; history kept 24 hours |
+| Logs | Latest 200 lines per read; one read per app every 10 seconds |
+| Repositories listed | Up to 500 |
+
+Detail: [Deploy an app](/apps/deploy), [How LiveHQ builds an app](/apps/builds), [Limits and usage](/apps/resources).
+
+### Variables
+
+| What | Value |
+| --- | --- |
+| Variables per app | 64 |
+| Name | 1 to 128 characters: letters, digits, underscores; not starting with a digit |
+| One value | 16 KiB |
+| All values of one app | 64 KiB |
+| Reserved | `PORT`, and names beginning `LIVEHQ_`, `LD_` or `DYLD_`. The full list is on [Variables](/apps/variables). |
+
+### Run tab
+
+| What | Value |
+| --- | --- |
+| Timeout | 30 s, 60 s (default), 5 min, 15 min or 30 min |
+| Command | 8 KiB |
+| Output kept | The first 1 MiB, plus the last 64 KiB when there is more |
+| At once | 1 per app on each server; 4 in the workspace |
+| Per hour | 60 in the workspace |
+| History | Latest 20 per app, kept 7 days |
+
+Detail: [Run a command](/apps/run-commands).
+
+### Custom domains
+
+| What | Value |
+| --- | --- |
+| Record | One `CNAME`, target shown on the domain's card |
+| Bare domains, wildcards | Not supported |
+| Unverified domain released | 7 days after it was added or last checked |
+| Removed verified domain reserved for its workspace | 30 days |
+| Retry certificate validation | At most once every 15 minutes |
+
+Detail: [Custom domains](/apps/custom-domains).
+
+### Firewall
+
+| | Free | Pro and Teams |
+| --- | --- | --- |
+| Rules per app | 10 | 100 |
+| Blocked and trusted IP entries per app | 100 | 2,000 |
+| Values in one list condition | 100 | 500 |
+| Shared lists per workspace | 3 | 50 |
+| Entries per shared list | 1,000 | 10,000 |
+
+Conditions in a rule, or in one group: 8. Groups in a rule: 5. Firewall emails: at most one of each kind every 6 hours per app. Detail: [App firewall](/apps/firewall/overview).
+
+### Background services
+
+| What | Value |
+| --- | --- |
+| Stay-healthy window before taking over | 60 seconds |
+| Time to prove healthy | Up to 1,800 seconds |
+| Unhealthy restart | At most once every 5 minutes |
+| Deploy-after chain | At most 3 apps; soak up to 24 hours |
+
+Detail: [Background services](/apps/background-services).
+
+## Databases
+
+| What | PostgreSQL | Redis |
+| --- | --- | --- |
+| Version | 17 | 8 |
+| Memory sizes | 256 MB to 16 GB; 512 MB by default | 128 MB to 4 GB of data; 256 MB by default |
+| CPU sizes | 0.25 to 8; 0.5 by default | 0.5 to 4; 1 by default |
+| Max connections | 100 by default, 20 to 2,000 | 1,000 by default, 100 to 10,000 |
+| Storage budget | 1 to 1,024 GB; monitored, not a quota | The larger of 1 GB and 4 times the memory |
+
+| What | Value |
+| --- | --- |
+| Public connections | 100 at once and 20 per IP address by default; 2,048 per server |
+| Public access | IPv4, TLS, password, optional IP rules |
+| Backup schedules | Hourly, daily or weekly |
+| A backup | At most twice the storage budget; must finish within 1 hour |
+| Offsite copies kept | The newest 1 to 3 per database, as set on its backup schedule; 3 by default |
+| Restore in place | Replaced data kept 7 days for **Undo restore** |
+| Offsite copies after a move to Free | Deleted after 30 days |
+| Studio editing mode | 10 minutes, then read only again |
+| PostgreSQL Studio | Statement timeout 15 seconds; at most 500 rows per result; history 24 hours |
+
+Detail: [Sizes and limits](/databases/sizes-and-limits), [Backups](/databases/backups), [Restore](/databases/restore).
+
+### Private network between servers
+
+| What | Value |
+| --- | --- |
+| Port for a direct path | UDP 51820 (51820 to 51829), open between the two servers |
+| Path through LiveHQ | About 20 Mbit/s for each pair of servers |
+| Database connections from one other server | 128 at once |
+| Database connections from all other servers | 512 at once; apps on one server can hold 512 to databases elsewhere |
+
+Detail: [Private network](/network/overview), [Connect across servers](/network/connect-across-servers).
+
+## Account and sign-in
+
+| What | Value |
+| --- | --- |
+| Recovery codes | 10, each used once |
+| Passkeys | 10 per account |
+| Wrong second-factor codes | 10, then a 15-minute lock |
+| Adding a sign-in method while two-factor sign-in is off | Within 15 minutes of signing in |
+| Workspace invitation | Expires in 7 days |
+| Audit log (Teams) | 30 days |
+| Password reset and password change | Not offered in the console today |
+
+Detail: [Two-factor sign-in](/account/two-factor).
+
+## Outages and export
+
+| What | Value |
+| --- | --- |
+| Public apps without LiveHQ's control plane | Up to 72 hours |
+| Permit renewal | About once an hour; a new public app gets its permit within the hour |
+| Export file | Kept 24 hours; download link 15 minutes |
+| Exports | 1 unfinished per server; 10 per workspace in 24 hours; up to 2 GiB decrypted in the browser |
+
+Detail: [What happens during an outage](/help/outages), [Take your data with you](/help/export).
+
+## Related
+
+- [Reference](/agents/reference)
+- [Status words](/agents/status-words)
+- [Known limits](/help/known-limits)

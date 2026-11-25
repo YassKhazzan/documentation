@@ -1,0 +1,116 @@
+---
+title: "Limit request rates"
+description: "Cap how fast visitors can call an app with rate-limit rules, choose what is counted, and decide whether to turn on the flood guard."
+---
+
+A rate limit caps how many requests are accepted in a period of time. LiveHQ has two tools for it:
+
+- A **Rate limit** rule, for a limit you design: "10 sign-in attempts a minute per visitor".
+- The **Flood guard**, one switch for a general ceiling per visitor. It is off by default.
+
+Requests refused by either do not reach your server and do not count toward [bandwidth](/apps/bandwidth).
+
+## Add a rate-limit rule
+
+<Steps>
+  <Step title="Start a rule">
+    Open the app, then **Firewall**. In **Rules**, press **Add rule**, name it, and add the conditions that pick the requests to count, such as **Path** starts with `/api/`. See [Write firewall rules](/apps/firewall/rules).
+  </Step>
+  <Step title="Choose Rate limit">
+    Under **Then**, press **Rate limit**.
+  </Step>
+  <Step title="Set the limit">
+    Fill in **Requests** (1 to 100,000) and **Per** (10 seconds, 1 minute, 10 minutes or 1 hour).
+  </Step>
+  <Step title="Choose what is counted">
+    Pick one choice under **Counted for**. The table below explains each.
+  </Step>
+  <Step title="Choose what happens past the limit">
+    Under **Past the limit**, pick **Block (429 Too Many Requests)**, **Ask for a browser check** or **Only log it**.
+  </Step>
+  <Step title="Save and publish">
+    Press **Add to draft**, then **Review and publish** and **Publish**.
+  </Step>
+</Steps>
+
+## What is counted
+
+| Counted for | One counter per | Use it for |
+| --- | --- | --- |
+| **Each visitor (IP address)** | Visitor. IPv6 visitors count by their /64 network, which one device usually owns. | Most limits. This is the default. |
+| **Each visitor, per path** | Visitor and path. Each visitor gets the limit on every path separately. | Forms and expensive pages |
+| **Each value of a header** | Value of the header you name, for example an API key | API clients that share an address |
+| **Each value of a cookie** | Value of the cookie you name, for example a session | Signed-in users |
+| **Each path, all visitors together** | Path, for everyone | A ceiling on what one path takes |
+| **All visitors together** | The whole rule | A ceiling on everything the rule matches |
+
+With a header or a cookie, requests that do not send it share one counter. Sending the value in another spelling, or twice, does not start a fresh count.
+
+## Past the limit
+
+| Choice | What the visitor gets |
+| --- | --- |
+| **Block (429 Too Many Requests)** | In a browser, a LiveHQ page titled "Too many requests" that says how long to wait and tries again by itself. Other clients get status 429 with a `Retry-After` header. |
+| **Ask for a browser check** | The browser check. A visitor who already holds a pass continues until three times the limit, then gets 429. |
+| **Only log it** | Nothing. The request goes through and is counted under **Logged**, so you can see what a limit would refuse. |
+
+### Keep blocking that visitor
+
+For the two per-visitor counters, a further field appears: **Keep blocking that visitor** (or **Keep checking that visitor**). Choose 1 minute, 5 minutes, 15 minutes, 1 hour, 6 hours or 24 hours. Once a visitor passes the limit, every request from them to this app gets the same answer for that long, on every path. The **Protect sign-in** template uses it: 10 attempts a minute, then 15 minutes blocked.
+
+It is not offered for the other counters, because those are shared: the penalty would fall on whoever happened to send the request that found the counter full.
+
+## How the counting works
+
+- A visitor who keeps to the limit is never refused.
+- A visitor who goes past it still gets the limit's worth through. Refused requests are not counted against them, so hammering does not lock them out for longer.
+- The period slides: "10 per minute" means the last 60 seconds, not a clock minute.
+- **It is approximate at the edges.** A client that sends a full burst at the very end of one period and then paces itself exactly can get close to twice the limit through in one period's length. Set limits with that margin in mind.
+- LiveHQ's edge can run as several instances. They share their counters about once a second, so a fast visitor can exceed a limit by about a second of traffic.
+- Trusted IPs skip rate limits. Blocked IPs never reach them.
+
+## Flood guard
+
+The flood guard is a ceiling for each visitor on the whole app, without writing a rule. You find it in the **Firewall** tab under **Protections**.
+
+| Level | Rate | What it is for |
+| --- | --- | --- |
+| **Off (default)** | No per-visitor ceiling | One visitor can send as much as your server can take. Your own apps that call each other through their public addresses are never slowed. |
+| **Standard** | 100 requests a second per visitor | Stops floods from a single visitor while staying far above what people and normal apps produce. Short bursts are fine. The console marks it **Recommended**. |
+| **Strict** | 20 requests a second per visitor | For apps that only people use. Busy API clients or crawlers sharing one address may be slowed. |
+
+Choose a level, then **Review and publish**. A visitor over the ceiling gets 429 with a `Retry-After` header.
+
+Why it is off by default: when several of your apps call each other through their public addresses, all those calls arrive from your server's one address and would share one visitor's budget. If no app of yours calls this one that way, **Standard** is a safe choice.
+
+Each instance of LiveHQ's edge counts the flood guard by itself, so its ceiling is less exact than a rule's.
+
+## A ceiling you cannot change
+
+Each instance of LiveHQ's edge handles at most 10,000 requests at the same moment for one app, not counting WebSockets. Past that, new requests get 503 with a `Retry-After` header until others finish. This protects other customers' apps from one app's flood. It shows in **Top matched** under **Causes** as **In-flight ceiling**, with the note "A platform limit: nothing to change".
+
+## Good starting points
+
+| Goal | Rule |
+| --- | --- |
+| Slow password guessing | The **Protect sign-in** template: `POST` to sign-in paths, 10 a minute per visitor, then blocked 15 minutes |
+| Protect an API | The **Protect your API** template: paths starting with `/api/`, 600 a minute per visitor |
+| Stop scrapers | The **Ban scrapers for an hour** template: 300 page requests a minute, then blocked from the whole app for an hour |
+| Find the right number first | Any of these with **Only log it**, or with **Log only** switched on, for a few days |
+
+## If something goes wrong
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| Real users report "Too many requests" | The limit is too low, or many people share one address, such as an office or a mobile carrier. | Raise the limit, count per path, or count by a session cookie in place of the IP address. |
+| An office or your own server is limited | All its requests come from one address. | Add the address under **Trusted** in [IP lists](/apps/firewall/ip-lists), or write a **Skip** rule above the limit. |
+| **Keep blocking that visitor** is missing | The counter is not per visitor, or **Past the limit** is **Only log it**. | Choose **Each visitor (IP address)** or **Each visitor, per path**. |
+| A visitor stays blocked after you raised the limit | A kept block lasts its full time. | Turn the rule off and publish to lift it for everyone, wait a minute, then turn it on and publish again. The lift reaches the edge with the app's next requests, so switching off and on at once may lift nothing. |
+| Your apps that call each other get 429 | The flood guard counts them as one visitor. | Set **Flood guard** to **Off (default)**, or trust your server's address. |
+
+## Related
+
+- [Write firewall rules](/apps/firewall/rules)
+- [Use attack mode](/apps/firewall/attack-mode)
+- [Block and trust IP addresses](/apps/firewall/ip-lists)
+- [Read what the firewall did](/apps/firewall/events-and-history)

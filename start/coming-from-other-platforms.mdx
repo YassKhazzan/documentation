@@ -1,0 +1,62 @@
+---
+title: "Coming from Vercel, Render or Coolify"
+sidebarTitle: "Coming from another platform"
+description: "The ideas you know from Vercel, Render and Coolify under LiveHQ's names, what works differently, and what LiveHQ does not have."
+---
+
+If you have deployed on another platform, most of LiveHQ will feel familiar: connect a repository, push, get an address with HTTPS. This page maps the ideas and names what is different, so nothing surprises you later.
+
+## The one big difference
+
+On LiveHQ **the server is yours**. You rent it from a hosting company, and LiveHQ builds and runs your apps on it. Two things follow:
+
+- **Capacity is your server's.** Memory and CPU limits are caps you set inside your own server. There is no per-app or per-build pricing: you pay the hosting company for the server and LiveHQ for the [plan](/account/plans).
+- **Builds run on your server too.** A big build shares memory with your running apps. See [How memory is shared](/servers/memory).
+
+Compared with running everything yourself, LiveHQ's control plane is hosted: nothing but a small agent and Docker runs on your server, and the server opens no web ports. Visitors arrive through LiveHQ's edge.
+
+## Ideas you know, under LiveHQ's names
+
+| You are used to | On LiveHQ | Page |
+| --- | --- | --- |
+| A project or a web service built from a Git repository | An **app** (a web app) | [Deploy an app](/apps/deploy) |
+| A background worker | A **background service**: an app with no public address | [Background services](/apps/background-services) |
+| Automatic deploys on `git push` | **Deploy on push**, a switch per app. It follows one branch. | [What a redeploy does](/apps/redeploy) |
+| Build detection, or your own Dockerfile | Automatic builds, or your **Dockerfile** | [How LiveHQ builds an app](/apps/builds) |
+| Environment variables and secrets | **Variables**, with Runtime and Build scopes, sealed in your browser | [Variables](/apps/variables) |
+| A generated `*.vercel.app` or `*.onrender.com` address | A **LiveHQ address**, `name.livehq.app`, with HTTPS | [App addresses](/apps/addresses) |
+| Custom domains | **Custom domains**, on Pro and Teams | [Custom domains](/apps/custom-domains) |
+| Instant rollback | **Roll back** to the previous release | [Roll back](/apps/rollback) |
+| Password protection or team-only previews | **Private**, password or public access, checked before traffic reaches your server | [App access](/apps/access) |
+| Managed PostgreSQL and Redis | **Databases** on your own server, with Studio and scheduled backups | [Databases](/databases/overview) |
+| A private network between services | A **private network** between your servers, for apps reaching databases | [Private network](/network/overview) |
+| Scaling a service to several instances | The same app on **several servers**, added by hand | [Several servers](/apps/several-servers) |
+| A web application firewall | The **app firewall**, on every plan | [App firewall](/apps/firewall/overview) |
+| A shell or one-off job in a service | The **Run** tab: one command inside the app's container | [Run a command](/apps/run-commands) |
+| Team members and roles | **People** and roles, on Teams | [People and roles](/account/members-and-roles) |
+
+## What works differently
+
+- **Apps are long-running containers.** There are no serverless or edge functions. A Next.js app runs as a Node server, and API routes run inside it.
+- **One deployment at a time per server.** A second deployment waits for the first.
+- **No preview deployments per branch or pull request.** An app follows one branch. To preview another branch, deploy it as a second app.
+- **One set of variables per app.** There are no separate production, preview and development sets.
+- **No configuration file in the repository.** Settings live in the console. There is nothing like `vercel.json`, `render.yaml` or a Compose file to deploy from. The exception is your own `Dockerfile`.
+- **Bare domains cannot be served.** Use `www.example.com` and redirect `example.com` to it at your domain company. See [Custom domains](/apps/custom-domains).
+- **Your server is patched for you.** LiveHQ installs security updates and may restart the server at a planned weekly time. See [Security updates and restarts](/servers/system-updates).
+
+## What LiveHQ does not have
+
+Scheduled jobs (cron), autoscaling, persistent volumes for apps, raw TCP or UDP services, names for one app to call another, a public API, a command-line tool, and point-in-time recovery for databases. The full list, with what to do instead, is on [Known limits](/help/known-limits).
+
+## If you ran your own server before
+
+- Remove nothing first. The installer reuses a healthy Docker installation and leaves your existing containers alone. See [What server you need](/servers/requirements).
+- You do not need a reverse proxy, a certificate tool or open ports 80 and 443 for LiveHQ apps. After moving your apps you can [close the server](/servers/lock-down).
+- SSH stays yours. LiveHQ never holds or adds an SSH key. [Private SSH](/servers/private-ssh) lets you reach the server with every port closed.
+
+## Related
+
+- [Quickstart](/quickstart)
+- [How LiveHQ works](/start/how-livehq-works)
+- [Take your data with you](/help/export)

@@ -1,0 +1,96 @@
+---
+title: "Connect a server"
+description: "Name your server, create a one-time enrollment code and paste one command into the server's terminal to connect it to your workspace."
+---
+
+Connecting a server installs the LiveHQ agent on it and adds it to your workspace. You do it once per server, from the console's **Connect a server** page. It takes a few minutes, most of it waiting for downloads.
+
+If you have never opened a server's terminal, follow [From zero, step by step](/start/rent-a-server) instead. It covers the same install with every screen explained.
+
+## Before you start
+
+- A server that meets [the requirements](/servers/requirements): Ubuntu 22.04, 24.04 or 26.04, or Debian 12 or 13, with SSH access as `root` or a `sudo` user.
+- The **Owner** or **Admin** role in the workspace. Other roles see "Server access required."
+- Room in your plan. **Free** holds 1 server, **Pro** 3 and **Teams** 10. See [Plans](/account/plans).
+
+## Steps
+
+<Steps>
+  <Step title="Open Connect a server">
+    In the console, press **New**, then **Connect a server**. The **+** beside **Servers** in the sidebar opens the same page.
+  </Step>
+  <Step title="Name your server">
+    Type a **Server name** you will recognise when you deploy, such as `prod-eu-1`. The page suggests `production-01`. A name can be up to 120 bytes and cannot start with a dash.
+
+    The name is written into the command below. If you change the name, copy the command again.
+  </Step>
+  <Step title="Create an enrollment code">
+    Press **Create enrollment code**. The page shows the code with "Works once, until" and a time: a code lasts 30 minutes and connects one server. Leave it on screen for now: you copy it two steps from here.
+
+    If two-factor sign-in is on for your account, the console may first ask you to confirm it's you.
+  </Step>
+  <Step title="Run the command on the server">
+    Open an SSH session on the server. Under **Run this command on your VPS.**, press **Copy**, then paste the command into that session. It is long: use the button, do not type it.
+
+    The command downloads LiveHQ's installer over HTTPS and checks that the file is unchanged before it runs. If you are not `root`, the terminal may first ask for the server's own `sudo` password.
+  </Step>
+  <Step title="Paste the code when the terminal asks">
+    The installer prints its progress, with many download lines in between:
+
+    ```text
+    [1/5] Preparing server setup…
+    [2/5] Preparing the application runtime…
+    [3/5] Installing the LiveHQ agent…
+    [4/5] Connecting your LiveHQ workspace…
+    Enrollment code from the LiveHQ console (hidden):
+    ```
+
+    In the console, press **Copy code**. Paste the code into the terminal and press Enter. Nothing appears as you paste: that is normal. Your LiveHQ password is never typed on the server.
+  </Step>
+  <Step title="Wait for the console to notice">
+    The installer ends with:
+
+    ```text
+    Server enrolled. Its machine identity will renew independently of your account login.
+    [5/5] Enabling automatic startup…
+    LiveHQ is installed and running. Return to the console; it confirms the agent and OriginLink connection.
+    ```
+
+    Keep the console page open, with the same name. **Waiting for your server** changes by itself to "prod-eu-1 is ready." Press **Deploy an app**.
+  </Step>
+</Steps>
+
+<Note>
+The page may also say "Preview installer · ready for your testing; production acceptance is pending." LiveHQ is in a closed beta, and every agent release so far is a preview.
+</Note>
+
+## What happens next
+
+- The server appears under **Servers** in the sidebar and its status reads **Connected**. The agent starts again by itself after every restart of the server.
+- "OriginLink" in the installer's last line is the console's name for the encrypted tunnel between your server and LiveHQ's edge. The page waits until both the agent and that tunnel are connected.
+- LiveHQ now installs the system's security updates and may restart the server at a planned weekly time. See [Security updates and planned restarts](/servers/system-updates).
+
+Next: [deploy an app](/apps/deploy), then [close the server to the internet](/servers/security).
+
+## If something goes wrong
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| "The Free plan includes 1 server, and it is in use." when you create a code | The plan is full | [Remove a server](/servers/remove) you no longer use, or change plan on the Billing page |
+| `This enrollment code is wrong, used or expired.` | A code works once, for 30 minutes | Create a new code and run the command again |
+| The console keeps saying **Waiting for your server** | The installer stopped, or the name on the page differs from the one in the command | Read the terminal's last lines. Running the command twice does no harm |
+
+Every installer message is explained on [Install problems](/help/install-problems).
+
+## Limits
+
+- **Free** holds one server. Pro includes 3 and Teams 10, and both can add more for \$3 a month each, up to 10 servers on Pro and 50 on Teams. See [Plans](/account/plans).
+- A server you install again from scratch counts as a new server. The old one keeps its place in the plan until you [remove it](/servers/remove).
+- Give each server its own name: the page recognises the new server by its name.
+- Running the command again, with the same name, on a connected server keeps its connection and asks for no code. That is how you [update the agent](/servers/update-agent) by hand.
+
+## Related
+
+- [What server you need](/servers/requirements)
+- [Find your way around a server](/servers/server-pages)
+- [Install problems](/help/install-problems)

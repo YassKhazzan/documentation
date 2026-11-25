@@ -1,72 +1,365 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mintlify Starter Kit",
+  "name": "LiveHQ",
+  "description": "LiveHQ turns a Linux server you rent into your own cloud: deploy apps from GitHub, run PostgreSQL and Redis, and serve everything through LiveHQ's edge. These docs cover every page of the console, with the limits said plainly.",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
-  },
-  "favicon": "/favicon.svg",
-  "navigation": {
-    "pages": [
-      {
-        "group": "Getting Started",
-        "pages": [
-          "index",
-          "quickstart"
-        ]
-      }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
+    "primary": "#6D4AED",
+    "light": "#AE97FF",
+    "dark": "#5D3AE0"
   },
   "logo": {
     "light": "/logo/light.svg",
     "dark": "/logo/dark.svg"
   },
+  "favicon": "/favicon.svg",
+  "appearance": {
+    "default": "system"
+  },
+  "background": {
+    "decoration": "gradient",
+    "color": {
+      "light": "#FBFAFE",
+      "dark": "#09080E"
+    }
+  },
+  "fonts": {
+    "heading": {
+      "family": "Instrument Serif",
+      "weight": 400
+    },
+    "body": {
+      "family": "Inter"
+    }
+  },
+  "styling": {
+    "eyebrows": "breadcrumbs"
+  },
   "navbar": {
     "links": [
       {
+        "label": "Website",
+        "href": "https://www.livehq.dev"
+      },
+      {
         "label": "Support",
-        "href": "mailto:support@mintlify.com"
+        "href": "mailto:support@livehq.dev"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Dashboard",
-      "href": "https://app.mintlify.com"
+      "label": "Open the console",
+      "href": "https://console.livehq.dev"
     }
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "icon": "book-open",
+        "groups": [
+          {
+            "group": "Get started",
+            "icon": "rocket",
+            "pages": [
+              "index",
+              "quickstart",
+              {
+                "group": "From zero, step by step",
+                "expanded": true,
+                "pages": [
+                  "start/rent-a-server",
+                  "start/open-your-server",
+                  "start/install-livehq",
+                  "start/first-app"
+                ]
+              },
+              "start/how-livehq-works",
+              "start/console-tour",
+              "start/security-model",
+              "start/coming-from-other-platforms"
+            ]
+          },
+          {
+            "group": "Servers",
+            "icon": "server",
+            "pages": [
+              "servers/requirements",
+              "servers/connect",
+              "servers/server-pages",
+              "servers/monitor",
+              "servers/memory",
+              "servers/update-agent",
+              {
+                "group": "Security",
+                "pages": [
+                  "servers/security",
+                  "servers/private-ssh",
+                  "servers/lock-down",
+                  "servers/system-updates"
+                ]
+              },
+              "servers/restart",
+              "servers/disk-cleanup",
+              "servers/remove"
+            ]
+          },
+          {
+            "group": "Apps",
+            "icon": "cube",
+            "pages": [
+              {
+                "group": "Deploy",
+                "pages": [
+                  "apps/deploy",
+                  "apps/github",
+                  "apps/builds",
+                  "apps/deployments",
+                  "apps/redeploy",
+                  "apps/rollback"
+                ]
+              },
+              {
+                "group": "Configure",
+                "pages": [
+                  "apps/variables",
+                  "apps/sealed-variables",
+                  "apps/resources",
+                  "apps/settings"
+                ]
+              },
+              {
+                "group": "Addresses and access",
+                "pages": [
+                  "apps/addresses",
+                  "apps/custom-domains",
+                  "apps/access",
+                  "apps/sharing"
+                ]
+              },
+              {
+                "group": "Run and watch",
+                "pages": [
+                  "apps/status",
+                  "apps/logs",
+                  "apps/run-commands",
+                  "apps/restarts",
+                  "apps/bandwidth"
+                ]
+              },
+              {
+                "group": "Scale",
+                "pages": [
+                  "apps/background-services",
+                  "apps/several-servers"
+                ]
+              },
+              {
+                "group": "Firewall",
+                "pages": [
+                  "apps/firewall/overview",
+                  "apps/firewall/attack-mode",
+                  "apps/firewall/rules",
+                  "apps/firewall/rate-limits",
+                  "apps/firewall/ip-lists",
+                  "apps/firewall/protections",
+                  "apps/firewall/events-and-history"
+                ]
+              }
+            ]
+          },
+          {
+            "group": "Databases",
+            "icon": "database",
+            "pages": [
+              "databases/overview",
+              "databases/create-postgresql",
+              "databases/create-redis",
+              "databases/connect-an-app",
+              "databases/connection-urls",
+              "databases/users",
+              "databases/sizes-and-limits",
+              "databases/backups",
+              "databases/restore",
+              "databases/postgresql-studio",
+              "databases/redis-studio",
+              "databases/stop-and-delete"
+            ]
+          },
+          {
+            "group": "Private network",
+            "icon": "network-wired",
+            "pages": [
+              "network/overview",
+              "network/connect-across-servers"
+            ]
+          },
+          {
+            "group": "Account and workspace",
+            "icon": "user-gear",
+            "pages": [
+              "account/plans",
+              "account/billing",
+              "account/workspaces",
+              "account/members-and-roles",
+              "account/two-factor",
+              "account/sign-in-providers"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Help",
+        "icon": "life-ring",
+        "groups": [
+          {
+            "group": "Troubleshooting",
+            "icon": "wrench",
+            "pages": [
+              "help/troubleshooting",
+              "help/build-failed",
+              "help/app-wont-start",
+              "help/out-of-memory",
+              "help/app-unavailable",
+              "help/disk-full",
+              "help/domain-not-live",
+              "help/server-offline",
+              "help/install-problems",
+              "help/database-connection"
+            ]
+          },
+          {
+            "group": "Good to know",
+            "icon": "circle-info",
+            "pages": [
+              "help/emails",
+              "help/outages",
+              "help/export",
+              "help/known-limits",
+              "help/faq",
+              "help/glossary",
+              "help/support"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "AI agents",
+        "icon": "robot",
+        "groups": [
+          {
+            "group": "For AI agents",
+            "icon": "robot",
+            "pages": [
+              "agents/overview",
+              "agents/connect",
+              "agents/reference",
+              "agents/order-of-operations",
+              "agents/status-words",
+              "agents/limits"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "footer": {
+    "links": [
+      {
+        "header": "LiveHQ",
+        "items": [
+          {
+            "label": "Website",
+            "href": "https://www.livehq.dev"
+          },
+          {
+            "label": "Pricing",
+            "href": "https://www.livehq.dev/pricing"
+          },
+          {
+            "label": "Security",
+            "href": "https://www.livehq.dev/security"
+          },
+          {
+            "label": "Console",
+            "href": "https://console.livehq.dev"
+          }
+        ]
+      },
+      {
+        "header": "Help",
+        "items": [
+          {
+            "label": "Email support",
+            "href": "mailto:support@livehq.dev"
+          }
+        ]
+      },
+      {
+        "header": "Legal",
+        "items": [
+          {
+            "label": "Terms",
+            "href": "https://www.livehq.dev/terms"
+          },
+          {
+            "label": "Privacy",
+            "href": "https://www.livehq.dev/privacy"
+          },
+          {
+            "label": "Acceptable use",
+            "href": "https://www.livehq.dev/acceptable-use"
+          }
+        ]
+      }
+    ]
   },
   "contextual": {
     "options": [
       "copy",
       "view",
-      "chatgpt",
       "claude",
+      "chatgpt",
       "perplexity",
       "mcp",
       "cursor",
       "vscode"
     ]
   },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+  "search": {
+    "prompt": "Search the docs, or ask how to do something"
+  },
+  "metadata": {
+    "timestamp": true
+  },
+  "errors": {
+    "404": {
+      "redirect": false,
+      "title": "This page isn't here",
+      "description": "The page may have moved. Start from the [home page](/), or see [Troubleshooting](/help/troubleshooting)."
     }
+  },
+  "redirects": [
+    {
+      "source": "/start",
+      "destination": "/quickstart"
+    },
+    {
+      "source": "/troubleshooting",
+      "destination": "/help/troubleshooting"
+    },
+    {
+      "source": "/faq",
+      "destination": "/help/faq"
+    }
+  ],
+  "markdown": {
+    "instructions": [
+      "LiveHQ is operated through its web console at https://console.livehq.dev. There is no public API, no supported command-line tool and no Terraform provider: never invent an endpoint, a CLI command or a configuration file for LiveHQ.",
+      "The only commands a user runs in a terminal are the one-line installer copied from the console's Connect a server page, the private SSH command the console generates, and the few `livehq-agent` commands these docs name.",
+      "Use the exact labels these docs put in bold: they are the words on the console's buttons and tabs. If a label is not in these docs, say you are not sure instead of guessing.",
+      "Start with /agents/reference for the model of the product, /agents/order-of-operations for the order of steps, /agents/status-words for what each status means and /agents/limits for every number. /help/known-limits lists what LiveHQ does not do.",
+      "Never ask a user to paste a password, an enrollment code, a recovery code, a connection URL or a variable's value into a chat."
+    ]
   }
 }

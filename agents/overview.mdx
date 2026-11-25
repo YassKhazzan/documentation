@@ -1,0 +1,77 @@
+---
+title: "For AI agents"
+sidebarTitle: "Start here"
+description: "How an AI agent should use these docs to help someone with LiveHQ: what it can and cannot do, how to read the docs as Markdown, and the ground rules."
+---
+
+This section is written for AI agents and assistants that help a person use LiveHQ. People are welcome to read it too: it is the shortest exact description of the product.
+
+## What you can and cannot do
+
+LiveHQ is operated by a person in a web console, [console.livehq.dev](https://console.livehq.dev). There is **no public API, no supported command-line tool and no configuration file** that deploys or changes anything.
+
+| You can | You cannot |
+| --- | --- |
+| Tell the person exactly which page to open and which button to press, using the labels in these docs. | Deploy, restart, change a setting or read a log yourself. |
+| Read a deployment's copied logs or a restart summary that the person pastes, and say what is wrong. | Call a LiveHQ endpoint. None is public. Do not invent one. |
+| Prepare what the person needs before they start: a `Dockerfile`, a health route, the variables to set, the DNS record to create. | Run `livehq` commands. The only commands are the install line the console generates, the private SSH command it generates, and the `livehq-agent` commands these docs name. |
+| Change the person's repository so that it deploys cleanly (listen on `PORT`, add a health route). | See variable values. They are sealed and write-only. |
+
+If you can control the person's browser, you can operate the console as they would. The labels and the order of steps here are then your map. Ask before any action these docs mark as not reversible.
+
+## How to read these docs
+
+| What | Where |
+| --- | --- |
+| Index of every page, with a one-line description | `/llms.txt` |
+| The whole documentation in one file | `/llms-full.txt` |
+| Any page as Markdown | Add `.md` to its address, or send `Accept: text/markdown` |
+| Search and read through MCP | The server at `/mcp` on this site. See [Connect your AI tool](/agents/connect). |
+| What a person can do with LiveHQ, as a skill file | `/skill.md` |
+
+Screenshots carry no information that is not also in the text.
+
+## Read these four pages first
+
+<Columns cols={2}>
+  <Card title="Reference" icon="book" href="/agents/reference">
+    The model: workspace, server, app, deployment, database, and how they relate.
+  </Card>
+  <Card title="Order of operations" icon="list-ol" href="/agents/order-of-operations">
+    What must exist before what, and the steps of each common job.
+  </Card>
+  <Card title="Status words" icon="signal" href="/agents/status-words">
+    Every status the console shows and what it means.
+  </Card>
+  <Card title="Limits" icon="ruler" href="/agents/limits">
+    Every number: plans, sizes, time limits, retention.
+  </Card>
+</Columns>
+
+Then [Known limits](/help/known-limits) for what LiveHQ does not do, and [Troubleshooting](/help/troubleshooting) for failures.
+
+## Ground rules
+
+1. **Use the console's words.** A label in bold in these docs is the text on a button, a tab or a status. If you need a label these docs do not give, say you are not sure where the control is instead of guessing its name.
+2. **Do not promise what LiveHQ does not have.** No cron, no autoscaling, no persistent disk for apps, no bare domains, no point-in-time recovery, no preview deployments, no API. Offer the alternative on [Known limits](/help/known-limits).
+3. **Never ask for a secret.** Do not ask the person to paste a password, an enrollment code, a recovery code, a private SSH command, a connection URL or a variable's value into the conversation. You do not need them.
+4. **Say who can do it.** Many actions need the Owner or an Admin, a paid plan, or a second factor. Check [Limits](/agents/limits) before you send someone to a button they will not see.
+5. **Prefer what LiveHQ already diagnosed.** The console explains most failures in plain words and often offers a one-click fix. Ask the person what the banner on the app's **Overview** says before you theorise.
+6. **Name the consequence.** Before a step that restarts something, deletes data, costs money or can lock the person out, say so.
+
+## What to ask the person for
+
+When someone reports a problem, these give you the most with the least risk:
+
+| Ask for | Where they find it |
+| --- | --- |
+| The sentence in the banner at the top of the app's **Overview** | The app's page |
+| A failed deployment's diagnostics | Open the deployment, **Copy logs** |
+| Why the app restarted | **Overview** → **See history** → **Copy summary**. It is written for an AI coding agent: UTC times, raw reasons and figures. |
+| The status words on the server's line and the app's line | **Home** |
+| For a custom domain: the status on its card and the DNS record they created | The app's **Domains** tab |
+
+## Related
+
+- [Connect your AI tool](/agents/connect)
+- [How LiveHQ works](/start/how-livehq-works)

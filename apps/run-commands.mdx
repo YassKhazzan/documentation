@@ -1,0 +1,120 @@
+---
+title: "Run a command in an app"
+description: "Use the Run tab to run a one-off command inside an app's running container and read its output, exit code and duration."
+---
+
+The **Run** tab runs one command inside your app's running container and shows its output as it arrives. Use it for a quick check (`node -v`, a `curl` to another service), to look at files or variables, or for a one-off task such as a database migration.
+
+It works for web apps and for background services.
+
+## Before you start
+
+- **Who may run:** workspace **Owners** and **Admins**. A command can read everything the app can, its variables included. Developers and viewers see the tab with an explanation and no command box.
+- **A second factor, if you use one:** when two-factor sign-in is on for your account, the console asks you to **Confirm it's you** with a code or a passkey. It does not ask again for 15 minutes. See [Two-factor sign-in](/account/two-factor).
+- **A running app:** the command runs in the release that is running now. A stopped or never-deployed app has no container to run in.
+
+## Steps
+
+<Steps>
+  <Step title="Open the app, then Run">
+    The card says where the command will run, for example: "Runs inside **storefront**’s container on **prod-eu-1**, as its own user." You can also reach the tab with **Run a command** on the **Logs** tab.
+  </Step>
+  <Step title="Type the command">
+    **Enter** runs it. **Shift+Enter** adds a line. **↑** and **↓** recall the commands you ran since you opened the console. With an empty box, **Try one** lists examples to click, such as `env | sort` or `ls -la`.
+  </Step>
+  <Step title="Choose a timeout">
+    **Timeout** is 30 s, 60 s, 5 min, 15 min or 30 min. It starts at 60 s. A command still running at its timeout is stopped.
+  </Step>
+  <Step title="Choose a server, if the app has several">
+    When the app runs on more than one server, **Server** lets you pick which one, marked `primary` or `replica`. The command runs on that server only.
+  </Step>
+  <Step title="Press Run and read the output">
+    The output appears live and follows the end; scroll up to stop following, and press **Follow the end** to resume. The status line counts the seconds, then gives the result.
+  </Step>
+</Steps>
+
+## Read the result
+
+| Status line | What it means |
+| --- | --- |
+| "Waiting for the server · 3 s" | The server has not picked the command up yet. |
+| "Running · 12 s" | The command is running. |
+| "Exited 0 in 1.3 s" | It finished and reported success. |
+| "Exited 1 in 4.2 s" | It finished with an error. Any number other than 0 is the command's own error code. |
+| "Command not found (127)" | The container has no program with that name. |
+| "Command not executable (126)" | The file exists and cannot be run. |
+| "Timed out after 60 s" | It was stopped at its timeout. Choose a longer one and run it again. |
+| "Stopped by you" | You pressed **Stop**. |
+| "Not started: the server didn’t pick it up within 10 minutes" | The server stayed offline. Nothing ran. |
+
+While a command runs you can press **Stop**. **Copy output** copies the text without colours. **Copy command** copies what was run.
+
+## What the command runs with
+
+- **Inside the app's container only.** It never runs on the server itself.
+- **As the app's own user**, not as root, in the container's working directory.
+- **With the app's variables.** A migration script finds `DATABASE_URL` the way the app does.
+- **Within the app's limits.** It shares the app's CPU and memory, so a heavy command can slow the app, and the memory it uses counts toward the app's [memory limit](/apps/resources).
+- **No keyboard input.** A command cannot ask you a question. Programs that need a screen, such as `vim`, `top` or an interactive prompt, do not work.
+- **Files do not last.** Anything the command writes is lost at the next deployment.
+
+### Masked output
+
+Before output leaves your server, the agent replaces the values of the app's variables (6 characters or longer) and common credential patterns with `[redacted]`. A web address stays readable; only the user name and password in it, and secret-looking values after `?`, are masked. So `env | sort` shows names with masked values.
+
+Masking works on known values and patterns. A secret printed in another form, such as encoded, can still appear.
+
+### Run without a shell
+
+Normally the text goes to `/bin/sh` inside the container, so pipes, redirects and `$VARIABLES` work. Some small images have no shell. Then the run fails and offers **Run it without a shell**.
+
+With **Run without a shell** on, the console says: "Without a shell the text is split into arguments, quotes respected: pipes, redirects and \$VARIABLES are passed as they are. For images with no /bin/sh."
+
+## Recent runs, and what is recorded
+
+Below the command box, **Recent runs** lists the latest 20 commands run in this app, with their output, for 7 days. Each row shows the first 200 characters of the command with credentials masked, who ran it, when, the result (such as **Exit 0**, **Timed out** or **Stopped**) and how long it took. Only owners and admins see the list.
+
+- Select a row to read its output again.
+- **Run again** puts the full command back in the box. Only the person who ran a command can do this; other admins see the masked preview.
+- The full command is stored encrypted. Output is deleted with the run after 7 days.
+- The workspace's audit log records who asked for each run, the masked preview, the exit code and the duration. It never holds output.
+
+## What the Run tab is not
+
+- **Not a terminal on your server.** For that, see [Private SSH](/servers/private-ssh).
+- **Not an interactive session.** One command in, its output back.
+- **Not a place for long jobs.** Nothing runs longer than 30 minutes, and LiveHQ has no cron jobs. For work that should keep running, deploy a [background service](/apps/background-services).
+
+## If something goes wrong
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| "Only workspace owners and admins can run commands…" | Your role is Developer or Viewer. | Ask an owner or admin to run it, or to change your role. |
+| "Commands run inside the app’s running container. Deploy it first." | The app has no release yet. | [Deploy the app](/apps/deploy). |
+| "The app is stopped. Start it from Settings & access to run a command." | There is no running container. | **Start app** under [Settings & access](/apps/settings). |
+| "A command is already running on prod-eu-1. Stop it or wait for it to finish." | One command at a time per app on each server. | Press **Stop** on the running one, or wait. |
+| "prod-eu-1 is offline. A run waits up to 10 minutes for it to reconnect." | The server is not connected. | See [A server is offline](/help/server-offline). |
+| "Run is available again in …" | The workspace reached a limit below. | Wait for the time shown. |
+| "Truncated: kept the first 1 MiB and the last 64 KiB" | The command printed more than LiveHQ keeps. The middle is missing. | Narrow the command so it prints less, for example with `grep` or `tail`. |
+| "Lost contact while reading the output … Trying again…" | The console could not reach LiveHQ for a moment. The command keeps running. | Wait. The output catches up. |
+| "This run is no longer kept. Runs are kept for 7 days." | The run was deleted. | Run the command again. |
+| "Update this server’s LiveHQ agent to run commands." | The agent on the server is too old. | [Update the agent](/servers/update-agent). |
+
+## Limits
+
+| Limit | Value |
+| --- | --- |
+| Command length | 8 KiB of text. Without a shell: at most 64 arguments, 8 KiB in all. |
+| Timeout | 30 s, 60 s (default), 5 min, 15 min or 30 min |
+| Output kept | The first 1 MiB, plus the last 64 KiB when there is more |
+| Running at once | One per app on each server; four in the workspace |
+| Runs per hour | 60 in the workspace |
+| History | The latest 20 runs per app, kept 7 days |
+| Waiting for an offline server | 10 minutes, then the run is "Not started" |
+
+## Related
+
+- [Read an app's logs](/apps/logs)
+- [Variables](/apps/variables)
+- [Private SSH](/servers/private-ssh)
+- [Members and roles](/account/members-and-roles)

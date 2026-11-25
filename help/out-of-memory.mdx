@@ -1,0 +1,115 @@
+---
+title: "Out of memory"
+description: "Tell apart an app that passed its memory limit, a build that ran out and a server that is full, and fix each one."
+---
+
+Three different things can run out of memory, and each has its own fix. Raising an app's memory limit helps only the first. Find your case by what you see.
+
+| What you see | Your case |
+| --- | --- |
+| A red banner on the app: "Your app ran out of memory." Or a restart with the reason "it ran out of memory". | [An app passes its own limit](#an-app-passes-its-own-limit) |
+| A failed deployment whose reason starts with "The build ran out of memory", "The build stopped at Node.js's own memory limit" or "The server ran out of memory during the build". | [A build runs out](#a-build-runs-out) |
+| A failed deployment whose reason starts with "The server ran out of memory while this release was starting". | [The server is full](#the-server-is-full) |
+
+Memory is the server's working memory (RAM), not its disk. For a disk that fills up, see [A full disk](/help/disk-full).
+
+## An app passes its own limit
+
+### What you see
+
+- On the app's **Overview**, a red banner: "Your app ran out of memory." (for a background service: "Your service ran out of memory."). Under it is the server's own sentence, such as "Out of memory: the system stopped it, at its 512 MiB limit or because the server itself ran out." Two buttons follow: **Raise memory limit** and **View logs**.
+- Before it gets that far, the **Restarts** row says "… it ran out of memory (its whole 512 MiB limit)" and offers **Give it more memory**.
+- On **Resources**: "Memory peaked at 93% of its 512 MiB limit in the last hour. Raise the limit to avoid out-of-memory restarts."
+- Or a deployment that fails at the start: "Your app ran out of memory while starting: it used its whole 512 MiB limit and the system stopped it. Raise its memory limit." The link **Redeploy with more memory** follows. Your previous release keeps serving.
+
+### What it means
+
+The app needed more memory than its limit allows. Linux stops such a process at once, with no warning to the app, so the logs often end mid-line or with the single word `Killed`. LiveHQ starts the app again. After 5 restarts in 10 minutes it stops trying, the sentence adds "LiveHQ paused restarts after 5 attempts in 10 minutes." and the app reads **Unavailable**.
+
+### What to do
+
+<Steps>
+  <Step title="Press Raise memory limit">
+    The **Resources** tab opens at **Limits**.
+  </Step>
+  <Step title="Pick a larger memory value">
+    Double it if you have no better number: 512 MiB to 1 GiB.
+  </Step>
+  <Step title="Press Review and redeploy, then Apply and redeploy">
+    The console says: "Pick a larger limit and redeploy. The new release starts with a fresh restart count." It is the same code with the new limit.
+  </Step>
+  <Step title="Watch the Memory chart for a day">
+    If use keeps climbing until the next restart, whatever the limit, the app leaks memory. A larger limit only delays that; the fix is in the code.
+  </Step>
+</Steps>
+
+For the steps in detail, see [Set memory and CPU limits](/apps/resources).
+
+<Note>
+The banner's sentence says "at its limit or because the server itself ran out" because what is left of a stopped app does not tell which. If the **Memory** chart shows the app well under its limit right before the restart, the server ran out. Go to [The server is full](#the-server-is-full).
+</Note>
+
+## A build runs out
+
+A build runs on your own server, next to everything that is already running. It does not use the app's memory limit: that limit applies only once the app runs. So raising the app's limit changes nothing here.
+
+A build that clearly ran out of memory fails the deployment at once: LiveHQ does not build it two more times to the same end. Nothing that was running is changed.
+
+Open the app, then **Deployments**, and the failed deployment. The reason is one of three.
+
+| The reason starts with | What happened | What to do |
+| --- | --- | --- |
+| "The server ran out of memory during the build, so LiveHQ stopped the build to keep your apps and databases running…" | LiveHQ watches free memory during a build. When almost none is left, it stops the build before Linux has to stop one of your apps. | Deploy again when less is running, stop or shrink another app or database, or move to a server with more memory. |
+| "The build ran out of memory. It may use up to …, and what already runs on the server takes part of that…" | Linux stopped the build's own command. | The same: free memory on the server, or use a larger server, then redeploy. |
+| "The build stopped at Node.js's own memory limit (JavaScript heap out of memory)…" | Node.js sets its own limit from the server's memory and reached it, even if the server had memory left. | Follow the sentence that comes next. See below. |
+
+### The Node.js limit
+
+The reason ends with one of these instructions:
+
+- "Add the variable NODE_OPTIONS with the value --max-old-space-size=… to the app with the scope Build (not Runtime: the running app's heap must stay within its own memory limit), then redeploy." Open **Variables**, add it with the scope **Build** and the number from the message, and redeploy. See [Variables](/apps/variables).
+- "Set a larger limit for the build in the Dockerfile, for example ENV NODE_OPTIONS=--max-old-space-size=… in the stage that builds (not the one that runs the app), then redeploy." This is the form for an app with its own Dockerfile.
+- "Node already had about as much heap as a build can use on this server: use a server with more memory." No setting helps; the server is too small for this build.
+
+Set the value for the build only. At run time it would let the app grow past its own memory limit, and you would be in the first case.
+
+### Small servers
+
+On a server with less than 2 GiB of memory, LiveHQ keeps a swap file for builds (2 GiB of disk, or 1 GiB on a small disk), so that a build which does not fit in memory can still finish, more slowly. The first build may show **Preparing the server** for a few minutes, once, while the file is written. A large build can still be too much for a 1 GiB server. See [How memory is shared on a server](/servers/memory) and [What server you need](/servers/requirements).
+
+## The server is full
+
+### What you see
+
+- A deployment fails with: "The server ran out of memory while this release was starting, so the system stopped it. Everything that was already running was kept. Free memory on the server (stop or shrink another app or database) or use a server with more memory, then deploy again."
+- Or a build is stopped, with the first reason in the table above.
+- Or an app that was serving is restarted with "it ran out of memory" while its own chart shows it well under its limit.
+
+### What it means
+
+LiveHQ never makes work wait for memory. The console says: "Nothing waits for memory on this server: an app, a database or a build starts with whatever is idle. Each app and database is still capped at its own limit." Limits are caps, not reservations, so the limits on a server may add up to more than it has.
+
+When the server really runs out, Linux must stop something. LiveHQ sets the order so that what serves your visitors goes last: a running build first, then a release that has not taken over yet, then serving apps and databases (the largest first), then LiveHQ's own programs.
+
+So a new deployment is what normally fails, once, with its reason, and what was already running keeps running. On a server that is truly full, a serving app or database can still be stopped; LiveHQ starts it again and lists the restart. For some seconds before something stops, everything on the server can be slow. The full rules are on [How memory is shared on a server](/servers/memory).
+
+### What to do
+
+1. Open the server, then **Health**, then **Capacity**, to see what uses the memory.
+2. Stop an app or a database you do not need, or give a smaller size to one that uses more than it needs. What counts is what they really use, not the sum of their limits.
+3. Deploy again with **Redeploy**. The failed deployment is not retried by itself.
+4. If the server is full with only what you need, rent a larger one, or put some apps on a second server.
+
+## If something else shows
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| **Waiting for capacity** on a deployment, or a reason that starts "Memory capacity check:" | The agent on this server is an older one that waits for memory instead of starting. | [Update the agent](/servers/update-agent). |
+| "Your app keeps stopping." with an exit code, not memory | The app stops for another reason. | [Why LiveHQ restarted an app](/apps/restarts) and [An app builds but won't start](/help/app-wont-start). |
+
+## Related
+
+- [Set memory and CPU limits](/apps/resources)
+- [How memory is shared on a server](/servers/memory)
+- [Why LiveHQ restarted an app](/apps/restarts)
+- [A build failed](/help/build-failed)

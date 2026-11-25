@@ -1,55 +1,71 @@
-# Mintlify Starter Kit
+# LiveHQ documentation
 
-Use the starter kit to get your docs deployed and ready to customize.
+The user documentation of [LiveHQ](https://www.livehq.dev), published with
+[Mintlify](https://mintlify.com). Pages are MDX files; `docs.json` holds the navigation and
+the site settings.
 
-Click the green **Use this template** button at the top of this repo to copy the Mintlify starter kit. The starter kit contains examples with
+## What is where
 
-- Guide pages
-- Navigation
-- Customizations
-- API reference pages
-- Use of popular components
+| Path | What it holds |
+| --- | --- |
+| `docs.json` | Navigation (three tabs: Documentation, Help, AI agents), colors, fonts, footer, redirects, and the instructions Mintlify adds to every Markdown page for AI agents (`markdown.instructions`). |
+| `index.mdx`, `quickstart.mdx`, `start/` | Welcome, the one-page quickstart, the four-step path for people who have never rented a server, and the concept pages. |
+| `servers/`, `apps/`, `databases/`, `network/`, `account/` | One page per job in the console. |
+| `help/` | Troubleshooting by symptom, emails, outages, export, known limits, FAQ, glossary. |
+| `agents/` | The compact reference for AI agents: model, order of operations, status words, limits. |
+| `skill.md` | The skill file AI agents can install. Written by hand. |
+| `images/console/` | Console screenshots (`.webp`), all taken with the example workspace "Acme Studio". |
+| `logo/`, `favicon.svg` | The LiveHQ mark and wordmark. |
+| `style.css` | A few rules for the serif headings. Mintlify loads it by itself. |
+| `AGENTS.md` | The style guide. Read it before you write or let an agent write. |
+| `scripts/check.py` | The link, image and configuration check. |
 
-**[Follow the full quickstart guide](https://starter.mintlify.com/quickstart)**
-
-## AI-assisted writing
-
-Set up your AI coding tool to work with Mintlify:
+## Before you commit
 
 ```bash
-npx skills add https://mintlify.com/docs
+python3 scripts/check.py
 ```
 
-This command installs Mintlify's documentation skill for your configured AI tools like Claude Code, Cursor, Windsurf, and others. The skill includes component reference, writing standards, and workflow guidance.
+It needs only Python 3. It fails when a page in the navigation is missing, a link, anchor
+or image does not resolve, a page has no title or description, a component tag is left
+open, or placeholder text, a credential-looking value or an unexpected email address is
+left in a page.
 
-See the guides for [Claude Code](https://www.mintlify.com/docs/guides/claude-code), [Codex](https://www.mintlify.com/docs/guides/codex), [Cursor](https://www.mintlify.com/docs/guides/cursor), and [Devin Desktop](https://www.mintlify.com/docs/guides/devin-desktop) for tool-specific setup.
+To also check `docs.json` against Mintlify's published schema:
 
-## Development
-
-Install the [Mintlify CLI](https://www.npmjs.com/package/mint) to preview your documentation changes locally. To install, use the following command:
-
+```bash
+curl -sL https://mintlify.com/docs.json -o /tmp/mintlify-docs.schema.json
+python3 scripts/check.py --schema /tmp/mintlify-docs.schema.json
 ```
+
+## Preview locally
+
+Mintlify's command-line tool renders the site on your computer. It is not needed to
+publish.
+
+```bash
 npm i -g mint
-```
-
-Run the following command at the root of your documentation, where your `docs.json` is located:
-
-```
 mint dev
 ```
 
-View your local preview at `http://localhost:3000`.
+The preview opens at `http://localhost:3000`. `mint broken-links` and `mint validate` are
+Mintlify's own checks.
 
-## Publishing changes
+## Publish
 
-Install our GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app) to propagate changes from your repo to your deployment. Changes are deployed to production automatically after pushing to the default branch.
+Mintlify deploys the default branch when its GitHub App is installed on this repository.
+A pull request gets a preview address.
 
-## Need help?
+## Keeping the docs true
 
-### Troubleshooting
-
-- If your dev environment isn't running: Run `mint update` to ensure you have the most recent version of the CLI.
-- If a page loads as a 404: Make sure you are running in a folder with a valid `docs.json`.
-
-### Resources
-- [Mintlify documentation](https://mintlify.com/docs)
+- **The console's words.** Every label in bold is the text of a button, a tab or a status
+  in the console. When the console changes a label, change it here.
+- **Numbers live in two places.** A plan limit or a time limit appears on its task page and
+  on `agents/limits.mdx`; a status word on its task page and on `agents/status-words.mdx`.
+  Change both.
+- **Dated facts.** The hosting companies and prices on `start/rent-a-server.mdx` were read
+  on 23 November 2026, the same day as the console's own setup guide. Refresh them together.
+- **Screenshots.** They were taken on 6 November 2026 with made-up data. Never capture a
+  real workspace. Name new files for what they show and store them at 2000 px wide.
+- **Limits are said plainly.** `help/known-limits.mdx` is the single list of what LiveHQ
+  does not do. Add to it when a page has to say "not yet".

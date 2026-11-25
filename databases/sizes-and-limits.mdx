@@ -1,0 +1,98 @@
+---
+title: "CPU, memory and connection limits of a database"
+sidebarTitle: "Sizes and limits"
+description: "The sizes a PostgreSQL or Redis database can have, what each limit does, the public URL's connection limits and what a change restarts."
+---
+
+Every database has a size: how much memory and CPU it may use and how many connections it accepts. You choose it when you create the database and can change it later. Sizes are not tied to a plan: the memory and CPU are your own server's.
+
+The console shows every size and connection limit on this page in the **Size** and **Connection limits** cards, and you can change all of them but one. Connections from apps on another server have limits of their own, which the console does not show: see [Connect across servers](/network/connect-across-servers#limits).
+
+## The sizes
+
+| | PostgreSQL | Redis |
+| --- | --- | --- |
+| **Memory** | 256 MB, 512 MB (default), 1 GB, 2 GB, 4 GB, 8 GB, 16 GB | **Memory for data**: 128 MB, 256 MB (default), 512 MB, 1 GB, 2 GB, 4 GB |
+| **CPU** | 0.25, 0.5 (default), 1, 2, 4, 8 CPU | 0.5, 1 (default), 2, 4 CPU |
+| **Max connections** | 100 by default, from 20 to 2,000 | 1,000 by default, from 100 to 10,000 |
+
+A database created before sizes existed runs at the default size until you change it. Its **Size** card says "Today's default size."
+
+## What each limit does
+
+### Memory
+
+- **PostgreSQL:** a hard limit for the database. PostgreSQL's cache and working memory follow this size, so a larger database is also faster.
+- **Redis:** the most data Redis holds in memory. What happens at that point is the rule you chose under **When memory is full**: writes fail, or keys are evicted. On the server, Redis may use up to 1.5 times its data size, because it needs room to save its data to disk. The **Size** card shows this as **Container memory**. See the table in [Create a Redis database](/databases/create-redis).
+
+A size is a ceiling, not a reservation. A database starts with whatever memory the server has idle, and the server's memory is shared with your apps. See [Server memory](/servers/memory).
+
+### CPU
+
+1 CPU is one core of your server. Above its CPU size a database is slowed down, not stopped. A size above the number of cores the server has cannot be chosen. Redis runs commands on one thread; 2 CPU or more adds I/O threads.
+
+### Max connections
+
+Every connection counts toward this limit: apps, Studio, backups and the public URL. When it is reached, the database refuses new connections.
+
+**Redis:** idle clients cost little memory, so a high limit is safe.
+
+**PostgreSQL:** each connection takes memory. The console recommends about one connection per 5 MB of memory (about 50 at 256 MB, 100 at 512 MB, 200 at 1 GB, 800 at 4 GB) and warns when you go above it. For more, put a connection pool in front (your framework's pool or PgBouncer) instead of raising the limit.
+
+## Change the size
+
+<Steps>
+  <Step title="Open the Size card">
+    Open the database, then **Settings**. The **Size** card shows the current memory, CPU and max connections.
+  </Step>
+  <Step title="Choose the new size">
+    Press **Change size**. The dialog shows what the server has: its CPU cores and its free memory, counting what this database uses now. Pick the new values. The dialog lists each change, for example "Memory 512 MB → 1 GB".
+  </Step>
+  <Step title="Restart with it">
+    Press **Restart with the new size**. The dialog follows the change until it reads "PostgreSQL restarted with its new size and accepts connections again."
+  </Step>
+</Steps>
+
+<Warning>
+Changing any of the three values restarts the database on its data. It is unreachable for a few seconds. Apps are disconnected and reconnect on their own, if they retry. No data is lost, and connection URLs, users and passwords stay the same.
+</Warning>
+
+For Redis, changing **Memory for data** also changes the disk budget: four times the memory, and at least 1 GB.
+
+## The public URL's connection limits
+
+Connections that arrive over the [public URL](/databases/connection-urls) have two more limits. They are on the **Connections** tab, in the **Connection limits** card. Apps on LiveHQ connect privately and never count here.
+
+| Limit | Default | Range | What it counts |
+| --- | --- | --- | --- |
+| **Connections at once** | 100 | 1 to 2,000 | Every outside machine together |
+| **Per IP address** | 20 | 1 to 1,000, never above **Connections at once** | One machine's connections |
+| The server's own limit | 2,048 | Cannot be changed | Public connections to all databases on one server |
+
+To change them, press **Change limits**, type the new numbers and press **Save limits**. This does not restart the database. You can change them once external access has been turned on at least once.
+
+For an app hosted elsewhere, set **Per IP address** to its pool size times its processes on one machine: a pool of 10 and 4 processes need 40. A public connection also counts toward the database's own **Max connections**.
+
+### When connections were refused
+
+A refusal on the public URL is never silent. If your server refused public connections, the card shows **Your server refused connections** with the count and the limit that refused them. Press **Raise limits** to change the per-address or the connections-at-once limit. The server's own limit protects it across all its databases and cannot be changed.
+
+## If something goes wrong
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| A size cannot be chosen: "More than the server's 2 cores. Choose a smaller size." | The server has fewer cores than that CPU size. | Choose a smaller CPU size. |
+| "Enter a whole number from 20 to 2,000." | The connection limit is outside the range for this engine. | Type a number in the range. |
+| "Can't be more than the connections at once (100)." | **Per IP address** is above **Connections at once**. | Lower it, or raise **Connections at once**. |
+| "Turn on external access first: these limits apply to the public URL." | The database has never had external access. | Show the public URL once, then change the limits. |
+| The dialog ends with the server's reason instead of the success line | The server refused the change before it stopped anything, or the database did not come back. | Read the reason, press **Choose again**, and pick a size that fits. |
+| Your app logs "too many clients" or "max number of clients reached" | The database's **Max connections** is reached. | Lower your app's pool size, add a pool, or raise **Max connections**. See [Database connection problems](/help/database-connection). |
+
+If the console says **Update this server's agent**, see [Update the agent](/servers/update-agent).
+
+## Related
+
+- [Create a PostgreSQL database](/databases/create-postgresql)
+- [Create a Redis database](/databases/create-redis)
+- [Server memory](/servers/memory)
+- [Get a connection URL](/databases/connection-urls)

@@ -1,0 +1,68 @@
+---
+title: "Troubleshooting"
+description: "Find the fix by what you see on screen: a failed build, an app that won't start, Unavailable, out of memory, a full disk, a domain that won't go live."
+---
+
+Find what you see in the left column and follow the link. Each page says what the message means and what to try, in order.
+
+## Start here: read what LiveHQ already says
+
+LiveHQ keeps the reason for most failures in plain words. Before anything else:
+
+1. Open **Home**. **Needs attention** lists failed deployments and offline servers, often with a one-click fix.
+2. Open the app. The banner at the top of **Overview** says what state it is in and why.
+3. Open the app's **Deployments** tab and the latest deployment. The build output ends with the reason.
+
+## While setting up
+
+| What you see | Go to |
+| --- | --- |
+| The `ssh` line times out, is refused, or says "Permission denied" | [Open your server](/start/open-your-server) |
+| The installer refuses the system, the code, or stops midway | [Install problems](/help/install-problems) |
+| The console keeps saying **Waiting for your server** | [Install problems](/help/install-problems) |
+| Your repository is not in the list | [Connect GitHub](/apps/github) |
+| A limit dialog says your plan is full | [Plans](/account/plans) |
+
+## Deploying
+
+| What you see | Go to |
+| --- | --- |
+| The deployment failed during the build | [A build failed](/help/build-failed) |
+| The build passed but the release did not start, or failed its health check | [An app won't start](/help/app-wont-start) |
+| "Out of memory" in a deployment or on the app's page | [Out of memory](/help/out-of-memory) |
+| A deployment stays queued or waiting | [Follow a deployment](/apps/deployments) |
+| Deployments wait for disk space | [A full disk](/help/disk-full) |
+
+## An app that is deployed
+
+| What you see | Go to |
+| --- | --- |
+| The app reads **Unavailable**, or its address does not open | [An app is Unavailable](/help/app-unavailable) |
+| The app keeps restarting | [Why LiveHQ restarted an app](/apps/restarts) |
+| Visitors see a sign-in page | The app is **Private**. See [App access](/apps/access). |
+| Visitors see "This app is paused for now" | The workspace used its bandwidth. See [Bandwidth](/apps/bandwidth). |
+| Visitors are blocked or get a browser check | [What the firewall did](/apps/firewall/events-and-history) |
+| A custom domain stays pending | [A domain won't go live](/help/domain-not-live) |
+| The app cannot reach its database | [Database connection problems](/help/database-connection) |
+
+## A server
+
+| What you see | Go to |
+| --- | --- |
+| The server reads **Offline**, or you got a "stopped responding" email | [A server is offline](/help/server-offline) |
+| The disk is filling up | [A full disk](/help/disk-full) |
+| The agent update does not finish | [Update the agent](/servers/update-agent) |
+| You locked yourself out | [Close the server to the internet](/servers/lock-down) |
+| The server did not come back after a restart | [Restart a server](/servers/restart) |
+
+## Your account
+
+| What you see | Go to |
+| --- | --- |
+| You lost your phone or your recovery codes | [Two-factor sign-in](/account/two-factor) |
+| Signing in with Google or GitHub does not open your account | [Sign in with Google or GitHub](/account/sign-in-providers) |
+| An email from LiveHQ you do not understand | [Emails LiveHQ sends](/help/emails) |
+
+## Asking for help
+
+If nothing here fits, write to [support@livehq.dev](mailto:support@livehq.dev). [Get help](/help/support) lists what to include so the first answer can be the fix.

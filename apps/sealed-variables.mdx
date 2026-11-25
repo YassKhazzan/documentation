@@ -1,0 +1,101 @@
+---
+title: "How LiveHQ protects variables"
+description: "An explanation of sealed variables: your browser encrypts each value for your server's key, so LiveHQ stores what it cannot read."
+---
+
+This page explains what happens to a variable's value after you press **Save variable**, what that protects you from, and what it does not. To add or change variables, see [Add and change variables](/apps/variables).
+
+## The short version
+
+- Your browser encrypts each value before it leaves the page, for a key that belongs to your server.
+- LiveHQ stores and passes on the encrypted value. LiveHQ cannot read it.
+- Only your server holds the private key that opens it. The server opens the value when it builds or starts the app.
+- The console never shows a saved value again. Names and scopes stay visible.
+
+The console calls these values **sealed**.
+
+## What happens when you save
+
+<Steps>
+  <Step title="Your server has its own key">
+    When LiveHQ's agent is installed on a server, it creates a key pair there. The private half never leaves the server and is in no LiveHQ backup. The public half is sent to LiveHQ, signed by the server.
+  </Step>
+  <Step title="Your browser encrypts the value">
+    When you save a variable, the console fetches the server's public key and encrypts the value in your browser. What travels to LiveHQ is the encrypted value, the variable's name and its scope.
+  </Step>
+  <Step title="LiveHQ stores what it cannot open">
+    LiveHQ keeps the encrypted value and refuses any save that carries a readable one. Each encrypted value is tied to its workspace, app, server, name and scope, so it cannot be moved to another app or renamed.
+  </Step>
+  <Step title="Your server opens it at deployment">
+    During a deployment, the server downloads the encrypted values for that app, opens them with its private key, and hands them to the build or to the running app.
+  </Step>
+</Steps>
+
+Under the Variables table, the **Sealed for** list names every server the values are encrypted for, and says: "Each value is encrypted in your browser once for every server listed. LiveHQ stores them but cannot read them."
+
+## When the console asks you to trust a key
+
+Your browser remembers the key of each server it has encrypted for.
+
+- **The app's own server** is trusted the first time, without a question.
+- **Any other server** brings up a dialog named **Encrypt for a new server?** before the first value is encrypted for it. The dialog names the server, says whether it runs this app or was prepared, and shows the start of its key. Press **Trust and encrypt** only if the server is yours: one the app runs on, or one you prepared. **Cancel** saves nothing.
+- **A key that changes** for a server your browser already knows blocks the save: "This server's encryption key changed … Saving is blocked to protect your values, because a server never changes its key." A server keeps one key for its whole life, so treat this as a warning sign. Check the server, and write to [support](/help/support) if you did not expect it.
+
+Each browser remembers keys separately, so a second computer or a private window may ask again.
+
+## An app on several servers
+
+When an app runs on more than one server, each value is encrypted once for every server, each copy for that server's own key. The **Sealed for** list says where each server stands:
+
+| What the list says | Meaning |
+| --- | --- |
+| **runs here** | The app runs on this server and it has every value. |
+| **runs here, 2 values missing** | The app runs here but this server lacks some values. A deployment to it is refused with a message that names them. Press **Replace** on each of those variables and enter the value again: it is then encrypted for every server in the list. |
+| **prepared** | You prepared this server. Values you save now are also encrypted for it. |
+| **prepared, 2 values to enter when you add it** | Values saved before you prepared the server are not there yet. The console asks for them when you add the app to that server. |
+| **prepared, waiting for its agent's key** | The server has not sent a key yet. See [Update the agent](/servers/update-agent). |
+
+**Prepare servers** lets you pick other servers of the workspace ahead of time. From then on every value you save is also encrypted for them, so adding the app to one of them later needs no re-entry. Values saved earlier are asked for when you add the server. See [Run an app on several servers](/apps/several-servers).
+
+## If you lose the server
+
+There is no recovery key, held by LiveHQ or by anyone else. That is deliberate: a recovery key would be one more thing that could be stolen.
+
+- If a server is destroyed, or reinstalled from nothing, its private key is gone and the values encrypted for it cannot be opened by anyone. You enter the app's variables again.
+- A server you connect again after a fresh install counts as a new server with a new key.
+- Keep your own copy of every value you cannot regenerate, in a password manager for example.
+- Treat a lost server as a security event and replace the keys it held at the services that issued them.
+
+The Variables tab never shows a saved value, to you or to anyone who signs in as you. That does not make values secret from someone who gets into an account that can deploy: they can deploy code, or run a command in the app, that reads them. Protect your account with [two-factor sign-in](/account/two-factor).
+
+## What this protects against
+
+| Situation | What a thief gets |
+| --- | --- |
+| A copy of LiveHQ's database or its backups | Names and encrypted values. No readable value. |
+| A person at LiveHQ, or an attacker inside LiveHQ's systems, reading stored data | The same: nothing readable. |
+| Another server's stolen credentials | Only values encrypted for other keys, which it cannot open. |
+
+## What it does not protect against
+
+Say these plainly to yourself before you rely on it:
+
+- **Your own server.** Whoever has root access to the server can read the values of the apps on it. Values are readable there because the app needs them. See [Lock down a server](/servers/lock-down).
+- **Your own app.** Code you deploy can read its variables and can leak them. Build variables with a public prefix end up in the files your visitors download.
+- **An attacker who controls LiveHQ while you save.** They could offer your browser their own key in place of your server's. The browser's memory of each key and the trust dialog are a tripwire for this, not a proof. Values saved before such an attack cannot be read this way.
+- **An attacker who controls LiveHQ and orders a deployment.** They could make your server deploy code that reads the values while the app runs.
+- **A tampered console page.** A value is readable in your browser while you type it.
+- **Other kinds of secrets.** Sealing covers app variables. Database passwords, backup keys and the GitHub connection are protected in other ways.
+- **Names.** Variable names and scopes are stored readable.
+
+The encryption has not had an independent security review yet.
+
+## Details for the curious
+
+Values are encrypted with HPKE (RFC 9180) using X25519, HKDF-SHA256 and AES-128-GCM, through the browser's built-in cryptography. A browser without it is refused with "This browser cannot encrypt variables. Open the console over HTTPS in an up-to-date browser." For every save, LiveHQ records who saved and which names were added, changed or removed, never a value. Since values cannot be read back, that record is the only trace of a change.
+
+## Related
+
+- [Add and change variables](/apps/variables)
+- [LiveHQ's security model](/start/security-model)
+- [Run an app on several servers](/apps/several-servers)

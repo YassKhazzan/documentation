@@ -1,0 +1,91 @@
+---
+title: "Disk space on a server"
+sidebarTitle: "Disk space"
+description: "What fills a server's disk, what LiveHQ removes by itself, and how to turn on automatic collection of old releases on the Maintenance tab."
+---
+
+Every deployment builds a new image of your app and keeps the old one for a while. Without cleaning, a disk fills up deployment by deployment. This page says what takes the space and how LiveHQ gives it back.
+
+If the disk is already full, go to [A disk is full](/help/disk-full).
+
+## What fills a disk
+
+| What | Why it grows |
+| --- | --- |
+| **Images** of old releases | Each deployment adds one. An image of a framework app is often over 1 GiB |
+| **Build cache · all builders** and **LiveHQ build cache** | Kept between builds so the next one is faster. The second figure is the part LiveHQ's own builder holds |
+| **Database data** | Your own data. It only grows as you store more |
+| **Backup spool** | Working space for point-in-time recovery, which LiveHQ does not offer, so it normally reads 0. The database backups kept on the server are not in this figure or in any other: they are files of the agent and show only in the free space |
+| **Container writes** and **Container logs** | Files your apps write while they run, and their output |
+
+To see the figures, open the server, then **Health**, then **Capacity**. The **Storage** card shows the free space of each disk LiveHQ uses and one figure per category. Press **Inspect storage** to measure again. The categories can overlap, so they do not add up exactly.
+
+## What LiveHQ removes by itself
+
+On every server, whatever the setting below:
+
+- The build cache is cut back to its budget after builds: the smaller of 10 GiB or 10% of the disk.
+- Old versions of the agent and their downloads are removed.
+- When you delete an app or a database, everything it left on the server is removed.
+
+Old releases follow the collection setting.
+
+## Automatic collection
+
+Open the server, then **Health**, then **Maintenance**. The **Resource collection** card shows the mode under **Collection**.
+
+| Mode | What happens to old releases |
+| --- | --- |
+| **Automatic** | Each app keeps its current release and one to roll back to. Older ones are removed 10 minutes after they are retired. A pass runs every 15 minutes |
+| **Dry run** | Nothing is removed. Every retired release stays on the disk, and the card only lists what could be collected |
+
+A newly connected server starts on **Automatic**. If yours reads **Dry run**, turn collection on:
+
+<Steps>
+  <Step title="Press Enable automatic collection">
+    The button is on the **Resource collection** card. Owners and admins see it.
+  </Step>
+  <Step title="Confirm">
+    The dialog **Enable automatic collection?** says what will be collected. Press **Enable for this server**.
+  </Step>
+</Steps>
+
+Automatic collection only removes what LiveHQ created and no longer uses: old releases' containers, images, networks and build files. It never removes database data, the current release, the one kept for rollback, anything still in use, or anything it did not create itself.
+
+<Note>
+Collection takes nothing away from rollback. A rollback goes to the app's previous release, and that release is never collected. The older releases that **Dry run** keeps only use disk space.
+</Note>
+
+## The other buttons on the card
+
+| Button | What it does |
+| --- | --- |
+| **Inspect now** | Asks the server to look again and refresh the figures. Removes nothing |
+| **Collect eligible resources** | Runs a collection pass now instead of waiting for the next one. Shown in **Automatic** mode |
+| **Pause collection** | Goes back to **Dry run** |
+
+The figures on the card: **Protected releases** are kept, **Eligible releases** can be collected, and **Reclaimed** is the space the last pass gave back. **Retained releases** below lists each retired release with the reason it is kept or eligible.
+
+## The prompt at 70%
+
+When a disk is at least 70% full and collection is in **Dry run**, the console shows "Disk 72% full · automatic collection is off" on the **Capacity** and **Maintenance** tabs, with **Enable automatic collection**, and a line on **Overview** with **Review collection →**. The prompt goes away once collection is automatic.
+
+## If something goes wrong
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| A deployment reads **Waiting for disk space** | Less than the larger of 2 GiB or 10% of the disk is free | It starts by itself once there is room. See [A disk is full](/help/disk-full) |
+| "Update this server's agent to inspect and manage retained resources." | The agent is older than collection | [Update the agent](/servers/update-agent) |
+| **Eligible releases** stays above 0 in **Automatic** mode | A release is collected only after its 10-minute wait, and a pass that runs out of time continues at the next one | Wait for the next pass, or press **Collect eligible resources** |
+| The disk keeps growing with collection on | The growth is your data, your logs, or files LiveHQ did not create | Read the categories under **Storage** on the **Capacity** tab |
+
+## Limits
+
+- Collection covers what LiveHQ created. Files, images and containers you put on the server yourself are never touched, and they are yours to clean.
+- The storage figures are measurements, not quotas. Nothing stops a database or an app from filling the disk.
+
+## Related
+
+- [A disk is full](/help/disk-full)
+- [Read the Monitor charts](/servers/monitor)
+- [Roll back to an earlier release](/apps/rollback)

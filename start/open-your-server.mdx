@@ -1,0 +1,108 @@
+---
+title: "Step 2: Open your server"
+sidebarTitle: "2. Open your server"
+description: "Open a terminal on your computer and sign in to your new server with one line, with every question it asks explained."
+---
+
+You talk to a server by typing into a window called a terminal. Your computer already has one. In this step you paste one line and a password.
+
+You need a computer for this step and the next: a phone has no terminal that can open a server. On a Chromebook, use another computer, or your hosting company's own terminal in the browser (see the last question on this page).
+
+## Before you start
+
+Have these at hand from [step 1](/start/rent-a-server):
+
+- the server's **IP address**, like `203.0.113.10`;
+- the **sign-in name** (`root`, or `ubuntu` at OVHcloud);
+- the server's **password**.
+
+## Steps
+
+<Steps>
+  <Step title="Open a terminal on your computer">
+    <Tabs>
+      <Tab title="Mac">
+        Press <kbd>⌘</kbd> + <kbd>Space</kbd>, type **Terminal** and press <kbd>Return</kbd>. A window with a blinking cursor opens.
+      </Tab>
+      <Tab title="Windows">
+        Press the <kbd>Windows</kbd> key, type **PowerShell** and press <kbd>Enter</kbd>. A dark blue or black window opens. Windows 10 and 11 can do this.
+      </Tab>
+      <Tab title="Linux">
+        Open the **Terminal** app. On most systems <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>T</kbd> opens it.
+      </Tab>
+    </Tabs>
+  </Step>
+  <Step title="Paste the line that opens the server">
+    Type `ssh`, a space, your sign-in name, `@` and your server's IP address, then press Enter (Return on a Mac). With the sign-in name `root` and the address `203.0.113.10` the line would be:
+
+    ```bash
+    ssh root@203.0.113.10
+    ```
+
+    Do not paste this example: `203.0.113.10` is not your server. The line means "open the server at this address as `root`". The guide in the console writes it with your own values, so that you can copy it with one button.
+
+    To paste into a terminal: <kbd>⌘</kbd> + <kbd>V</kbd> on a Mac; a right-click or <kbd>Ctrl</kbd> + <kbd>V</kbd> in PowerShell; <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>V</kbd> on Linux.
+  </Step>
+  <Step title="Answer its questions">
+    The terminal prints a few lines. Here is each one and what to do.
+
+    | The terminal shows | What to do |
+    | --- | --- |
+    | `The authenticity of host '203.0.113.10' can't be established.` and `Are you sure you want to continue connecting (yes/no/[fingerprint])?` | Type `yes` and press Enter. This is not an error: your computer is meeting this server for the first time, and asks only once. |
+    | `Warning: Permanently added '203.0.113.10' (ED25519) to the list of known hosts.` | Nothing. Your computer has noted this server. |
+    | `root@203.0.113.10's password:` | Paste the server's password and press Enter. **Nothing appears while you type or paste.** That is normal: a terminal hides passwords completely. |
+    | `root@my-server:~#` | You are in. The server is listening to what you type. |
+
+    A few lines of welcome text scroll by before that last line, and the name after `@` is your server's own, not `my-server`. You are connected when the last line starts with your sign-in name and `@`, and ends in `#` or `$`. If it starts with your own computer's name instead (or with `PS C:\` on Windows), you are not connected: paste the line again.
+  </Step>
+</Steps>
+
+## If the server asks you to change the password
+
+Hetzner and OVHcloud make you choose a new password the first time you sign in. Other companies may too. The terminal shows:
+
+```text
+You are required to change your password immediately (administrator enforced).
+Current password:
+New password:
+Retype new password:
+```
+
+1. At `Current password:` paste the same password as before.
+2. Type a new, long password twice. Nothing shows as you type. Keep it somewhere safe.
+3. The server then prints `Connection to 203.0.113.10 closed.` and you are back on your own computer. That is expected.
+4. Paste the `ssh` line again and sign in with your **new** password.
+
+## If something goes wrong
+
+<AccordionGroup>
+  <Accordion title="Windows says “ssh” is not recognized">
+    A small Windows part is missing. Open the **Start** menu, type **Optional features** and open it. Add **OpenSSH Client**, then close PowerShell, open it again and paste the line once more.
+  </Accordion>
+  <Accordion title="“Connection timed out”, “Connection refused”, or nothing happens">
+    The server may still be starting: wait a minute and paste the line again. Then compare the address with your hosting company's page, digit by digit.
+  </Accordion>
+  <Accordion title="“Permission denied”">
+    The password was not accepted. Find it again where you chose it or where the company gave it to you, copy it without a space before or after, and paste it when asked. After a few wrong tries the server ends the connection: paste the line again to retry.
+
+    Check the sign-in name in the line too. A few companies use another name than `root`.
+
+    If it says `Permission denied (publickey)` and never asked for a password, the server was created with an SSH key. At your hosting company, reset the server's password, or create the server again choosing a password.
+  </Accordion>
+  <Accordion title="“REMOTE HOST IDENTIFICATION HAS CHANGED”">
+    Your computer remembers another server at this address, usually one you deleted and created again. Run this line with your address, then paste the `ssh` line again:
+
+    ```bash
+    ssh-keygen -R 203.0.113.10
+    ```
+  </Accordion>
+  <Accordion title="I'd rather not use a terminal on my computer, or I have a Chromebook">
+    Many hosting companies have their own terminal in the browser, on the server's page, often named **Console** or **Web Console**. It opens the same window inside their site, and at some companies it signs you in by itself. Pasting a long line does not work in all of them, so the terminal on your computer is the surer way.
+  </Accordion>
+</AccordionGroup>
+
+Still stuck? Write to [support@livehq.dev](mailto:support@livehq.dev), say which step you are on and copy what the terminal shows. Leave out passwords and codes.
+
+## Next
+
+Keep the terminal window open. [Step 3: Install LiveHQ](/start/install-livehq)

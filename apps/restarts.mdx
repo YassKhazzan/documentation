@@ -1,0 +1,114 @@
+---
+title: "Why LiveHQ restarted an app"
+description: "Read the Restarts row and the restart history to see when LiveHQ restarted an app, the reason in plain words, and what to change."
+---
+
+When an app stops or stops answering, LiveHQ starts it again and writes down why. The app's **Overview** shows the count for the last 24 hours and the latest reason. The history keeps 14 days.
+
+## When LiveHQ restarts an app
+
+- **A web app:** when its process exits, or when it fails its health check 3 times in a row. LiveHQ sends `GET` to the health check path every 5 seconds and waits 3 seconds for an answer.
+- **A background service:** when its process exits, or when its health command keeps failing (at most one restart every 5 minutes for that reason).
+- **Then it pauses.** After 5 restarts in 10 minutes LiveHQ stops trying. The banner reads "Your app keeps stopping." and the status becomes **Unavailable**. A new deployment, or **Restart** under [Settings & access](/apps/settings), starts it again.
+
+The list holds the restarts LiveHQ did by itself to recover the app. A restart you ask for and the change to a new release during a deployment are not in it.
+
+## Read the Restarts row
+
+Open the app, then **Overview**. Under the banner, the **Restarts** row says one of:
+
+- "No restarts in the last 24 hours"
+- "Restarted once in the last 24 hours · at 10:27 — it stopped answering its health check"
+- "Restarted 3 times in the last 24 hours · last at 10:27 — it ran out of memory (its whole 512 MiB limit)"
+
+Times are in your own time zone.
+
+## The reasons, in the console's words
+
+| The console says | What happened | What to check |
+| --- | --- | --- |
+| "it stopped answering its health check" | The app was running, but three checks in a row got no answer or an error. | [Logs](/apps/logs) around that time. CPU on [Resources](/apps/resources): an app with no CPU left answers late. Whether the health check path depends on something that was down. |
+| "it exited (code 1)" | The app's process ended by itself. The number is the code the app gave. | The last lines in [Logs](/apps/logs) usually name the error. A web app that exits with code 0 is restarted too: a web app is meant to keep running. |
+| "it ran out of memory (its whole 512 MiB limit)" | Linux stopped the app because it had no memory left to give it. | [Out of memory](/help/out-of-memory). |
+| "its health command kept failing" | A background service's own health command failed. | The command and its settings. See [Background services](/apps/background-services). |
+| "LiveHQ restarted it" | The server sent a reason this console does not know. | Reload the console, then open the history. |
+
+When the app was close to a limit right before the restart, the sentence goes on:
+
+- "… while using all of its CPU (0.5 cores)"
+- "… while using 93% of its memory (512 MiB)"
+- "… while held back by its CPU limit (0.5 cores)": the app wanted more CPU than its limit for at least half of the last minute.
+
+## Give it more CPU, give it more memory
+
+Under the sentence, LiveHQ offers a button when the numbers point at a limit:
+
+| Button | Shown when |
+| --- | --- |
+| **Give it more CPU** | The app stopped answering or exited while it was at 90% or more of its CPU limit, or held back by it for half of the last minute. |
+| **Give it more memory** | The app ran out of memory, or was at 90% or more of its memory limit. |
+
+Both open **Resources** at the **Limits** card. Choose a larger value, then **Review and redeploy**. See [Set memory and CPU limits](/apps/resources). Once the running release has a higher limit than the one a restart happened under, the button for that restart goes away.
+
+## See the history
+
+<Steps>
+  <Step title="Press See history">
+    It is at the end of the **Restarts** row. **Restart history** opens.
+  </Step>
+  <Step title="Choose a range">
+    **24 hours**, **7 days** or **14 days**. The list is grouped by day, newest first.
+  </Step>
+  <Step title="Read a restart">
+    Each one shows the time to the second, the reason, the server (when the app runs on several), the exit code, the release by its commit, and what the app was using right before, such as "using 98% of its CPU · 480 MiB of 512 MiB". A line of detail from the server may follow.
+  </Step>
+</Steps>
+
+Every member who can see the app can open the history.
+
+## Copy summary, for an AI coding agent
+
+**Copy summary** puts the whole range on your clipboard as plain text: times in UTC, the raw reason and its words, exit codes, the release's commit and deployment, exact usage right before each restart, the health check rule and what LiveHQ suggests. It is written so you can paste it to an AI coding agent, or into an issue, without explaining anything.
+
+An example:
+
+```text
+LiveHQ restarts of web app "storefront" (2f6c1d0e-5b7a-4c3e-9d21-8a4f6e0b1c57) in the last 24 hours: 1 restart.
+LiveHQ checks GET / every 5 seconds (3 s timeout); after 3 failures in a row it restarts the app. Restarts pause after 5 in 10 minutes. It also restarts the app when its process exits.
+LiveHQ suggests: give it more memory (the app's Resources tab).
+
+1. 2026-11-25 10:27:38 UTC on server "prod-eu-1"
+   Reason: out_of_memory — it ran out of memory (its whole 512 MiB limit)
+   Exit code: 137
+   Release: commit 3f9c2a17d04b5e86a1c9f2037b6d48e5a0c1f9d2, deployment 7d3a9c1e-0f42-4b6d-a5e8-3c9b1d7f2a60
+   Just before: CPU 41.2% of one core (41% of its 1 core limit); memory 509 MiB of 512 MiB (99%)
+   Detail: Out of memory: the system stopped it, at its 512 MiB limit or because the server itself ran out.
+   Restart 2 of this release
+```
+
+## Marks on the charts
+
+Each restart of the last 24 hours is marked on the app's CPU and memory lines: on the **Usage** strip of the Overview and on the charts of the **Resources** tab. A mark reads, for example, "Restarted: it ran out of memory (its whole 512 MiB limit)". The **Resources** charts also mark each deployment, in another colour, so you can tell a restart from a new release.
+
+## If something goes wrong
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| "Your app keeps stopping." and **Unavailable** | 5 restarts in 10 minutes. LiveHQ paused them. | Read **View logs**, fix the cause and redeploy, or press **Restart** under [Settings & access](/apps/settings). |
+| "Your app ran out of memory." | The restarts were for memory. | [Out of memory](/help/out-of-memory). |
+| No **Restarts** row | The app has never run. | [Deploy it](/apps/deploy). |
+| A restart with no usage figures | The server had no recent sample of the app when it restarted. | Open **Resources** and look at the chart around that time. |
+| The app restarts and the reason is always the health check | The path may not suit your app. | [Change the health check path](/apps/settings#health-check). |
+
+## Limits
+
+- LiveHQ keeps restarts for 14 days.
+- The Overview counts the last 24 hours.
+- An app that restarts more than 200 times in about a day gets no more restarts stored until some of them are a day old.
+
+## Related
+
+- [What an app's status means](/apps/status)
+- [Set memory and CPU limits](/apps/resources)
+- [Read an app's logs](/apps/logs)
+- [Out of memory](/help/out-of-memory)

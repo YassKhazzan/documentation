@@ -1,0 +1,107 @@
+---
+title: "LiveHQ reference for agents"
+sidebarTitle: "Reference"
+description: "The compact model of LiveHQ for AI agents: the objects and how they relate, where each thing is in the console, who may do what, and how apps run."
+---
+
+Everything on this page is stated elsewhere in these docs at more length. This is the short, exact form.
+
+## The product in five sentences
+
+A person rents a Linux server, pastes one install line into it, and enters a single-use code. From then on they manage the server from a web console at `https://console.livehq.dev`. An agent on the server builds apps from GitHub repositories and runs them, and PostgreSQL and Redis databases, in Docker. Visitors reach web apps only through LiveHQ's edge, over an encrypted tunnel that the server opens outward, so the server needs no open web ports. There is no public API and no command-line tool.
+
+## Objects
+
+| Object | Belongs to | Key facts |
+| --- | --- | --- |
+| **Account** | A person | Signs in with a password, a passkey, or Google or GitHub where offered. Two-factor sign-in is optional unless a workspace requires it. |
+| **Workspace** | One Owner | Holds servers, apps, databases, people, the plan and the bill. A person can belong to several workspaces. |
+| **Server** | A workspace | A rented Linux server with the LiveHQ agent. Ubuntu 22.04, 24.04 or 26.04, or Debian 12 or 13; Intel/AMD or ARM. |
+| **App** | A workspace; runs on a server | Built from one GitHub repository and one branch. Kind is **web app** (has an address) or **background service** (no address). The kind cannot be changed after creation. |
+| **Deployment** | An app | One attempt to put a version online. One runs at a time per server. |
+| **Release** | An app | The running result of a successful deployment. One is live; the previous one is kept for rollback. |
+| **Address** | A web app | One LiveHQ address, `name.livehq.app`, plus custom domains on Pro and Teams. HTTPS always. |
+| **Variables** | An app | Name and value pairs with a scope: Runtime, Build, or both. Sealed in the browser; write-only once saved. |
+| **Database** | A workspace; runs on a server | PostgreSQL 17 or Redis 8. Independent of any app: deploying, rolling back or deleting an app never touches it. |
+| **Connection** | An app and a database | Made by **Connect an app**: a database user for the app, its private URL sealed into the app's variables. |
+| **Firewall** | A web app | Rules, rate limits, IP lists and managed protections, applied at the edge. |
+
+## Where things are in the console
+
+Paths are relative to `https://console.livehq.dev`.
+
+| Place | Path | Sidebar or tab |
+| --- | --- | --- |
+| Home | `/` | **Home** |
+| Setup guide for a first server | `/start` | **Guide me, step by step** on Home |
+| Connect a server | `/servers/connect` | **+** beside Servers, or **New** → **Connect a server** |
+| A server | `/servers/ID` | Views: **Canvas**, **Deployments**, **Monitor**, **Health** |
+| A server's health tabs | `/servers/ID/health/TAB` | **Overview**, **Workloads**, **Capacity**, **Maintenance**, **Security**, **Updates**, **Settings** |
+| All apps | `/apps` | **Applications** |
+| An app | `/apps/ID?tab=TAB` | **Overview**, **Deployments**, **Domains**, **Variables**, **Resources**, **Bandwidth**, **Firewall**, **Logs**, **Run**, **Settings & access** |
+| Deploy | `/deploy` | **New** → **GitHub repository** |
+| The latest deployment of each app | `/activity` | **Deployments** |
+| All databases | `/databases` | **Databases** |
+| A database | `/databases/ID` | **Overview**, **Studio** (not for Viewers), **Users**, **Connections**, **Backups**, **Settings** |
+| GitHub | `/integrations` | **GitHub** |
+| Billing | `/billing` | **Billing** |
+| People | `/settings/people` | **People** |
+| Settings | `/settings` | **Settings** |
+
+A background service's page has no **Domains**, **Bandwidth** or **Firewall** tab, and its last tab reads **Settings**.
+
+## Who may do what
+
+| Role | May |
+| --- | --- |
+| **Viewer** | See servers, apps, databases, deployments, logs and usage. Change nothing. No **New** button, no **Billing**, no **People**, no database **Studio**. |
+| **Developer** | Everything a Viewer may, and deploy, redeploy and stop deployments; change an app's settings, variables, domains and firewall; create and manage databases, with Studio, users, connection URLs, backups and restores. Not add, remove, lock, patch, restart or update servers, and nothing in the Admin row. |
+| **Admin** | Everything a Developer may, and manage servers, connect GitHub, see Billing and People, invite and manage developers and viewers, change a background service's settings and the workspace's shared firewall lists, run commands in apps, export a server, download a backup. |
+| **Owner** | Everything, and the only one who changes the plan, extras, spend limits and payment, makes or removes an Admin, and can transfer the workspace. |
+
+Roles other than Owner exist only on Teams. The full table is on [People and roles](/account/members-and-roles).
+
+With two-factor sign-in on, some actions ask for the second factor again (a "step-up"), such as removing a server, running a command in an app, exporting, and raising a spend limit. Changing a spend limit and transferring the workspace need two-factor sign-in turned on. See [Two-factor sign-in](/account/two-factor).
+
+## How a web app runs
+
+| Fact | Value |
+| --- | --- |
+| Source | A GitHub repository shared with LiveHQ's GitHub App, one branch. |
+| Build | On the person's own server. Automatic detection, or the repository's `Dockerfile`. |
+| Port | LiveHQ sets the `PORT` variable and sends traffic there. An app on a fixed port needs that port set as the app port. |
+| Health check | `GET` on the health check path, `/` by default. The release goes live when it answers. |
+| Going live | The new release starts beside the old one. When it is healthy, traffic moves to it and the deployment reads **Live**. LiveHQ watches it for a minute and keeps the previous release ready to roll back. |
+| On failure | The previous release keeps serving. |
+| Disk | Not kept. Files written inside the container are gone after the next deployment or restart. |
+| Protocols | HTTP, server-sent events, WebSockets. |
+| Access | **Private** by default. |
+| Logs | The app's standard output and error, in the **Logs** tab. |
+
+A background service is the same without an address, access, firewall or bandwidth. It reads **Running** when healthy, never **Live**.
+
+## How a database runs
+
+| Fact | Value |
+| --- | --- |
+| Engines | PostgreSQL 17, Redis 8. |
+| Where | In Docker on one of the person's servers. One server per database, no replication. |
+| Private URL | For apps on LiveHQ. Needs no external access. |
+| Public URL | Optional. TLS, a password, and IP rules if set. IPv4. |
+| Backups | Scheduled or on demand, Pro and Teams. Encrypted. No point-in-time recovery. |
+| Restore | In place with undo for 7 days, or as a new database. |
+
+## What LiveHQ never does
+
+- It never holds an SSH key for the server and never opens a shell on it.
+- It cannot read variable values.
+- It does not check an app from outside the server.
+- It does not email about a database failure.
+- It does not add servers, copies or schedules by itself.
+
+## Related
+
+- [Order of operations](/agents/order-of-operations)
+- [Status words](/agents/status-words)
+- [Limits](/agents/limits)
+- [Known limits](/help/known-limits)

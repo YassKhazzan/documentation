@@ -1,0 +1,147 @@
+---
+title: "Take your data with you"
+description: "Export every app's settings and variables, your databases' data and your backup keys from a server, in the console or on the server itself."
+---
+
+An export is one archive that holds everything LiveHQ runs on a server: each app's settings and variables, a Docker Compose file that runs them, your databases' data, and the keys that open your backups. Take one before a big change, as your own copy, or when you want to run things without LiveHQ.
+
+There are two ways. **Export everything** in the console downloads an archive encrypted to a key that exists only in your browser tab, so LiveHQ cannot read it. A command on the server, `sudo /opt/livehq-agent/current/livehq-agent export`, writes the same files with no LiveHQ involved.
+
+## Before you start
+
+- You are an **Owner** or **Admin** of the workspace. Other roles see "Only the workspace's owner and admins can export a server."
+- The server is connected to LiveHQ.
+- If the card says "This server's agent can't export yet", see [Update the agent](/servers/update-agent).
+- You can leave one browser tab open until the download finishes. Closing or reloading the tab loses the key, and the export must start again.
+
+## Export from the console
+
+<Steps>
+  <Step title="Open the Export everything card">
+    Open the server, then **Health**, then the **Settings** tab. The card is titled **Export everything**.
+  </Step>
+  <Step title="Choose what to include">
+    Every app's settings, variables and domains, and a `compose.yaml` that runs them, are always included. Two boxes are ticked for you:
+
+    - **Database data**: a dump of each database on the server. The card lists each database with its size on disk.
+    - **Backup keys**: the keys that open this server's offsite database backups.
+  </Step>
+  <Step title="Press Export">
+    With [two-factor sign-in](/account/two-factor) on, the console first asks you to confirm it's you.
+  </Step>
+  <Step title="Wait for the server">
+    The card shows four steps: **Queued**, **Preparing**, **Uploading**, **Ready**. The server starts within a minute, collects the files, encrypts the archive to your tab's key and uploads it.
+  </Step>
+  <Step title="Download and decrypt">
+    When the card reads "Ready to download", press **Download and decrypt** and choose where to save. The tab decrypts the file as it arrives and checks every part.
+  </Step>
+</Steps>
+
+## What happens next
+
+The card reads "Saved livehq-export-prod-eu-1-2026-11-25.tar" and adds: "This file holds every secret of this server. Keep it like a password." Press **Done**. Unpack the archive and open its `README.md`.
+
+LiveHQ deletes the encrypted file from its storage after 24 hours. **Recent exports** lists the last ones with their state: Queued, Preparing, Uploading, Ready, Failed or Expired.
+
+### If the download becomes two steps
+
+If your browser cannot fetch the file directly, the card changes to "Download in two steps":
+
+1. Press **Download the encrypted file**. It saves a file ending in `.lhqexp`. The link is valid for 15 minutes; **Get a new link** makes another.
+2. Press **Choose the downloaded file**, pick that file, then press **Decrypt and save**.
+
+Do both in the same tab: only that tab holds the key. **Try the direct download again** goes back to one step.
+
+## What an export contains
+
+| File | What it is |
+| --- | --- |
+| `README.md` | How to run everything elsewhere and restore the databases |
+| `manifest.json` | What the export holds, with each file's size and SHA-256 |
+| `compose.yaml` | Every app, background service and database as Docker Compose services |
+| `apps/<name>/app.json` | The app's source (repository, branch, commit), build and runtime settings, and domains |
+| `apps/<name>/runtime.env`, `build.env` | The app's variables with their values, opened on your server |
+| `databases/<name>/database.json` | Engine, version, limits, and users with their passwords and connection URLs |
+| `databases/<name>/dump.pgdump` | PostgreSQL data (`pg_dump --format=custom`), when data is included |
+| `databases/<name>/dump.rdb` | Redis data, when data is included |
+| `backups/keys.json` | Each database's backup key (console exports, when chosen) |
+| `images/<name>.tar` | Each app's current image (server exports with `--images`) |
+
+<Warning>
+An export holds the values of your variables and your database passwords in plain text once it is decrypted. Store it like a password, and delete copies you no longer need.
+</Warning>
+
+## Export on the server
+
+For more than 2 GiB of data, or when the console is not available, run this on the server as root:
+
+```bash
+sudo /opt/livehq-agent/current/livehq-agent export
+```
+
+Type the program with its full path, as shown: it is not a command the terminal finds by name. The console's card shows the same command.
+
+It writes the same files, unencrypted, into a new folder in `/root` named `livehq-export-` followed by the time (UTC), readable by root only. It needs nothing from LiveHQ and no network.
+
+| Option | Effect |
+| --- | --- |
+| `--to DIR` | Write into `DIR` instead. The folder must not exist yet |
+| `--no-data` | Leave the databases' data out |
+| `--images` | Also save each app's current image, to load on another machine |
+
+A server export has no `backups/keys.json`: the dumps it writes make the keys unnecessary.
+
+## Open a backup without LiveHQ
+
+Offsite backups stay encrypted when you download them.
+
+1. Get the keys: a console export with **Backup keys** ticked contains `backups/keys.json`.
+2. Download the backup: open the database, then its backups, and press **Download** beside a backup marked "Offsite + local". Only owners and admins see the button, and with two-factor sign-in on the console asks you to confirm first. The console shows the file's SHA-256 so you can check the download.
+3. On your server, or on any Linux machine that has the same `livehq-agent` program, run:
+
+```bash
+/opt/livehq-agent/current/livehq-agent backup open --keys backups/keys.json BACKUP_FILE -o restored.pgdump
+```
+
+On another machine, replace the path with the place you copied the program to. An export's `README.md` made by an older agent names the program without its path: add the path.
+
+It writes the plain dump (`.pgdump` for PostgreSQL, `.rdb` for Redis), needs no root, and never replaces an existing file. Without `-o` the dump is written beside the backup file. `--database ID` makes it refuse a backup of any other database. Backups made after an export need a newer `keys.json`, so export again from time to time.
+
+## If you stop using LiveHQ
+
+Your apps and databases run in Docker on your own server, and their data is on its disk. An export gives you what you need to run them yourself, and its `README.md` lists the steps:
+
+- `compose.yaml` describes every app and database. The images your server built are on that server; on another machine, load the ones saved with `--images`, or rebuild from the source named in `app.json`.
+- Each web app listens on its own port of `127.0.0.1`. Without LiveHQ's edge, you put your own web server in front and point your domain's DNS at the machine. An address ending in `livehq.app` belongs to LiveHQ and does not move with you.
+- Apps keep reaching their databases by the same private names, so connection URLs in the variables keep working.
+
+Export **before** you delete anything in the console. Deleting an app or a database in the console deletes it on the server too, and **Remove server** needs the server emptied first. See [Remove a server](/servers/remove).
+
+## If something goes wrong
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| "This server isn't connected to LiveHQ right now, so it can't export." | LiveHQ has not heard from the server in the last 5 minutes | Bring it online, or run the command on the server |
+| "An export of this server is already in progress." | One export per server at a time | Wait for it, or open the tab that started it |
+| "An export of this server started elsewhere is still running. Only the tab that started it can open it" | Another tab or person started one | Start a new one when it finishes |
+| "This workspace already exported 10 times in the last 24 hours. Try again later." | The daily limit | Wait, or run the command on the server |
+| "Too large for a browser download" | More than 2 GiB of database data | Run the [command on the server](#export-on-the-server) |
+| "The server didn't start the export within an hour. Check that it's online, then export again." | The server never picked it up | Check the server, then export again |
+| "The export didn't finish within 6 hours." | It took too long | Export again, or use the server command |
+| "The download link expired. Download again." | A link lasts 15 minutes | Press **Download again** |
+| "This export expired" | The file was deleted after 24 hours | Press **Start a new export** |
+| "This browser keeps the archive in memory until it's saved." | A large export in a browser that cannot write to disk as it downloads | Use Chrome or Edge, or the server command |
+| "This browser cannot decrypt an export. Open the console over HTTPS in an up-to-date browser." | The browser lacks the needed encryption | Update the browser |
+
+## Limits
+
+- A console export stops at 2 GiB of database data. Dumps are usually smaller than the data on disk.
+- One unfinished export per server, and 10 per workspace in 24 hours.
+- Only the person and the tab that started an export can download it.
+- The encrypted file is kept for 24 hours.
+
+## Related
+
+- [Backups](/databases/backups)
+- [What happens during an outage](/help/outages)
+- [How LiveHQ keeps your server safe](/start/security-model)

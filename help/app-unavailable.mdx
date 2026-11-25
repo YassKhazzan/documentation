@@ -1,0 +1,101 @@
+---
+title: "An app is Unavailable"
+description: "Find out why an app reads Unavailable or does not open: check the banner, the server, the deployment, restarts, access, the firewall and the domain."
+---
+
+Use this page when an app's status reads **Unavailable**, or when its address does not open for you or a visitor. Check in the order below and stop at the first step that explains it.
+
+Two things can differ, so look at both:
+
+- **What the console says.** The status and the banner come from your server's report. See [What an app's status means](/apps/status).
+- **What a visitor gets.** Paste the app's address into a private browser window. **Open app** in the console is not the same test: it signs you in as the owner.
+
+## Check in this order
+
+<Steps>
+  <Step title="Read the banner on the app's Overview">
+    The heading and the sentence under it name the problem. Find yours in [the table below](#what-the-banner-tells-you). The small line under it helps too: `Agent: unknown` means LiveHQ has no current report from the server; `Agent: healthy` means the app itself is fine.
+  </Step>
+  <Step title="Check the server">
+    Open the server, then **Health**. The **Status** card answers four questions.
+
+    - **Agent** reads **Offline**: the server is not talking to LiveHQ, and a notice says "The server has not sent a fresh online heartbeat. It may be restarting, disconnected or stopped." Every app on it reads **Unavailable**. See [A server is offline](/help/server-offline).
+    - **OriginLink** reads **Disconnected**, or anything other than connected: the server's tunnel to LiveHQ's edge is down while the agent still reports. The app's banner then says "Your app is running, but its connection needs attention." The tunnel reconnects by itself; if it stays down, see [A server is offline](/help/server-offline).
+    - **Last heartbeat** is minutes old: reports are not arriving.
+    - **Clock** reads `skewed`, with the seconds it is off: LiveHQ refuses reports from a server whose clock is more than 30 seconds wrong. Make sure time synchronization is on for the server.
+
+    Then open **Workloads** on the same page. It lists each app as the server itself sees it.
+  </Step>
+  <Step title="Check the latest deployment">
+    On the app's **Overview**, a red notice with "Latest deployment:" gives the reason a deployment failed. When it begins "Your previous release is retained.", the old release should still serve. Press **View deployment** for the build output. See [A build failed](/help/build-failed) and [An app builds but won't start](/help/app-wont-start).
+  </Step>
+  <Step title="Check restarts and logs">
+    The **Restarts** row on **Overview** says how often LiveHQ restarted the app in the last 24 hours and why. "Your app keeps stopping." means LiveHQ paused the restarts after 5 in 10 minutes. Press **View logs**, fix the cause and redeploy, or press **Restart** under **Settings & access**. See [Why LiveHQ restarted an app](/apps/restarts) and [Out of memory](/help/out-of-memory).
+  </Step>
+  <Step title="Check access">
+    A new app is Private: under **Who can open this app?** it is set to **Only me**, and visitors get a sign-in page. A password-protected app asks for the password. Both are working as set. Open **Settings & access** to change it. See [Choose who can open an app](/apps/access).
+  </Step>
+  <Step title="Check bandwidth and the plan">
+    Visitors who see "This app is paused for now" have met the workspace's monthly bandwidth limit. See [Bandwidth](/apps/bandwidth). An app that reads **Suspended** is outside what the plan covers. See [Plans](/account/plans).
+  </Step>
+  <Step title="Check the firewall">
+    Visitors who see "This request was blocked" or "Too many requests" were stopped by the app's firewall. Open **Firewall** and find their request under **Recent events**. See [What the firewall did](/apps/firewall/events-and-history).
+  </Step>
+  <Step title="Check the custom domain">
+    Open the app's LiveHQ address, such as `storefront.livehq.app`. If that opens and your own domain does not, the app is fine and the domain is the problem. On **Domains**, the domain should read **Connected**; **Waiting for DNS**, **Issuing certificate**, **Needs attention** and **Paused** each say what is missing. See [A domain won't go live](/help/domain-not-live). A bare domain such as `example.com` cannot be served; use `www.example.com`.
+  </Step>
+</Steps>
+
+## What the banner tells you
+
+| The banner says | What it means | Go to |
+| --- | --- | --- |
+| "Your app needs attention." with "A release is retained. Check the server connection before redeploying." | LiveHQ has no current report that the release is healthy: the server is silent, or it reports the app unhealthy. | Step 2, then step 4 |
+| "Your app is running, but its connection needs attention." | The app is healthy on your server. The server's connection to LiveHQ's edge is down, so visitors cannot reach it. | Step 2 |
+| "Your app keeps stopping." | The app stopped 5 times in 10 minutes. LiveHQ no longer restarts it. | Step 4 |
+| "Your app ran out of memory." | Linux stopped the app for memory. | [Out of memory](/help/out-of-memory) |
+| "Your app is recovering." | The agent is starting the app again. | Wait a minute, then step 4 |
+| "Your app is stopped." | Someone stopped it. | **Start app** under [Settings & access](/apps/settings) |
+| "Your app is running." | Healthy, but the address does not point at this release yet. | Wait a minute, then step 3 |
+| "Your app is live.", and a visitor still cannot open it | Your server reports the app healthy. The trouble is on the visitor's way in. | Steps 5 to 8 |
+
+## What a visitor sees
+
+When LiveHQ's edge cannot serve an app, it shows the visitor a short page instead. Each page carries a **Reference** code; keep it if you write to support.
+
+| The page says | What it means | What to do |
+| --- | --- | --- |
+| "This app is offline" | The server that runs the app is not connected to LiveHQ. The page tries again by itself. | Step 2 |
+| "This app can’t be reached right now" | LiveHQ could not connect to the app. The page tries again by itself. | Steps 2 to 4 |
+| "This app is taking too long" | The app did not answer in time. | [Logs](/apps/logs) and CPU on [Resources](/apps/resources) |
+| "Back in a moment" | The server is restarting to finish its security updates. | Wait. See [System updates](/servers/system-updates). |
+| "This app is stopped" | Its owner stopped it. | **Start app** under [Settings & access](/apps/settings) |
+| "There’s no app at this address" | No running release answers at this address. | Check the address on **Domains**, and that the app has a successful deployment |
+| "This app is paused for now" | The workspace reached its monthly bandwidth limit. | [Bandwidth](/apps/bandwidth) |
+| "This app is busy" | It is handling more traffic than it can take right now. | [Resources](/apps/resources), or [several servers](/apps/several-servers) |
+| "This request was blocked" | The app's firewall blocked this request. | [What the firewall did](/apps/firewall/events-and-history) |
+| "Too many requests" | The app's firewall limits how often one visitor may ask. | [Rate limits](/apps/firewall/rate-limits) |
+| A sign-in or password page | The app is not public. | [App access](/apps/access) |
+
+## Known issue: Unavailable for a few seconds of each minute
+
+<Note>
+In November 2026 working apps could read **Unavailable**, with `Agent: unknown`, for a few seconds of every minute and then return to normal. Visitors were not affected. The cause was on LiveHQ's side: a quiet server checks in about once a minute, and the console treated a report older than 60 seconds as missing. The correction trusts a report for 150 seconds. If you see a healthy app flip to **Unavailable** and back within seconds while its address keeps opening, it is this issue and you need to do nothing.
+</Note>
+
+## What LiveHQ cannot see
+
+LiveHQ runs no check of your app from outside your server today. If the server finds the app healthy, the console says **Live**, even when a visitor's request fails further out. That is why the steps above end with access, the firewall and the domain. On the server's **Health** page, the **Status** card's **Independent checks** reads "No external report yet" for the same reason.
+
+When LiveHQ's own control plane is down, public apps keep serving for up to 72 hours and private apps pause. See [What happens during an outage](/help/outages).
+
+## Still stuck
+
+Write to [support](/help/support) with the app's **App ID** (under **Settings & access**, **General**), the **Reference** code from the visitor's page if there was one, and the time it happened.
+
+## Related
+
+- [What an app's status means](/apps/status)
+- [A server is offline](/help/server-offline)
+- [An app builds but won't start](/help/app-wont-start)
+- [A domain won't go live](/help/domain-not-live)

@@ -1,0 +1,110 @@
+---
+title: "Deploy an app from GitHub"
+description: "Choose a repository and a server on the Deploy page, set limits and variables, and put the app online at its own address."
+---
+
+The Deploy page turns a GitHub repository into a running app on one of your servers. LiveHQ pins the exact commit, builds it on that server, checks that it answers and gives it an HTTPS address.
+
+## Before you start
+
+- A server that is connected. See [Connect a server](/servers/connect).
+- GitHub connected to the workspace, with your repository shared. See [Connect GitHub](/apps/github).
+- The role **Owner**, **Admin** or **Developer**. A **Viewer** sees "Deployment access required."
+- Room in your plan: 3 apps and services on Free, 30 on Pro, 100 on Teams. See [Plans](/account/plans).
+
+## Open the Deploy page
+
+Press **New** at the top of any page, choose **GitHub repository** and pick a repository. You can also open **Applications** and press **New application**.
+
+The page is titled **Deploy from GitHub** and has five numbered cards. The steps below follow them.
+
+## Steps
+
+<Steps>
+  <Step title="Source">
+    At the top of the card, keep **Web app** selected. A **Background service** has no address: see [Background services](/apps/background-services).
+
+    Choose the repository, then check two fields:
+
+    - **Branch, tag or commit**: starts as the repository's default branch.
+    - **App name**: starts as the repository name. Type any name of 2 to 120 characters.
+
+    Below them the page shows the app's address, such as `storefront.livehq.app`. For the first app of a workspace it shows only the first part, `storefront`. It is based on the app name, and if that address is taken LiveHQ adds a short suffix. To ask for an exact address press **Choose address** and type 2 to 40 lowercase letters, numbers or single hyphens. If an exact address is already taken, the deployment stops so that you can choose another.
+
+    Switch on **Deploy when I push** if every push to the branch should deploy. It is off unless you switch it on, and you can change it later: see [Redeploy an app](/apps/redeploy).
+  </Step>
+  <Step title="Server">
+    Choose the server the app runs on. Only a server marked **Connected** can be chosen. An app stays on the server it was first deployed to.
+  </Step>
+  <Step title="Resources">
+    Set the most the running app may use:
+
+    - **Memory limit**: one of ten sizes from `128 MiB` to `64 GiB`, each double the one before. A new app normally starts at `512 MiB`.
+    - **CPU**: `0.25`, `0.5`, `1`, `2` or `4` cores, or a **Custom** value from 0.1 to 16. A new app starts at 1 core.
+
+    A limit is a cap, not memory kept aside. The build does not count against it. You can change both later: see [App resources](/apps/resources).
+  </Step>
+  <Step title="Environment variables (optional)">
+    Press **Add variable** for each value your app needs to build or start: a name, a value and when it is available (**Runtime**, **Build** or **Build & runtime**). You can add up to 64 here, each value up to 16 KiB.
+
+    Values you type are saved when you deploy. They are lost if you leave or refresh the page first. See [Variables](/apps/variables).
+  </Step>
+  <Step title="Access & build">
+    Choose who can open the app:
+
+    | Choice | Meaning |
+    | --- | --- |
+    | **Private** (preselected) | Only you, after signing in with LiveHQ. |
+    | **Public** | Anyone with the link can open it. |
+
+    A new app starts **Private**. You can change this, or add a password, after the deployment: see [App access](/apps/access).
+
+    **Build and health settings** holds the build method, the project directory, the app port and the health check path. The defaults fit most projects: see [How LiveHQ builds an app](/apps/builds).
+  </Step>
+  <Step title="Deploy">
+    Check the summary beside the form: address, server, resources, build, variables and access. Then press the button at its foot. On a phone the button is in a bar at the bottom of the screen.
+
+    | The button reads | When |
+    | --- | --- |
+    | **Deploy application** | A new web app. |
+    | **Queue deployment** | Another build is running on that server. Yours starts when it ends. |
+    | **Deploy service** | A new background service. |
+    | **Deploy new release** | You are redeploying an app that exists. |
+    | **Retry this request** | The console got no answer to your last attempt. |
+
+    There it reads **Deploy**, **Queue** or **Retry**.
+  </Step>
+</Steps>
+
+## What happens next
+
+The console creates the app, saves your variables, asks GitHub for the branch's newest commit and queues the deployment. Then it opens the app's page, where **Latest deployment** shows each step and the build output. See [Follow a deployment](/apps/deployments).
+
+The first build of a project is the slowest, because nothing is cached on the server yet.
+
+When the new release takes over, a message reads "storefront is live". Press **Open app** at the top of the app's page to see it. The app's status then reads **Live** or **Running**: see [App status](/apps/status).
+
+## If something goes wrong
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| "Connect GitHub to choose a repository" | The workspace has no GitHub connection. | [Connect GitHub](/apps/github). An owner or admin does this. |
+| Your repository is not in the list | LiveHQ sees only the repositories you shared. | Open **GitHub**, press **Manage repository access**, add it on GitHub, then press **Sync repositories**. |
+| A server is marked **Edge disconnected** or **Unavailable** | LiveHQ's edge has no tunnel to that server, or its agent cannot deploy from GitHub. | See [A server is offline](/help/server-offline). |
+| "Your workspace's application allowance is full. Existing applications can still be redeployed." | The plan's app limit is reached. | Delete an app you no longer need, or change plan. See [Plans](/account/plans). |
+| "This address is reserved. Choose another." | The exact address you typed is one LiveHQ keeps, such as `www` or `api`. | Type another, or press **Use automatic address**. |
+| "This request is saved in this tab. Retrying uses the same application and deployment identity." | The console is not sure your request arrived. | Press **Retry this request**. It cannot create a second app. |
+| The deployment fails | The build or the start failed. The reason is on the app's page. | See [A build failed](/help/build-failed) or [An app builds but won't start](/help/app-wont-start). |
+
+## Limits
+
+- The Deploy page deploys from GitHub repositories only.
+- One deployment runs at a time on a server. Others wait their turn.
+- An app's files do not survive a new release: apps have no persistent volumes. Keep data in a [database](/databases/overview).
+
+## Related
+
+- [How LiveHQ builds an app](/apps/builds)
+- [Follow a deployment](/apps/deployments)
+- [App access](/apps/access)
+- [App addresses](/apps/addresses)

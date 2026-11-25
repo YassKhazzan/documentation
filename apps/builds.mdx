@@ -1,0 +1,122 @@
+---
+title: "How LiveHQ builds an app"
+description: "How a repository becomes a running app on your server, what LiveHQ decides for you and which build settings you can change."
+---
+
+Every deployment turns your repository into an image (a packaged copy of the app) and starts it. Most projects need no settings. This page explains what LiveHQ decides and what you can change under **Build and health settings** on the Deploy page.
+
+## Where the build runs
+
+On your own server, the one the app runs on. LiveHQ has no build machines of its own. That means:
+
+- A build uses your server's CPU, memory and disk.
+- One build runs at a time on a server.
+- A small server builds slowly, and a large build can run out of memory on it.
+
+## Build method
+
+| **Build method** | What LiveHQ does |
+| --- | --- |
+| **Automatic · Dockerfile, otherwise Railpack** (default) | Uses the Dockerfile at **Dockerfile path** if the project has one. With the path left at `Dockerfile`, a file named `Containerfile` counts too, and with neither file Railpack builds the project. If you changed the path and no file is there, the deployment fails. |
+| **Dockerfile** | Always uses your Dockerfile. The deployment fails if the file is missing. |
+| **Railpack** | Always uses Railpack, even when a Dockerfile exists. |
+
+Railpack is an open-source builder. It reads files such as `package.json`, `requirements.txt`, `pyproject.toml`, `Cargo.toml` or `index.html` and works out how to install, build and start the project. LiveHQ tests it with Next.js, React and Vue (Vite), FastAPI and other Python apps, Rust and static sites. When Railpack cannot tell how to start a project, the deployment fails in its first step and says so: see [A build failed](/help/build-failed).
+
+## Project directory, for monorepos
+
+**Project directory** is the folder LiveHQ builds. `.` is the repository root.
+
+- Set it to a subfolder such as `apps/web` when the app lives there. Only files inside that folder reach the build.
+- **Dockerfile path** is read from inside the project directory.
+- If the app needs sibling packages of a monorepo, keep `.` and point **Dockerfile path** at the app's Dockerfile, such as `apps/web/Dockerfile`.
+
+## The app port and the PORT variable
+
+LiveHQ gives every web app a variable named `PORT`. Your app must listen on `0.0.0.0` at that port. Its value is the first of these that exists:
+
+1. **App port**, if you typed one.
+2. The single port your Dockerfile declares with `EXPOSE`.
+3. `8080`, for a Railpack build.
+
+A Dockerfile with no `EXPOSE` line, or with several, needs **App port**.
+
+## Health check
+
+Before a new release receives visitors, LiveHQ asks it `GET` on **Health check path** (default `/`) once a second. The release passes when it answers twice in a row with a status from 200 to 399, each time within 3 seconds.
+
+It has the **Startup allowance** to do so: 120 seconds unless you change it, from 15 to 1,800. If it does not pass, the deployment fails and the previous release keeps serving. See [An app builds but won't start](/help/app-wont-start).
+
+A server on an older agent asks every five seconds and needs three answers in a row, which is what the hint under **Startup allowance (seconds)** describes.
+
+## Build variables
+
+A variable whose **Available during** is **Build** or **Build & runtime** is given to the build.
+
+- **Railpack builds** read it as an ordinary environment variable.
+- **Dockerfile builds** read it as a BuildKit secret named after the variable:
+
+```dockerfile
+RUN --mount=type=secret,id=API_URL \
+    API_URL="$(cat /run/secrets/API_URL)" npm run build
+```
+
+Frameworks copy variables with a public prefix, such as `NEXT_PUBLIC_` or `VITE_`, into the pages they send to browsers. Anyone can read those. Changing a build variable makes the next deployment build again. See [Variables](/apps/variables).
+
+## What is left out of the build
+
+LiveHQ downloads the commit from GitHub without its Git history, and leaves these out wherever they are in the project:
+
+| Left out | Examples |
+| --- | --- |
+| Environment files | Names that begin with `.env`, and copies such as `production.env`, `app.env.local`, `env.bak` |
+| Keys and credentials | `*.pem`, `*.key`, `*.p12`, `*.pfx`, `id_rsa`, `credentials.json`, `secrets.yml`, `service-account.json`, `.npmrc`, `.yarnrc.yml`, `.netrc` |
+| Local databases | `*.db`, `*.sqlite`, `*.sqlite3` |
+| Dependency and output folders | `node_modules`, `.next`, `.nuxt`, `dist`, `build`, `target`, `coverage`, `venv`, `.venv`, `__pycache__` |
+| Tool folders | `.git`, `.github`, `.vscode`, `.idea`, `.aws`, `.ssh`, `.terraform`, `.vercel` |
+
+<Note>
+The match is on the name alone, in any letter case and at any depth. A source folder you named `build` or `dist` is left out too. Rename it if the app needs it.
+</Note>
+
+Put values in [variables](/apps/variables) instead of committed environment files. Git submodules and Git LFS files are not fetched, and a `.gitmodules` file in the project directory fails the deployment.
+
+## Source size limits
+
+These apply to the whole repository at the commit, even when the project directory is a subfolder.
+
+| What | Limit |
+| --- | --- |
+| The download from GitHub (compressed) | 64 MiB |
+| The unpacked source | 256 MiB |
+| One file | 64 MiB |
+| Files and folders | 50,000 |
+
+## Memory and CPU for the build
+
+The app's own **Memory limit** applies only once it runs. A build has its own allowance:
+
+- It may use the server's memory up to the server's build maximum, and free swap on top.
+- On a server with less than 2 GiB of memory and no swap, LiveHQ creates a swap file for builds when the disk has room (2 GiB, or 1 GiB on a small disk). The first deployment waits a few minutes for it, once.
+- A build never waits for memory. If the server runs out during a build, LiveHQ stops the build, not your running apps and databases. The deployment fails once with that reason. See [Out of memory](/help/out-of-memory).
+
+An **Owner** or **Admin** changes the maximum: open the server, then **Health**, **Capacity**, **Build resources**. **Use spare resources** lets builds use idle memory and spare CPU at lower priority, up to 16 cores and 64 GiB. Without it you set **Build memory maximum (MiB)**, from 512 to 65,536, and **Build CPU maximum (cores)**, from 0.1 to 16. Press **Save build budget**.
+
+## Retries and the build cache
+
+- A step that fails is tried again, up to three attempts, before the deployment fails. Some failures are final at the first attempt, because trying again cannot help: a build that ran out of memory, a server that ran out of memory, a wrong port, an app that listens only on localhost, and a health check answered with a 4xx status.
+- The server keeps a build cache between deployments, up to 10 GiB or a tenth of its disk, whichever is smaller. Unchanged steps of a later build come from it.
+- A deployment that changes only how the app runs reuses the last image and builds nothing. See [Redeploy an app](/apps/redeploy).
+
+## Limits
+
+- Builds run on your server. There is no separate build service.
+- Images are built for the server's own processor type.
+- No private image registries, Git submodules or Git LFS.
+
+## Related
+
+- [Deploy an app from GitHub](/apps/deploy)
+- [Follow a deployment](/apps/deployments)
+- [A build failed](/help/build-failed)
+- [Server memory](/servers/memory)

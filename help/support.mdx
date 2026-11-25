@@ -1,0 +1,45 @@
+---
+title: "Get help"
+description: "How to reach LiveHQ support, what to include so the first answer can be the fix, and what never to send."
+---
+
+Write to [support@livehq.dev](mailto:support@livehq.dev).
+
+Before you write, look at [Troubleshooting](/help/troubleshooting): it is sorted by what you see on screen, and most answers are there.
+
+## What to include
+
+The more exact the message, the faster the answer.
+
+| Include | Where to find it |
+| --- | --- |
+| The page you are on and what you pressed | The address in your browser's bar, and the button's label. |
+| The exact words on screen | Copy them, or attach a screenshot. |
+| For a failed deployment: its diagnostics | Open the deployment and press **Copy logs**. The copy includes the deployment's ID and each step's result. |
+| For an app that restarts: the restart summary | On the app's **Overview**, open **See history** and press **Copy summary**. |
+| For the install line: what the terminal shows | Select the last twenty lines in the terminal and copy them. |
+| The server's name and the app's name | As they appear in the console. |
+| When it happened | The time, with your time zone. |
+
+## What never to send
+
+- Passwords, including your server's.
+- Enrollment codes and recovery codes.
+- A database's connection URL, or any variable's value.
+- Private SSH commands the console generated.
+
+LiveHQ support never asks for any of these. Build output and copied diagnostics have common credentials removed, but read what you paste before you send it.
+
+## Working with an AI assistant
+
+You can paste a deployment's copied logs or a restart summary into an AI assistant and ask what is wrong. Point it at these docs: [For AI agents](/agents/overview) explains how an assistant can read them. The same rule applies: never paste a password, a code or a connection URL into a chat.
+
+## Reporting a security problem
+
+If you believe you found a security problem in LiveHQ, say so in the subject of your email to [support@livehq.dev](mailto:support@livehq.dev) and do not include details that would let someone else repeat it until you have an answer.
+
+## Related
+
+- [Troubleshooting](/help/troubleshooting)
+- [Known limits](/help/known-limits)
+- [Emails LiveHQ sends](/help/emails)

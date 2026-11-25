@@ -1,0 +1,84 @@
+---
+title: "Create a PostgreSQL database"
+description: "Create a PostgreSQL 17 database on one of your servers, choose its storage budget and size, and get its default user."
+---
+
+Create a PostgreSQL 17 database when your app needs tables and SQL. It runs on the server you pick and needs no app to exist first.
+
+## Before you start
+
+- A server in the workspace that reads **Connected**. See [Connect a server](/servers/connect).
+- Room in your plan: 3 databases on Free, 30 on Pro, 100 on Teams. See [Plans](/account/plans).
+- The role **Owner**, **Admin** or **Developer**. Viewers cannot create a database.
+
+## Steps
+
+<Steps>
+  <Step title="Open the form">
+    Open **Databases** in the sidebar and press **Create database**. Or press **New** at the top of the console and choose **PostgreSQL database**.
+  </Step>
+  <Step title="Choose PostgreSQL">
+    Under **Create a database**, pick **PostgreSQL**. The form title becomes **Create PostgreSQL**.
+  </Step>
+  <Step title="Fill in the fields">
+    Use the table below. The defaults suit a first database.
+  </Step>
+  <Step title="Create it">
+    Press **Create database**. The console opens the new database's page.
+  </Step>
+</Steps>
+
+## The fields
+
+| Field | Default | What it is |
+| --- | --- | --- |
+| **Database name** | none | The name you see in the console, 2 to 120 characters, for example `shop-db`. You can change it later in **Settings**. It is not part of the connection URL. |
+| **Server** | none | The server that runs the database and stores its data. You cannot move a database to another server afterwards, except by restoring a backup that has an offsite copy as a new database there. |
+| **Storage budget (GB)** | 1 | How much disk you expect the database to use, from 1 to 1,024. |
+| **Memory** | 512 MB | A hard limit for the database. Choices: 256 MB, 512 MB, 1 GB, 2 GB, 4 GB, 8 GB, 16 GB. |
+| **CPU** | 0.5 CPU | Above this the database is slowed down, not stopped. Choices: 0.25, 0.5, 1, 2, 4 and 8 CPU. |
+| **Max connections** | 100 | How many connections the database accepts at once, from 20 to 2,000. |
+
+The form shows how many CPU cores and how much free memory the server has. A CPU size above the server's cores cannot be chosen. [CPU, memory and connection limits](/databases/sizes-and-limits) explains each size and how to change it later.
+
+### What "storage budget" means
+
+The storage budget is a number LiveHQ compares with the database's real size. It is not a quota.
+
+- It does not reserve disk and does not resize your server's disk.
+- PostgreSQL keeps writing when the database grows past it. The **Storage** meter on the database's Overview and on its card shows the use against the budget.
+- A backup may be at most twice the storage budget. If the database grows well past its budget, backups start to fail.
+
+Raise the budget in **Settings** when the meter gets close: change **Storage budget (GB)** and press **Save settings**. The real limit is the free space on your server's disk. See [A full disk](/help/disk-full).
+
+## What happens next
+
+The status reads **Provisioning** while your server downloads PostgreSQL (the first time only) and starts the database, then **Ready**. The page updates on its own. How long it takes depends on your server and its connection.
+
+You get:
+
+- A database named `app` inside PostgreSQL, where your tables go.
+- A default user named `livehq` with a generated password. It owns the schema, so use it for migrations. You can see the password again at any time: **Reveal password** on the **Users** tab.
+- No public address. Apps on LiveHQ connect privately; a public URL exists only when you ask for one.
+- No backups yet. On Pro and Teams, turn on a schedule in **Backups**.
+
+Next, [connect an app](/databases/connect-an-app) or [get a connection URL](/databases/connection-urls).
+
+## If something goes wrong
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| The server is greyed out with **Agent update required** | The agent on that server is too old to run databases. | If the console says **Update this server's agent**, see [Update the agent](/servers/update-agent). |
+| A size cannot be chosen, with a reason such as "More than the server's 2 cores" | The server cannot give the database that much. | Choose a smaller size. |
+| A dialog says your plan's limit is reached | The workspace already has as many databases as the plan allows. | Delete a database you no longer need, or see [Plans](/account/plans). |
+| The status reads **Failed** after creating | Setup did not finish. **Recent operations** on Overview shows the server's reason. | Fix the cause (often a full disk or too little free memory), then press **Retry setup** in the **Lifecycle** card and **Confirm**. It keeps any data already there. |
+| The status stays **Provisioning** | The server has not finished, or it is offline. | Check that the server reads **Connected**. See [A server is offline](/help/server-offline). |
+
+A database does not wait for memory to become free: it starts with what the server has idle, and its **Memory** size is a ceiling, not a reservation. On a server that is already full, something may be stopped for lack of memory. See [Server memory](/servers/memory) and [Out of memory](/help/out-of-memory).
+
+## Related
+
+- [Connect an app](/databases/connect-an-app)
+- [Database users and passwords](/databases/users)
+- [Back up a database](/databases/backups)
+- [PostgreSQL Studio](/databases/postgresql-studio)

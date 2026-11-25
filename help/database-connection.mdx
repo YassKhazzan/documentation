@@ -1,0 +1,72 @@
+---
+title: "Database connection problems"
+sidebarTitle: "Database connection"
+description: "Find out why an app or a tool cannot connect to a LiveHQ database, from the error it shows, and what to change."
+---
+
+When an app cannot reach its database, the cause is usually one of four things: the wrong URL for where the app runs, a variable that was saved but not deployed, a password that changed, or a database that is not running. Check them in this order.
+
+## Check these four things first
+
+<Steps>
+  <Step title="Is the database Ready?">
+    Open **Databases** and look at the database's status. Anything other than **Ready** explains the failure. See [Stop, start and delete](/databases/stop-and-delete).
+  </Step>
+  <Step title="Which URL does the app have?">
+    A host that ends in `.internal` is the **Private URL**. It works only from apps on LiveHQ. A host that ends in `db.livehq.dev` is the **Public URL**. It works from anywhere, but only while external access is on. See [Get a connection URL](/databases/connection-urls).
+  </Step>
+  <Step title="Was the app deployed after the variable was saved?">
+    A variable reaches the app only with a new deployment. Open the app, then **Deployments**, and check that the latest one is newer than your change. See [Variables](/apps/variables).
+  </Step>
+  <Step title="What does the app say?">
+    Open the app's **Logs** and find the database error. Match it in the tables below. See [Logs](/apps/logs).
+
+    The quoted errors in these tables are the usual words of PostgreSQL, Redis and their client libraries, not of LiveHQ. Your library may word them a little differently.
+  </Step>
+</Steps>
+
+## An app on LiveHQ cannot connect
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| The app cannot resolve a host that ends in `.internal`. Clients word this as "could not translate host name", "getaddrinfo ENOTFOUND" or "Name or service not known" | The app cannot see this database. The database is stopped, or the app runs on another server and was never connected, or the URL belongs to a database that was deleted. | Check that the database reads **Ready**. Then open its **Connections** tab and press **Connect an app** in the **Apps** card. For an app on another server this is required: see [Connect across servers](/network/connect-across-servers). |
+| The same error during a build | The private URL works in the running app, not while the app is being built. | Do not query the database in a build step. Run migrations when the app starts, or from the app's **Run** tab. See [Run commands](/apps/run-commands). |
+| "server does not support SSL, but SSL was required", or a TLS handshake error on an `.internal` host | The private URL does not use TLS: it carries `sslmode=disable` (PostgreSQL) or starts with `redis://`. Your app or its library forces TLS. | Turn the library's SSL option off for this connection, and keep `sslmode=disable` in the URL. The traffic stays on your server or on LiveHQ's encrypted private network. |
+| The app uses the public URL and is refused or times out | External access is off, or the app's server is not in the allowed IP addresses. | Use the private URL instead: an app on LiveHQ does not need the public one. |
+| "password authentication failed" (PostgreSQL), "WRONGPASS" (Redis) | The password in the app's variable is no longer the user's password, or the user was revoked. | Open **Users**. If the user reads **Revoked**, press **Enable access**. Otherwise show the URL again under **Connections**, save it in the app's variable and redeploy. See [Users and passwords](/databases/users). |
+| A PostgreSQL error such as "permission denied for schema public", "permission denied for table orders" or "must be owner of table orders" | The app connects as a named user, such as the one **Connect an app** created. **Read & write** users change rows but cannot create, alter, drop or truncate tables; **Read only** users cannot write at all. | Run migrations as the default user `livehq`: show its private URL under **Connections** and save it in the variable your migration tool reads. See [If your app runs migrations](/databases/connect-an-app#if-your-app-runs-migrations). |
+| The variable is saved, and the app still uses the old value or none | The app was not redeployed, or it reads another variable name. | Redeploy. Check that the name matches what the app reads, usually `DATABASE_URL` or `REDIS_URL`. See [Redeploy](/apps/redeploy). |
+| "sorry, too many clients already" or "remaining connection slots are reserved" (PostgreSQL), "max number of clients reached" (Redis) | The database's **Max connections** is reached. Every connection counts: all apps, Studio and backups. | Lower each app's pool size, or raise **Max connections** in **Settings**, then **Change size**. That restarts the database for a few seconds. See [CPU, memory and connection limits](/databases/sizes-and-limits). |
+| "Connection refused" or "the database system is starting up" | The database is stopped, restarting or not healthy. | Check its status. **Stopped**: press **Start database**. **Degraded**: wait a minute, then look at **Recent operations**. **Failed**: press **Retry setup**. |
+| Connections drop for a few seconds, then work again | The database restarted: a size change, a Redis settings change, an in-place restore, or a restart of the server. | Nothing, if your app retries. Make sure it reconnects after a lost connection. |
+
+## A tool or an outside app cannot connect to the public URL
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| The connection times out or is refused | Nothing accepts your connection on that address and port. In order of likelihood: external access is off, your IP address is not allowed, the address is still being set up, the server is offline, or a firewall at your hosting company blocks the port. | Open **Connections**. If **Access** says external access is off, press **Show public URL**. If it says "Only … can connect", add your address with **Change allowed IPs**. If the pill reads **Setting up**, wait about a minute. If it reads **Accepting connections** and you are allowed, open TCP on the database's port in your hosting company's firewall. |
+| **Not connecting** next to **Public URL** | The server could not set the address up. The sentence under it says why. | See the status table in [Get a connection URL](/databases/connection-urls). |
+| A certificate error, or "root certificate file does not exist" | The client must verify the server's certificate and cannot find trusted certificates. | Keep `sslmode=verify-full`. With `psql` 16 or newer add `sslrootcert=system` to the URL. Do not switch verification off. |
+| A plain connection fails (`sslmode=disable`, `redis://`) | The public address accepts TLS only. | Use the URL as the console shows it: `sslmode=verify-full`, or `rediss://` and your client's TLS option. |
+| Some connections work and others are refused under load | The public URL's limits were reached: 100 at once and 20 from one IP address by default. | Open **Connections**. The **Connection limits** card shows **Your server refused connections** and which limit. Press **Raise limits**. |
+| It worked, then stopped after you changed networks | Your IP address changed and is no longer allowed. The public address is also IPv4 only. | Update the allowed IP addresses, and connect over IPv4. |
+
+## Redis only
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| "NOAUTH Authentication required" | The client sent no user name and password. Redis's password-less `default` user is switched off. | Use the full URL, with the user and the password. |
+| `OOM command not allowed when used memory > 'maxmemory'` | Memory is full and the rule is **Keep everything**, so writes fail. Reads still work. | Delete keys you no longer need, raise **Memory for data**, or choose **Cache** if the data can be rebuilt. See [Create a Redis database](/databases/create-redis). |
+| "NOPERM" | The user may not run this command. Read-only users cannot write or publish; named users cannot flush databases. | Use a user with the access the app needs. See [Users and passwords](/databases/users). |
+| Keys vanish | Redis evicted them because memory was full and the rule is **Cache** or another eviction policy, or they had an expiry. | Raise the memory or use **Keep everything**. **Insights** in Redis Studio shows the evicted count. |
+
+## Still stuck
+
+Open the database's **Overview** and look at **Recent operations**: a failed operation keeps the server's reason, and **Copy diagnostics** copies it. Send that, the database's name and the error from your app's logs to [support](/help/support). Leave out the connection URL and any password.
+
+## Related
+
+- [Connect an app](/databases/connect-an-app)
+- [Get a connection URL](/databases/connection-urls)
+- [Database users and passwords](/databases/users)
+- [Connect across servers](/network/connect-across-servers)

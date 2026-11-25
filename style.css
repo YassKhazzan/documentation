@@ -1,0 +1,33 @@
+/* Headings use Instrument Serif, like the console's page titles. It has one weight, so
+   without these rules the theme asks for bold and the browser fakes it. A regular serif
+   also needs a little more size than the theme's sans-serif default. If the theme's class
+   names change, these rules stop applying and the headings fall back to the theme. */
+
+h1,
+h2,
+h3,
+h4 {
+  font-weight: 400 !important;
+}
+
+#page-title {
+  font-size: 2.25rem;
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+}
+
+@media (min-width: 640px) {
+  #page-title {
+    font-size: 2.75rem;
+  }
+}
+
+h2.font-semibold {
+  font-size: 1.75rem;
+  line-height: 1.2;
+}
+
+h3.font-semibold {
+  font-size: 1.375rem;
+  line-height: 1.25;
+}

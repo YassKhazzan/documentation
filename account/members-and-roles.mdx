@@ -1,0 +1,132 @@
+---
+title: "Invite people and set roles"
+description: "On Teams, invite people to a workspace, give each one a role, remove a member safely, transfer ownership and read the audit log."
+---
+
+On the Teams plan a workspace is shared. Everyone you invite sees its servers, apps and databases, and a role decides what each person may change.
+
+## Before you start
+
+- **The Teams plan** (\$49 a month). It includes 5 members; each one more is \$5 a month, up to 50. Free and Pro are for one person: on those plans **People** shows a card named "Work together on Teams", with **Move to Teams** for the owner. See [Plans](/account/plans).
+- **You are the Owner or an Admin.** Nobody else sees **People**.
+
+Open **Settings**, then **People**. The same page is under **People** in the sidebar.
+
+## What each role may do
+
+A workspace has exactly one Owner, who pays for it.
+
+| | Owner | Admin | Developer | Viewer |
+| --- | --- | --- | --- | --- |
+| See servers, apps, databases, logs, metrics, usage, domains and the firewall | Yes | Yes | Yes | Yes |
+| Deploy; change app settings, variables, domains and the firewall; add an app to another server | Yes | Yes | Yes | No |
+| Create and manage databases, backups, restores and Studio; show connection URLs | Yes | Yes | Yes | No |
+| Run a command in an app's container (the **Run** tab) | Yes | Yes | No | No |
+| Change a background service's **Service** settings (the **Run and health** step) | Yes | Yes | No | No |
+| Download a backup; export a server; change the workspace's shared firewall lists | Yes | Yes | No | No |
+| Servers: connect, remove, lock, SSH settings and private SSH, system updates, restarts, agent updates | Yes | Yes | No | No |
+| Manage the GitHub connection | Yes | Yes | No | No |
+| Invite and remove developers and viewers, and change their role | Yes | Yes | No | No |
+| Make someone an admin; change or remove an admin | Yes | No | No | No |
+| Require two-factor sign-in for everyone | Yes | Yes | No | No |
+| See Billing and the audit log | Yes | Yes | No | No |
+| Change the plan, extras, spend limits and payment | Yes | No | No | No |
+| Transfer ownership | Yes | No | No | No |
+
+A Viewer who tries to change something reads "Viewers can look but not change anything. Ask an owner or admin for a developer role." A Viewer can read logs and the list of a database's users, but cannot show a connection URL or a password.
+
+## Invite someone
+
+<Steps>
+  <Step title="Check you have a seat">
+    The top card reads, for example, "3 of 5 seats used". Pending invitations hold a seat. If every seat is taken, the owner presses **Add seats**, which opens **Billing** with one more member ready to confirm.
+  </Step>
+  <Step title="Send the invitation">
+    In **Invite someone**, type the person's **Email**, choose a **Role** and press **Send invitation**. The owner can invite admins, developers and viewers. An admin can invite developers and viewers. Nobody can be invited as Owner.
+  </Step>
+  <Step title="They accept">
+    They get an email with a link that works for 7 days, for that address only. A person with no LiveHQ account chooses a password on the link's page. A person who has an account confirms with their password, or signs in to the console and presses **Join Acme Studio**.
+  </Step>
+</Steps>
+
+The **Invitations** card lists the ones waiting for an answer and the last 30 days of answered ones. Next to a waiting one, press **Resend** to send the email again, or **Revoke…** and then **Revoke** to cancel it. "Email not delivered. Resend it." means the email could not be sent.
+
+## Change a role
+
+In **Members**, press **Change role** next to the person, pick the role and press **Save role**. With two-factor sign-in on, making someone an admin asks you to confirm it is you first. You cannot change your own role, and the Owner's role changes only by a transfer.
+
+## Remove a member
+
+Press the bin icon next to the person and read the dialog. To go ahead, press the button that reads "Remove dana@example.com"; **Keep them** cancels. With two-factor sign-in on, the console asks you to confirm it is you first.
+
+What LiveHQ does at once:
+
+- The console and private apps stop working for them.
+- Their unused invitations and server enrollment codes are cancelled, and their app shares end.
+- Servers, apps and databases they created move to the workspace owner and keep running.
+
+<Warning>
+LiveHQ cannot undo these for you:
+
+- SSH keys or root access they set up on a server stay there. Lock each server and rotate its keys from the server's **Security** tab. See [Server security](/servers/security).
+- A private SSH session they already have open keeps running until it is idle for an hour, or for at most 12 hours. Turn private SSH off on the server to end it now.
+- If they connected GitHub, deployments may depend on their connection. Check it on the **GitHub** page.
+- Database connection URLs they revealed, database users they created and app passwords they know keep working. Rotate them.
+</Warning>
+
+A removed person moves to **Removed members**, where **Restore access** brings them back. Their seat is free in the meantime.
+
+## Transfer ownership
+
+Only the Owner sees the **Transfer ownership** card. It needs [two-factor sign-in](/account/two-factor) on your account.
+
+<Steps>
+  <Step title="Choose the new owner">
+    Press **Transfer…** and pick a member under **New owner**. The person must already be a member.
+  </Step>
+  <Step title="Confirm with the workspace's name">
+    Type the workspace's exact name, then press the button that reads "Make dana@example.com the owner".
+  </Step>
+  <Step title="The new owner confirms a card">
+    On **Billing**, the new owner presses **Confirm your card**.
+  </Step>
+</Steps>
+
+After the transfer you are an Admin, and the new owner decides everything. Until they confirm a card:
+
+- the subscription keeps renewing on **your** card;
+- both spend limits are back at \$0;
+- upgrades, extras and higher spend limits wait;
+- you cannot be removed or made less than an Admin.
+
+## Read the audit log
+
+The **Audit log** card, at the bottom of **People**, lists who did what in the workspace over the last 30 days, newest first. Filter with **Show** (**People**, **Billing**, **Security**, **Servers**, **Apps**, **Domains** or **Databases**) and with **Person**. **Load more** brings the next 50. Entries older than 30 days are not kept.
+
+## When a Teams plan ends
+
+When a workspace moves from Teams to Pro or Free:
+
+- **Members other than the Owner lose access.** They see "Acme Studio's Teams plan has ended" and can switch to their other workspaces. They keep their membership.
+- **Pending invitations are revoked.**
+- **Apps and servers keep running**, including servers a member connected.
+- The Owner's **People** page says how many members are waiting. If the workspace returns to Teams, they are back, and the payment includes the extra seats they need.
+
+## If something goes wrong
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| "Every seat is taken." | Members plus pending invitations fill the seats. | The owner presses **Add seats**, or you revoke an invitation nobody answered. |
+| "That's the most Teams offers; contact us for more." | The workspace has 50 members. | Write to [support](/help/support). |
+| "This invitation is for dana@example.com. Sign out, then sign in as that account to accept it." | The link was opened while signed in as someone else. | Sign in with the invited address. |
+| "This invitation is no longer waiting: it was accepted, withdrawn or has expired." | The 7 days passed, or it was revoked. | Send a new invitation. |
+| "Transferring ownership needs two-factor sign-in on your account." | Your account has no second factor. | Press **Set up two-factor sign-in**. |
+| "Invite someone first: only a member can own it." | There is nobody to transfer to. | Invite the person and wait until they join. |
+| "Only the workspace owner can move the workspace to Teams." | You are not the Owner. | Ask the Owner. |
+
+## Related
+
+- [Plans and limits](/account/plans)
+- [Manage your plan and billing](/account/billing)
+- [Two-factor sign-in](/account/two-factor)
+- [Who can open an app](/apps/access)

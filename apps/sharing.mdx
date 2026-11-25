@@ -1,0 +1,80 @@
+---
+title: "Share a private app with people"
+description: "Let chosen people open an app that is not public by giving them its password, and know what the console cannot do yet."
+---
+
+To let other people open an app without making it public, you give them the app's password. That works on every plan.
+
+<Note>
+The console has no screen today for inviting one person, or a group of people, to one app by email. There is also no choice that opens an app to every member of your workspace. This page describes what you can do now.
+</Note>
+
+## Pick the right way
+
+| You want | Use | Plan |
+| --- | --- | --- |
+| Anyone who has the address can open it | **Anyone with the link** | Every plan |
+| A few people you choose can open it | **Password protection** | Every plan |
+| Colleagues deploy, read logs and change settings with you | Invite them to the workspace. See [Members and roles](/account/members-and-roles). | Teams |
+
+## Share with a password
+
+Owners, admins and developers can do this.
+
+<Steps>
+  <Step title="Turn on the password">
+    Open the app, then **Settings & access**. In the card **Who can open this app?**, press **Enable password protection**.
+  </Step>
+  <Step title="Copy the password">
+    LiveHQ shows the generated password once, under **Copy before leaving this page**. Copy it before you leave or reload the page.
+  </Step>
+  <Step title="Send the address and the password">
+    Send each person the app's address, such as `https://storefront.livehq.app`, and the password. Use two different channels if you can, for example the address by email and the password by phone.
+  </Step>
+</Steps>
+
+## What the person sees
+
+1. They open the address. A LiveHQ page titled "Welcome to storefront" says "Enter the password shared by the app owner."
+2. They type the password under **App password** and press **Open app**.
+3. The app opens. It stays open in that browser for 12 hours, then asks again.
+
+They need no LiveHQ account. The password opens the app only: it shows them nothing of your console, server, variables, logs or database.
+
+## Take access away
+
+Everyone shares one password, so you cannot remove one person.
+
+- **Shut everyone out and start again.** Press **Generate replacement password**. The old password stops working, people who are in are signed out within seconds, and you give the new password to those who should keep access.
+- **Close the app to all visitors.** Press **Only me**.
+
+## Colleagues in a Teams workspace
+
+In a Teams workspace, every member sees the workspace's apps in the console, and their role decides what they may change. See [Members and roles](/account/members-and-roles).
+
+That is access to the console, not to the running app. An app set to **Only me** opens in the browser for the workspace's owners and for the member who created the app. Another member who presses **Open app** gets "You do not have access to this app." To let them use the app, turn on the password or choose **Anyone with the link**.
+
+## Limits
+
+- One password per app, shared by everyone you give it to. No list of who opened the app, and no way to remove one person.
+- You cannot choose the password, and LiveHQ cannot show it again. If it is lost, generate a replacement.
+- The password page is for people using a browser. Scripts, mobile apps and other servers cannot use it.
+- After 20 attempts in an hour from one address, the password page refuses more until the hour has passed.
+- An app that is not public pauses when LiveHQ is down, because LiveHQ checks every visitor. See [What happens during an outage](/help/outages).
+- Inviting a person to one app by email, groups, and a choice for "every member of this workspace" are not in the console.
+
+## If something goes wrong
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| The person sees "That password is not correct. Try again." | A typing error, or the password was replaced. | Send the current password. If nobody has it, press **Generate replacement password**. |
+| The person is asked for the password again later the same day | A session lasts 12 hours. | Nothing is wrong. They enter it again. |
+| You left the page before copying the password | LiveHQ cannot show it again. | Press **Generate replacement password** and copy the new one. |
+| The person sees a page asking for an email address | The app is set to **Only me**, not to a password. | Press **Enable password protection**. |
+| The buttons in **Who can open this app?** are switched off | Your role is Viewer. | Ask an owner, an admin or a developer. |
+
+## Related
+
+- [Choose who can open an app](/apps/access)
+- [Members and roles](/account/members-and-roles)
+- [An app's LiveHQ address](/apps/addresses)

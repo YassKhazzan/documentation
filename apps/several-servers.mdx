@@ -1,0 +1,118 @@
+---
+title: "Run an app on several servers"
+description: "Add a server to an app so LiveHQ's edge spreads visitors across its servers and deployments roll through them one at a time."
+---
+
+An app starts on one server, its **Primary**. You can add more of your servers to it. Each one builds and runs its own copy, and LiveHQ's edge spreads visitors across every server that is serving.
+
+## Before you start
+
+- **Two connected servers in the workspace.** Free includes one server, so this needs Pro or Teams. See [Plans](/account/plans). Added servers do not count as extra apps.
+- **An app with a first deployment.** Until then **Add a server** in the card is disabled, with the tooltip "Available after the first deploy", and the header has no such button.
+- Owners, Admins and Developers can add and remove servers. If your account has [two-factor sign-in](/account/two-factor), the console asks you to confirm with it.
+- If the console says **Update this server's agent**, see [Update the agent](/servers/update-agent).
+
+## Steps
+
+<Steps>
+  <Step title="Open the flow">
+    Open the app. On **Overview**, find the **Servers and load balancing** card and press **Add a server**. The same button is in the app's header.
+
+    The flow also opens from **New** → **Load balance an app**, from **Scale an app** on Home, and from **Run an app here** on a server's page. From those places it first asks you to **Choose an app**.
+  </Step>
+  <Step title="Choose a server">
+    Pick one of your other servers. A server that is ready reads "Ready", with its free memory. A server that cannot take the app is greyed out with the reason: see the table below. Press **Continue**.
+  </Step>
+  <Step title="Review and add">
+    **Review** says what happens: the new server builds the release the app runs now, with the same settings and variables, and visitors reach it only once its health checks pass. Press **Add prod-eu-2**.
+  </Step>
+  <Step title="Enter sealed values if asked">
+    If the button reads **Enter values and add**, the new server has no copy of some of the app's variables. Each value is encrypted in your browser for one server, so LiveHQ cannot copy it for you. Type the values, then press **Save and add prod-eu-2**.
+  </Step>
+  <Step title="Follow the deployment">
+    The card says "Deploying to prod-eu-2". Press **Follow it** to watch the build. The new server's row reads **Deploying**, then **Serving**. Until then nothing changes for visitors.
+  </Step>
+</Steps>
+
+<Tip>
+To avoid typing values again later, open the app's **Variables** tab and press **Prepare servers**. Values you save from then on are also sealed for the servers you pick. See [Sealed variables](/apps/sealed-variables).
+</Tip>
+
+## Why a server cannot be picked
+
+| The console says | What to do |
+| --- | --- |
+| "Its agent needs an update." | [Update the agent](/servers/update-agent) on that server. |
+| "It's offline." | Bring the server back: see [The server is offline](/help/server-offline). |
+| "A different CPU architecture than this app's image." | Choose a server with the same kind of processor (Intel/AMD or ARM) as the primary. |
+| "Not enough memory for this app's limit." | Lower the app's memory limit or free memory on that server. See [Server memory](/servers/memory). |
+| "One of this app's databases isn't reachable from there yet." | Fix the path between that server and the database. See [Connect across servers](/network/connect-across-servers). |
+
+Two notes do not block a server. "You'll enter 2 values for it when you add it" announces the sealed values step. "Can't reach the databases on this app's primary server yet. Connect the app to any it uses." means you should [connect the app to its database](/databases/connect-an-app), so that every server gets a private path to it.
+
+## How a deployment rolls out
+
+Every deployment of the app, from a push, **Redeploy** or a settings change, goes to the primary first, then to each added server in the order you added them, one at a time.
+
+- Each server builds the same commit itself, so a rollout takes about one build per server.
+- The rollout stops at the first failure. The servers after it keep the release they had, so a bad release reaches at most one server.
+- A server that is offline is skipped and catches up when it returns.
+- **Deployments** shows one entry per rollout: "Rolling out to 2 servers", "Rolled out to 2 servers" or "Rollout stopped at prod-eu-2".
+
+### After a stopped rollout
+
+The card shows **This app is running two versions** and names the release on each server. Choose one:
+
+- **Retry** deploys the stopped rollout's release to every server again, one at a time.
+- **Roll back** brings back the release before the current one, with its variables and limits. Every server returns to it.
+
+## How visitors are spread
+
+LiveHQ's edge sends each request to the serving server that has the fewest requests in progress. On a tie it picks the primary.
+
+- Only servers that are ready take requests. A server that is still on its first deployment, **Down** or in a planned restart is passed over while another one can serve.
+- During a rollout, a server keeps serving its current release until the new one takes over there.
+- If a request cannot be delivered to one server, the edge passes that server over for 15 seconds and tries one other server. A request that was already sent is tried again only when it is a GET, HEAD or OPTIONS request.
+- A WebSocket picks its server once, when it opens.
+
+LiveHQ judges a server by its connection to the edge and by what its agent reports. It does not test your app from outside.
+
+## What the copies share
+
+Copies share only their database.
+
+- **No shared disk.** Keep uploads and sessions in the database or in object storage, not in files.
+- **No sticky sessions.** Any request can land on any server.
+- **More database connections.** Connection pools multiply by the number of servers. Size them so every copy fits within the database's connections: see [Database sizes and limits](/databases/sizes-and-limits).
+
+## Remove a server
+
+On the card, press **Remove** next to a **Replica**. LiveHQ takes that server out of the load balancer first, then stops the app there. The app keeps serving from the others. Confirm with **Remove from prod-eu-2**.
+
+## Background services
+
+A [background service](/apps/background-services) can run on several servers too. Its card is named **Servers**. One copy runs on each server, with no load balancing, so work the service schedules for itself runs on every server.
+
+## Limits
+
+- The primary cannot be changed, and it has no **Remove** button.
+- No weighted traffic: you cannot send one server a larger share.
+- No autoscaling: you add and remove servers yourself.
+- Servers build one after another, never in parallel.
+
+## If something goes wrong
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| **This app is running two versions** | A rollout stopped at a failure. | Open the failed deployment to read why, then **Retry** or **Roll back**. |
+| A row reads **Down** | That server is offline, or the app is not running there. The edge uses the other servers. | Open the server from the row and check it. |
+| "Stopped: a deployment to another server in this rollout failed or was stopped." | This server's turn was cancelled because an earlier one failed. | Fix the first failure, then **Retry**. |
+| "Skipped: this server's agent doesn't run replicas. Update it and it catches up." | The agent on that server is too old. | [Update the agent](/servers/update-agent). |
+| "Every server in this workspace already runs storefront." | There is no server left to add. | [Connect a server](/servers/connect). |
+
+## Related
+
+- [Deployments](/apps/deployments)
+- [Roll back](/apps/rollback)
+- [How the private network works](/network/overview)
+- [Plans and limits](/account/plans)

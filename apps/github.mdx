@@ -1,0 +1,80 @@
+---
+title: "Connect GitHub"
+description: "Install the LiveHQ GitHub App for your workspace, choose the repositories it may read, and keep that list up to date."
+---
+
+LiveHQ deploys apps from GitHub. You connect GitHub once for a workspace by installing the LiveHQ GitHub App and choosing which repositories it may read.
+
+## Before you start
+
+- You are the workspace's **Owner** or an **Admin**. Everyone else sees "A workspace owner or admin manages the GitHub connection." A **Developer** can still deploy the repositories that are shared.
+- You can install apps on the GitHub account or organization that holds the code. On an organization, GitHub may ask one of its owners to approve.
+
+## Steps
+
+<Steps>
+  <Step title="Open the GitHub page">
+    In the console, press **GitHub** at the foot of the sidebar. The dot beside it is lit once GitHub is connected.
+  </Step>
+  <Step title="Press Connect GitHub">
+    Your browser goes to `github.com`.
+  </Step>
+  <Step title="Choose repositories on GitHub">
+    Pick the account or organization, then choose **Only select repositories** and pick the ones LiveHQ should see. **All repositories** shares every current and future one.
+
+    Press **Install**. The button may read **Install & Authorize**.
+  </Step>
+  <Step title="Come back to the console">
+    GitHub returns you by itself. The page reads "Finishing your GitHub connection…", then **Connected to** followed by your GitHub name, and lists each shared repository with its default branch and **Private** or **Public**.
+  </Step>
+</Steps>
+
+Finish within 15 minutes, in the same browser tab you started in.
+
+## Add or remove repositories later
+
+1. On the **GitHub** page, press **Manage repository access**. GitHub's settings for the LiveHQ app open in a new tab.
+2. Add or remove repositories there and save.
+3. Back in the console, press **Sync repositories**. The page confirms with "Repository access refreshed from GitHub."
+
+A repository you added on GitHub can be deployed once it appears in this list.
+
+## What LiveHQ can read
+
+- **Only what you shared.** LiveHQ sees the repositories you selected and nothing else in the account.
+- **Their names, default branch and whether they are private**, to fill the lists in the console.
+- **The code of the commit being deployed.** To fetch it, LiveHQ asks GitHub for a token that can only read the contents of the selected repositories.
+- **Pushes to them**, so that [deploy on push](/apps/redeploy) can start a deployment.
+
+GitHub lists the app's full permissions on the install page, before you agree.
+
+Your server never holds a GitHub credential. GitHub credentials stay in LiveHQ's backend, and the server receives a short-lived download for the exact commit it is deploying.
+
+## Take access away
+
+The console has no button to disconnect GitHub. You remove access on GitHub: press **Manage repository access**, then remove repositories or uninstall the app there. After removing repositories, press **Sync repositories** so that the console's list matches.
+
+Apps that are already running keep running, because their releases are on your server. LiveHQ can no longer redeploy an app whose repository it cannot read, and pushes to it no longer deploy.
+
+## If something goes wrong
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| "This GitHub setup is expired or belongs to a different session. Start it again." | More than 15 minutes passed, or you finished in another tab, another browser or under another LiveHQ account. | Press **Return to GitHub settings →**, then **Connect GitHub** again. |
+| **Reconnect GitHub** where **Manage repository access** should be | LiveHQ has no saved link to your installation's settings page. | Press it and go through GitHub's page once more. |
+| "No selected repositories." | The app is installed, but no repository is shared with it. | Press **Choose repositories on GitHub**, add one, then **Sync repositories**. |
+| A repository is missing on the Deploy page | It is not shared, or the list is out of date. | **Manage repository access**, add it, then **Sync repositories**. |
+| "GitHub is not connected. Reconnect it so LiveHQ can fetch acme/storefront." on the Deploy page | The connection was removed after the app was deployed. | Connect GitHub again and share that repository. |
+| "Showing the first 500 selected repositories." | The list is cut at 500. | Share only the repositories you deploy. |
+
+## Limits
+
+- GitHub is the only source. There is no connection for other Git hosts.
+- The console lists up to 500 shared repositories.
+- Git submodules and Git LFS files are not fetched. See [How LiveHQ builds an app](/apps/builds).
+
+## Related
+
+- [Deploy an app from GitHub](/apps/deploy)
+- [Redeploy an app](/apps/redeploy)
+- [Members and roles](/account/members-and-roles)

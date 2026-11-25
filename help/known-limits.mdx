@@ -1,0 +1,74 @@
+---
+title: "Known limits"
+description: "What LiveHQ does not do today, said plainly, with what to do instead: domains, backups, scheduling, scaling, storage, APIs and outages."
+---
+
+This page lists what LiveHQ cannot do today. Nothing here is hidden elsewhere in small print. Numbers that depend on your plan are on [Plans](/account/plans).
+
+## Apps
+
+| Limit | What it means | What to do instead |
+| --- | --- | --- |
+| **No bare domains** | LiveHQ cannot serve `example.com`, only names with something in front, such as `www.example.com` or `app.example.com`. | Add `www.example.com` and redirect `example.com` to it at your domain company. See [Custom domains](/apps/custom-domains). |
+| **No scheduled jobs** | There is no cron and no "run every night". | Run a [background service](/apps/background-services) that keeps its own schedule, or call an HTTP route of your app from an outside scheduler. |
+| **No autoscaling** | LiveHQ never adds or removes servers or copies by itself. | Add a server to an app by hand. See [Several servers](/apps/several-servers). |
+| **No persistent disk for apps** | Files an app writes inside its container are gone after the next deployment or restart. | Keep data in a database, and uploads in object storage. |
+| **HTTP only** | Apps are reached over HTTP, including server-sent events and WebSockets. Raw TCP or UDP services are not supported. | Databases have their own [public URL](/databases/connection-urls). |
+| **No names between apps** | One app cannot call another by a private name. | Call the other app's address, or share a database or a Redis queue. |
+| **One branch per app, no previews** | An app follows one branch. There are no per-branch or per-pull-request deployments. | Deploy the other branch as a second app. |
+| **GitHub only** | Code comes from GitHub through LiveHQ's GitHub App. | Mirror other hosts to GitHub. |
+| **One deployment at a time per server** | A second deployment waits for the first. | Spread apps over more servers if this slows you down. |
+| **Builds run on your server** | A build uses your server's CPU and memory beside your running apps. | Give the server enough memory. See [How memory is shared](/servers/memory). |
+| **No check from outside** | An app's **Live** status rests on what your server reports and on the edge's connection to it. LiveHQ does not test your address from the internet. | Use an outside uptime checker if you need one. |
+| **No sharing with one person** | An app is open to you alone, to anyone with its password, or to everyone. You cannot invite one person to one app. | Give the app's password to the people you choose. See [Share a private app](/apps/sharing). |
+| **The Run tab is not a terminal** | It runs one command with a timeout. It is not interactive. | For a shell on the server itself, use [private SSH](/servers/private-ssh). |
+
+## Several servers
+
+| Limit | What to do instead |
+| --- | --- |
+| No sticky sessions: any request may go to any server. | Keep sessions in a database or in Redis. |
+| No weighted traffic. Ready servers share requests. | |
+| An app's first server cannot be changed. | Deploy the app again with another first server. |
+| Copies share nothing but what you connect them to. | Keep uploads and sessions in a database or object storage. |
+
+## Databases
+
+| Limit | What it means | What to do instead |
+| --- | --- | --- |
+| **Scheduled backups only** | There is no point-in-time recovery. After a failure you can lose what changed since the last backup. | Schedule backups as often as your data needs. See [Backups](/databases/backups). |
+| **No backups on Free** | Scheduling and running backups need Pro or Teams. | [Export](/help/export) your data, or upgrade. |
+| **PostgreSQL and Redis only** | No MySQL, MongoDB or SQLite databases. | Use an outside provider and put its URL in a variable. |
+| **One server per database** | A database runs on one server. There is no replication and no automatic failover. | Restore a backup as a new database on another server. See [Restore](/databases/restore). |
+| **Public access over IPv4 only** | A database's public URL points at your server's IPv4 address. | |
+| **Storage budgets are not quotas** | The budget is monitored and shown. It does not stop a database from growing, and it does not resize your disk. | Watch the server's disk. See [A full disk](/help/disk-full). |
+| **No import of a Redis dump** | You cannot load an existing `.rdb` file. | Write the keys through a connection. |
+
+## Servers
+
+| Limit | What it means |
+| --- | --- |
+| **Supported systems** | Ubuntu 22.04, 24.04 or 26.04; Debian 12 or 13; Intel/AMD or ARM, 64-bit. |
+| **You rent the server** | LiveHQ does not sell, resize, move or back up the server itself. You do that at your hosting company. |
+| **LiveHQ patches it** | Security updates are installed for you, and the server may restart at a planned weekly time. You can change or switch this off. See [Security updates and restarts](/servers/system-updates). |
+| **Small servers** | A 1 GB server can run LiveHQ and a small app. Large builds can run out of memory on it. See [What server you need](/servers/requirements). |
+
+## The platform
+
+| Limit | What it means |
+| --- | --- |
+| **No public API or command-line tool** | Everything is done in the console. There is no Terraform provider and no configuration file in your repository. |
+| **No uptime promise** | LiveHQ gives no SLA. Visitors reach your apps through LiveHQ's edge, so while the edge is unreachable they cannot load them. See [What happens during a LiveHQ outage](/help/outages). |
+| **72 hours without LiveHQ's control plane** | Public apps keep serving for up to 72 hours if LiveHQ's console and API are down. Private apps pause. |
+| **Some failures are not emailed** | LiveHQ emails when a server stops responding, when a deployment fails and when a server reports an app failing. It does not email when your app is healthy on the server but unreachable from the internet, or when a database fails. See [Emails LiveHQ sends](/help/emails). |
+| **Team features need Teams** | Inviting people and roles are on the Teams plan. On Free and Pro a workspace has one person. |
+| **No company single sign-on** | You sign in with a password, a passkey, or Google or GitHub where LiveHQ offers them. |
+| **No password reset** | The console has no "forgot password" and no way to change a password today. Add a passkey and keep your recovery codes, so one lost thing does not lock you out. See [Two-factor sign-in](/account/two-factor). |
+| **English only** | The console and these docs are in English. |
+| **Monthly plans only** | There are no yearly plans and no trials of the paid plans. Start on Free. |
+
+## Related
+
+- [FAQ](/help/faq)
+- [Plans](/account/plans)
+- [For AI agents: limits](/agents/limits)

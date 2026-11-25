@@ -1,0 +1,96 @@
+---
+title: "A tour of the console"
+description: "Find your way around the LiveHQ console: the sidebar, Home, a server's views, an app's tabs, a database's tabs, search and the New button."
+---
+
+The console is at [console.livehq.dev](https://console.livehq.dev). It works on a phone: the sidebar becomes a menu behind the button at the top left.
+
+## The sidebar
+
+The sidebar is always there and shows the whole workspace.
+
+| Item | What it opens |
+| --- | --- |
+| The workspace name | Switch workspace and open **Workspace settings**. Owners and admins also see **People**. |
+| **Search or jump to…** (⌘K, or Ctrl+K) | The command palette: jump to an app, a server or a page, or start an action such as **Deploy from GitHub**. |
+| **Home** | How the workspace is doing and what needs you. |
+| **Deployments** | The latest deployment of each app, newest first. A number shows how many are running. An app's full history is on its own **Deployments** tab. |
+| **Applications** | All apps and background services. |
+| **Databases** | All PostgreSQL and Redis databases. |
+| **Servers** | One line per server with a status light. The **+**, shown to owners and admins, connects another server. |
+| **GitHub** | The GitHub connection and the repositories LiveHQ may read. |
+| **Billing** | The plan, bandwidth and usage. Owners and admins only. |
+| **People** | Members, roles and invitations. Owners and admins only; inviting people needs Teams. |
+| **Settings** | Your account, sign-in security and the workspace. |
+| Your email, at the bottom | Theme (system, light or dark) and **Sign out**. |
+
+## The top bar
+
+- The breadcrumbs at the left show where you are: workspace, then the server (or **Applications** or **Databases**), then the app or database.
+- On a server, the four views sit in the middle: **Canvas**, **Deployments**, **Monitor**, **Health**.
+- A pill appears while a deployment is running. Press it to follow the deployment.
+- **Live**, at the right, means the console is receiving fresh data. It has nothing to do with an app's **Live** status. **Connection interrupted** means the console shows the last data it received.
+- **New** creates things: an app from a **GitHub repository**, a **Background service**, a **PostgreSQL database**, a **Redis database**, a copy of an app on another server, or **Connect a server**. Viewers have no **New** button, and **Connect a server** is offered to owners and admins only.
+
+## Home
+
+Home says in one sentence how the workspace is doing. Below it:
+
+- **Needs attention:** failed deployments with a one-click fix where LiveHQ knows one, and servers that are offline.
+- **In flight:** deployments that are running, each with its steps.
+- **Servers:** one tile per server with its apps and databases.
+- **Recent deployments.**
+
+A new workspace shows first steps instead, with **Guide me, step by step**.
+
+## A server
+
+| View | What it is for |
+| --- | --- |
+| **Canvas** | A drawing of the server: the edge, the tunnel, each app and database. Click one to open it. |
+| **Deployments** | The latest deployment of each app on this server. |
+| **Monitor** | CPU, memory, network and disk charts for the last 15 minutes to 24 hours. |
+| **Health** | The server's state and controls, in tabs: **Overview**, **Workloads**, **Capacity**, **Maintenance**, **Security**, **Updates** and **Settings**. |
+
+Details: [Find your way around a server](/servers/server-pages).
+
+## An app
+
+Open an app from **Applications**, from Home or from a server's Canvas. Its tabs:
+
+| Tab | What you do there | Page |
+| --- | --- | --- |
+| **Overview** | See the status, usage, the latest deployment and why the app last restarted. | [App status](/apps/status) |
+| **Deployments** | Follow a build, read its output, roll back. | [Follow a deployment](/apps/deployments) |
+| **Domains** | Change the LiveHQ address, add your own domain. | [Custom domains](/apps/custom-domains) |
+| **Variables** | Add and replace variables. | [Variables](/apps/variables) |
+| **Resources** | Read CPU and memory use, change the limits. | [Limits and usage](/apps/resources) |
+| **Bandwidth** | See what the app's traffic uses. | [Bandwidth](/apps/bandwidth) |
+| **Firewall** | Block, check and limit visitors. | [App firewall](/apps/firewall/overview) |
+| **Logs** | Read what the app prints. | [Logs](/apps/logs) |
+| **Run** | Run a command inside the app's container. | [Run a command](/apps/run-commands) |
+| **Settings & access** | Choose who can open the app, stop it, delete it. | [App access](/apps/access) |
+
+A background service has no **Domains**, **Bandwidth** or **Firewall** tab, because nothing on the internet reaches it.
+
+## A database
+
+| Tab | What you do there | Page |
+| --- | --- | --- |
+| **Overview** | See health, storage and the latest backup. | [Databases](/databases/overview) |
+| **Studio** | Browse and edit data, run SQL or Redis commands. | [PostgreSQL Studio](/databases/postgresql-studio), [Redis Studio](/databases/redis-studio) |
+| **Users** | Create users, rotate passwords. | [Users and passwords](/databases/users) |
+| **Connections** | Get a connection URL, connect an app. | [Connection URLs](/databases/connection-urls) |
+| **Backups** | Schedule, run and restore backups. | [Backups](/databases/backups) |
+| **Settings** | Change sizes and limits, stop or delete. | [Sizes and limits](/databases/sizes-and-limits) |
+
+Viewers do not see the **Studio** tab.
+
+## Who sees what
+
+Every member of a workspace sees its servers, apps and databases. The role decides what they may change: viewers change nothing, developers deploy, admins and the owner also manage servers. See [People and roles](/account/members-and-roles).
+
+## Related
+
+- [How LiveHQ works](/start/how-livehq-works)
+- [Quickstart](/quickstart)

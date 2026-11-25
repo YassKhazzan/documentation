@@ -1,0 +1,109 @@
+---
+title: "Bandwidth"
+description: "What counts as bandwidth, where to see an app's use, what happens at 75% and 100% of the workspace's limit, and how to use less."
+---
+
+Bandwidth is the data that passes through LiveHQ's edge between your apps and their visitors. Each plan includes an amount per period, shared by every app in the workspace. This page says what counts, where to see it, and what happens when it runs out.
+
+## What counts
+
+| Counts toward the limit | Does not count |
+| --- | --- |
+| Responses your apps send to visitors, WebSocket messages included | Data LiveHQ's edge saved: compressed bytes and pages it did not have to resend |
+| Uploads from visitors: request bodies and WebSocket messages they send | Files served from the cache in front of the edge |
+| | Requests the [app firewall](/apps/firewall/overview) refused, challenged or redirected, and the bodies of those requests |
+| | Request and response headers |
+| | Private SSH sessions to a server |
+| | [Background services](/apps/background-services), which have no visitors |
+
+Sizes are decimal: 10 GB is 10,000,000,000 bytes.
+
+## The limit and the period
+
+| | Free | Pro | Teams |
+| --- | --- | --- | --- |
+| Included per period | 10 GB | 2 TB | 5 TB |
+| Period | The calendar month | Your billing period | Your billing period |
+| Beyond the included amount | Apps pause | Billed per GB up to the spend limit the owner sets, then apps pause | Same as Pro |
+
+On Pro and Teams the spend limit starts at \$0. Until the owner raises it, apps pause when the included amount is used up. Prices and the spend limit are on [Billing](/account/billing).
+
+## See an app's use
+
+Open the app, then **Bandwidth**. Every member who can see the app can see this tab.
+
+| On the tab | What it shows |
+| --- | --- |
+| **This period** | What this app used, and its share of the workspace's use |
+| **Sent to visitors** | Responses, with **Uploads** below |
+| **Requests** | How many, and the average size of one |
+| **By the period's end** | A forecast at this app's current pace. It appears after the first day. |
+| The daily chart | One bar per day: **Sent to visitors**, **Uploads** and **Saved by LiveHQ** |
+| The line under the chart | The workspace's total against its limit, the period's dates, and **Last counted** |
+
+LiveHQ's edge reports use about once a minute, so the numbers trail real traffic slightly. Owners and admins can press **See every app** to compare apps on the Billing page.
+
+## At 75% and at 100%
+
+The limit belongs to the workspace, so these apply to all its apps together.
+
+| When | What happens |
+| --- | --- |
+| 75% of the limit | Every member sees a banner in the console: "75% of this period's 10 GB bandwidth is used." Owners and admins get a **See usage** link. |
+| 80% | Owners and admins get one email for the period. |
+| The included amount is used up (Pro and Teams) | Owners and admins get one email that says what happens next: extra bandwidth billed up to the spend limit, or a pause when the spend limit is \$0. |
+| 100% of the limit | Every app in the workspace pauses. The banner reads "Apps are paused: this period's 10 GB of bandwidth is used up. They resume on" followed by the date. Owners and admins get one email. |
+
+Because use is counted about once a minute, a workspace with heavy traffic can pass the limit by a little before its apps pause.
+
+## What visitors see while apps are paused
+
+- In a browser: a LiveHQ page titled "This app is paused for now" with the line "It reached its monthly bandwidth limit. Try again later."
+- Scripts and API clients: status `429` with a `Retry-After` header and the text `monthly bandwidth limit reached`.
+- Open WebSocket connections are closed.
+
+The apps keep running on your server and nothing is deleted. Deployments, logs and databases work as usual. Only visitor traffic through the edge stops.
+
+## What resumes the apps
+
+- **A new period.** Apps resume by themselves when it starts. The banner names the date.
+- **On Free:** moving to Pro or Teams. The banner's link reads **Upgrade or see usage**.
+- **On Pro and Teams:** the owner raises the bandwidth spend limit. The banner's link reads **Raise the limit**, and apps resume within seconds of the change.
+
+## How LiveHQ saves data for you
+
+LiveHQ's edge reduces what it has to send, without changing what visitors receive. Saved data does not count, and the Bandwidth tab shows it: "LiveHQ saved … by compressing pages and letting browsers reuse what they already have."
+
+- **Compression.** If your app sends HTML, CSS, JavaScript, JSON, XML, SVG or similar text uncompressed, the edge compresses it for visitors whose browsers accept that. Text often shrinks to about a quarter. Content your app already compressed, images and video are left as they are.
+- **Not sending what the visitor already has.** When a browser asks for a page it already holds and the page has not changed, the edge answers "not modified" without the body.
+- **Long caching of build files (public apps only).** Files whose names carry a content fingerprint, such as `index-BzX3k9a1.js`, and everything under `/_next/static/`, get a one-year cache header when your app set none. They are then served from the cache without using your bandwidth. Private apps are never cached this way.
+
+<Warning>
+If a public app overwrites a fingerprint-named file in place and sends no `Cache-Control` header for it, visitors can keep getting the old copy. Give changed files new names, which build tools do by default, or send your own `Cache-Control`.
+</Warning>
+
+## Use less
+
+These are the tips on the tab's **Using less** card:
+
+- **Serve images at the size they are shown.** A 4000-pixel photo shown at 800 pixels sends about 25 times the data. WebP or AVIF are often half the size of JPEG.
+- **Let browsers and the cache keep files.** Files that rarely change can send `Cache-Control: public, max-age=…`. They are then served without using your bandwidth.
+- **Host large downloads elsewhere.** Videos and big files are better served from object storage or a video service.
+
+One more: an attack or a scraper can use bandwidth quickly. Requests the [app firewall](/apps/firewall/overview) refuses cost you nothing, so blocking them saves bandwidth too.
+
+## If something goes wrong
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| "Apps in this workspace used all of this period's bandwidth, so they're paused." | The workspace reached its limit. | See "What resumes the apps" above. |
+| Use jumps on one day | One app sent much more than usual. | Open **Billing** to find the app, then its **Firewall** tab to see who asked for what. |
+| **By the period's end** shows a dash | The period is less than a day old. | Look again tomorrow. |
+| The banner has no link | You are a developer or a viewer. | Ask an owner or an admin. |
+
+## Related
+
+- [Billing](/account/billing)
+- [Plans](/account/plans)
+- [App firewall](/apps/firewall/overview)
+- [Emails LiveHQ sends](/help/emails)

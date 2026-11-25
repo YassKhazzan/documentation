@@ -1,0 +1,91 @@
+---
+title: "Update the agent"
+description: "Install a new version of the LiveHQ agent on a server from the console, follow its progress, and know what to do when an update stalls."
+---
+
+The agent is the LiveHQ program on your server. New console features often need a newer agent. When the console says **Update this server's agent**, this is the page to follow. Your apps keep running during an agent update.
+
+## How updates reach a server
+
+LiveHQ is in a closed beta, and every agent release so far is a preview release. **A preview release does not install by itself.** Someone with the **Owner** or **Admin** role installs it with **Update agent**.
+
+The **Automatic updates** schedule on the same tab is for stable releases: a server installs a stable release by itself during its daily window, 03:00 to 04:00 UTC unless you change it. Until LiveHQ publishes stable releases, the **Stable releases** card has nothing to install and says so.
+
+## Before you start
+
+- The **Owner** or **Admin** role. Other roles do not see the update controls.
+- The server is **Connected**.
+
+## Steps
+
+<Steps>
+  <Step title="Open the Updates tab">
+    Open the server, then **Health**, then **Updates**. The **Agent version** card says which version is installed and which is the latest.
+  </Step>
+  <Step title="Press Update agent">
+    The button reads **Agent up to date** when there is nothing to install.
+  </Step>
+  <Step title="Follow the progress">
+    Four steps light up in turn: **Requested**, **Preparing**, **Installing**, **Confirming**. You can leave the page: the update continues on the server.
+  </Step>
+</Steps>
+
+## What the progress words mean
+
+| Step | What the console says | What is happening |
+| --- | --- | --- |
+| **Requested** | "Sending the update request" | The request is on its way to the server |
+| **Preparing** | "Server received the request", then "Update downloaded" | The server downloads the release and checks its signature |
+| **Preparing** | "Update waiting", with a reason | The server is busy or short of room. It continues automatically |
+| **Installing** | "Installing the update" | The agent is replaced and your apps are checked. Apps keep running |
+| **Confirming** | "Confirming the new version" | Installed. The console waits for the new agent to report |
+| Done | "Updated to" and the version | The new agent runs and passed its checks |
+
+An update waits for other work to end. The reasons you may read:
+
+- "Waiting for the current deployment, backup, restore or Studio session to finish."
+- A sentence that starts "Waiting for disk headroom:" or "Waiting for memory headroom:", with figures in bytes. An update needs the larger of 2 GiB or 10% of the disk free, and 128 MiB of free memory.
+- "Waiting for the server clock to synchronize."
+
+If the new agent fails its checks, the console says "Rolling back the update": the server goes back to the previous version by itself and your apps keep running.
+
+## When an update stalls
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| "Update waiting" for more than 10 minutes, and the button reads **Request update again** | Something keeps the server busy | Let the deployment or backup finish, then press **Request update again** |
+| "Update request expired" or "Update needs a new request" | The server did not install it within an hour, or stopped working on it | Press **Request update again** |
+| "The request did not reach the server" | The server did not pick the request up | Check that the server is **Connected**, then request it again |
+| "Update needs attention" | The server could not switch to this release | Read the reason under it. If it stays, use the update command below or write to [support](/help/support) |
+
+The console remembers a request in the browser you used. Another browser shows the progress only once the server reports it.
+
+## When the install command must be run again
+
+Some updates cannot be installed from the button. The button then reads **Get update command**, or a note on the card says so:
+
+| The console says | Why |
+| --- | --- |
+| "This release updates the server service settings and needs the update command once." | The release changes how LiveHQ's services start, which only the installer may do |
+| "Run the installer command once to enable updates from this page." | The installed agent is older than the button |
+| "This server's installed updater waits for more free memory than a server this size has." | An older agent on a small server cannot update itself |
+| A row on the **Security** tab reads **Needs the installer** | That protection needs a release installed by the installer |
+
+To run it:
+
+1. On the **Agent version** card, press **Show update command**, then **Copy**.
+2. Open an SSH session on the server and paste the command.
+
+It is the same command as on **Connect a server**, with this server's name filled in. The installer keeps the server's connection to your workspace, asks for no enrollment code, and does not restart your apps. If the server is in the middle of a deployment, a database operation or an update, it stops and asks you to retry afterwards.
+
+## The schedule and the other cards
+
+On the **Automatic updates** card, press **Edit schedule**. Choose **Use the maintenance window** or **Paused**, a **Timezone**, a **Start time** and a **Window length** of 1 to 6 hours, then press **Save update policy**. The same window sets the time of day for [security updates and planned restarts](/servers/system-updates).
+
+**Security advisories** lists published notices about the agent's own components. It is not a scan of your server or your apps.
+
+## Related
+
+- [Find your way around a server](/servers/server-pages)
+- [Security updates and planned restarts](/servers/system-updates)
+- [Install problems](/help/install-problems)

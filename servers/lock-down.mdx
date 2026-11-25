@@ -1,0 +1,113 @@
+---
+title: "Close the server to the internet"
+description: "Lock a server so nothing on it answers from the internet, test the lock for 5 minutes before keeping it, and get back in if you are locked out."
+---
+
+The lock is a firewall rule set that LiveHQ puts on your server. With it, nothing on the server answers from the internet except what you choose to keep for SSH. Your apps keep working: their visitors arrive through LiveHQ's edge, over a connection the server opens outward.
+
+Every lock starts as a 5-minute test that undoes itself unless you keep it.
+
+## What the lock closes
+
+| | With the lock on |
+| --- | --- |
+| Your apps | Unchanged. They never needed an open port |
+| SSH on port 22 | Closed, limited to your IP addresses, or left open: your choice |
+| A database's public connection | Unchanged. It follows the database's own access settings |
+| Programs or containers you started yourself that listen on a port | Closed from the internet |
+| Ping | Not answered |
+| Connections the server opens outward | Unchanged: updates, backups and the tunnel keep working |
+
+LiveHQ adds its own rules and leaves every other firewall rule on the server as it is.
+
+## Before you start
+
+- The **Owner** or **Admin** role.
+- [Private SSH](/servers/private-ssh) turned on and tried once, if you plan to close port 22. The console reminds you when you have not connected through it in the last day. It does not stop you.
+
+## Steps
+
+<Steps>
+  <Step title="Open the lock choices">
+    Open the server, then **Health**, then **Security**. On the **Closed to the internet** row, which reads **Open**, press **Lock this server**.
+  </Step>
+  <Step title="Choose how SSH stays reachable">
+    | Choice | What it does |
+    | --- | --- |
+    | **Only through LiveHQ** (Recommended) | Port 22 closes. You reach SSH with private SSH. The safest choice |
+    | **From my IP addresses** | Port 22 answers only the addresses you list, such as `203.0.113.7, 2001:db8::/48` |
+    | **Keep SSH open** | Everything else closes. Port 22 stays open to everyone |
+  </Step>
+  <Step title="Lock for a 5-minute test">
+    Press **Lock for a 5-minute test**. The row reads **Testing** and a ring counts down from 5:00.
+  </Step>
+  <Step title="Check that you can still get in">
+    Open a **new** connection. A session that was already open proves nothing.
+
+    - With **Only through LiveHQ**: press **Connect with private SSH** in the panel and run the command. When your session opens, the step reads "You connected through private SSH at" and the time, then "It's safe to keep the lock."
+    - With the other two choices: open a new terminal and connect the way you usually do. The console cannot see that connection, so you are the judge.
+
+    Open one of your apps in a browser too.
+  </Step>
+  <Step title="Keep it or undo it">
+    Press **Keep it locked**. The lock then stays on, after restarts too. **Undo** removes it at once.
+
+    The console does not wait for the check: **Keep it locked** works even if you tested nothing. Test first.
+  </Step>
+</Steps>
+
+## If you do nothing
+
+The lock rolls back by itself when the 5 minutes end, and the panel says at what time. It also rolls back if the server restarts during the test. Nothing is final until you press **Keep it locked**.
+
+## After the lock is on
+
+The row reads **Locked · SSH only through LiveHQ**, **Locked · SSH from your addresses** or **Locked · SSH still open**.
+
+| Button | What it does |
+| --- | --- |
+| **Close port 22** | Shown on **Locked · SSH still open**. Starts a 5-minute test with port 22 closed |
+| **Change** | Pick another choice. It runs its own 5-minute test, and rolls back to the lock you had |
+| **Unlock** | Removes the lock. Everything listening on the server can be reached from the internet again |
+
+Owners and admins get an email when a lock is kept and when it is removed.
+
+## If you are locked out
+
+<Warning>
+With port 22 closed and private SSH turned off, the only way into the server is your hosting company's web console. Keep private SSH on while the server is locked.
+</Warning>
+
+Try these in order:
+
+1. **During the test:** wait. The lock is gone after 5 minutes.
+2. **From the LiveHQ console:** if the server still reads **Connected**, press **Unlock** or **Change** on the row. The lock does not block the agent's own connection to LiveHQ.
+3. **From your hosting company's web console:** every hosting company offers a screen to the server that does not use SSH, often named Console, VNC or Recovery. Sign in there and run:
+
+   ```bash
+   sudo /opt/livehq-agent/current/livehq-agent firewall unlock
+   ```
+
+   It answers `The LiveHQ lock is off. The server's own firewall rules are unchanged.`
+
+Type the program with its full path, as shown: it is not a command the terminal finds by name. The console shows the same command on the lock's row, and the email "prod-eu-1 is locked" repeats it.
+
+## If something goes wrong
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| The row reads **Needs the installer** | The server's agent was installed before the lock existed | Run the update command once. See [Update the agent](/servers/update-agent) |
+| "Not an address:" and what you typed | An entry in your address list is not an IP address or a range | Correct it. Separate addresses with commas or new lines |
+| The lock disappeared after 5 minutes | You did not press **Keep it locked** in time | Lock again and keep it |
+| "prod-eu-1 didn't pick this up in time. Check it's online, then try again." | The server did not receive the request | Check that it reads **Connected** |
+
+## Limits
+
+- **From my IP addresses** takes at most 16 addresses or ranges. A range that is too wide, such as the whole internet, is refused. If your own IP address changes, that choice shuts you out of port 22; private SSH still works.
+- If LiveHQ is unreachable, private SSH does not work and the lock stays on. Your ways in are then your hosting company's web console and the IP addresses you listed.
+
+## Related
+
+- [The Security tab](/servers/security)
+- [Connect with private SSH](/servers/private-ssh)
+- [The security model](/start/security-model)

@@ -1,0 +1,128 @@
+---
+title: "A custom domain does not go live"
+description: "Find why a custom domain stays on Waiting for DNS, Issuing certificate or Needs attention, what to change, and how long to wait."
+---
+
+You added a custom domain and it does not reach **Connected**, or you cannot add it at all. Start from the status on the domain's card: open the app, then **Domains**.
+
+The card shows a status, three steps (**DNS record**, **Certificate**, **Live**), the record to create, and any error in red. Find your status below.
+
+## How long to wait
+
+| After | Normal wait |
+| --- | --- |
+| Creating the DNS record at your domain company | Often a few minutes. This part depends on your domain company, not on LiveHQ: some take an hour or more to publish a change. |
+| The record becoming visible | LiveHQ looks at a waiting domain about every half minute during the hour after you added it or last pressed **Check status**, then every ten minutes. **Check status** asks at once. |
+| **DNS record** turning to "Verified" | A few minutes for the certificate. |
+
+If nothing has moved an hour after you created the record, work through the checks below before you wait longer.
+
+## Waiting for DNS
+
+LiveHQ has not seen the DNS record. The **DNS record** step says "Waiting". Work through these in order. The first two come from what the card shows. The others are general DNS advice: your domain company's help pages have the exact steps.
+
+<AccordionGroup>
+  <Accordion title="The name is a bare domain">
+    A bare domain is the registered name with nothing in front, such as `example.com`. Most domain companies refuse a `CNAME` record there, with a message like "A CNAME cannot coexist with other records at the same name".
+
+    LiveHQ cannot serve a bare domain. Press **Add the www domain** on the card to add `www.example.com`, create the record for that name, and remove the bare entry. Then forward `example.com` to `https://www.example.com` at your domain company, with its forwarding or URL redirect setting.
+  </Accordion>
+  <Accordion title="The record is missing or has a typing error">
+    Compare your record with the card, character by character.
+
+    | Field | Must be |
+    | --- | --- |
+    | Type | `CNAME`. Not `A`, not a URL redirect. |
+    | Name | The domain you added. If your company adds the domain itself, only the part in front, such as `www`. Typing the full name there creates `www.example.com.example.com`. |
+    | Target | Exactly the **Target** on the card. Use the copy button. |
+
+    Check that the change was saved, and that you made it at the company that really runs your domain's DNS. If you moved your nameservers to another company, records at the registrar are ignored.
+  </Accordion>
+  <Accordion title="Another record uses the same name">
+    A name can hold a `CNAME` or other records, not both. Delete any `A`, `AAAA` or older `CNAME` record for the same name. Domain companies often create one for `www` that points to their parking page.
+  </Accordion>
+  <Accordion title="A proxy is switched on for the record">
+    General DNS advice, not a LiveHQ rule: some DNS companies can put their own proxy or CDN in front of a record. The record then no longer answers with LiveHQ's target, and the check can fail. Switch the proxy off for this record so it is a plain DNS record. The setting is often labelled "DNS only".
+  </Accordion>
+  <Accordion title="The record is right but not visible yet">
+    Ask the public DNS from your own computer. This command works on Windows, macOS and Linux:
+
+    ```bash
+    nslookup -type=CNAME www.example.com
+    ```
+
+    The answer should name the target shown on the card. If it says the name does not exist, or names something else, the record is not published yet or is wrong. If it is right, press **Check status**.
+  </Accordion>
+</AccordionGroup>
+
+<Warning>
+A domain that is never verified is removed 7 days after you added it or last pressed **Check status**. Pressing **Check status** starts the 7 days again. If your domain disappeared from the list, add it again once the record is in place.
+</Warning>
+
+## Issuing certificate
+
+The record is verified and the HTTPS certificate is being made. The **Certificate** step shows where it is: "Waiting for validation", "Being issued", "Being deployed", then "Issued". This normally takes a few minutes.
+
+- **Leave the DNS record alone.** Changing or deleting it now can make the validation fail.
+- **Stuck on "Waiting for validation" for more than 15 minutes?** Press **Retry certificate validation** at the bottom of the card, once. It asks for a new validation at most once every 15 minutes; pressed sooner, it only checks the status.
+- **Do not remove and add the domain again** to speed things up. That starts a new certificate request from the beginning.
+- **Check for CAA records.** A CAA record tells certificate authorities who may issue certificates for your domain. If your domain has CAA records that leave out the authority LiveHQ's provider uses, the certificate is refused and the card shows the reason under **Needs attention**. Add the authority the message names, or remove the CAA records.
+- **A proxy at your DNS company** can also block validation, as general DNS advice. See above.
+
+## Needs attention
+
+The provider that verifies the domain and issues its certificate reported a problem, and its message is shown in red on the card. Read it first. Common causes:
+
+| The message is about | What to do |
+| --- | --- |
+| Validation that timed out | Check the DNS record again, then press **Retry certificate validation**. |
+| CAA | Fix the CAA records as described above, then press **Check status**. |
+| A record that changed or moved | Put the `CNAME` back exactly as the card shows, then press **Check status**. |
+
+The red message is stored at the last check. After a fix, press **Check status** to refresh it.
+
+## Connected, but the site does not open
+
+The domain itself is done. Look elsewhere:
+
+| What you see at the address | Meaning | Next |
+| --- | --- | --- |
+| A LiveHQ page "This app is offline" or "This app is stopped" | The app or its server is the problem, on every address. | [The app is unavailable](/help/app-unavailable) |
+| A sign-in or password page | The app is not public. Each address has its own session, so being signed in at the LiveHQ address does not count here. | Use **Open app** in the console, or see [Choose who can open an app](/apps/access) |
+| An old page, a parking page or an error from another host | Your computer or network still remembers the old DNS answer. | Try a private window or another network, such as a phone's mobile data. It clears by itself. |
+| `example.com` does not open while `www.example.com` does | The bare name is not forwarded. | Set up forwarding at your domain company. |
+
+## Paused and Removing
+
+- **Paused**: the domain is set up but held back by something outside its own setup, such as a billing pause on the workspace. Owners and admins: open the [Billing page](/account/billing).
+- **Removing**: the domain is being removed. It keeps its place in your plan until it is gone, usually within a few minutes.
+
+## You cannot add the domain
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| "Custom domains are part of Pro." | The workspace is on Free. | See [Plans](/account/plans). |
+| A dialog saying all the custom domains on your plan are in use | Pro includes 5 and Teams 10. A domain being removed still counts until it is gone. | Remove one you no longer use, or the owner adds one for \$3 a month. |
+| "Publish your first release before connecting a custom domain." | The app has never been deployed. | [Deploy the app](/apps/deploy) first. |
+| "This domain is already connected somewhere else." | Another workspace already uses this domain. | Remove it there first. If you do not know that workspace, write to [support](/help/support). |
+| "hostname already bound" | The domain is already connected to an app. | Look for it in the **Domains** tab of your other apps and remove it there. If it is not yours, write to [support](/help/support). |
+| "This domain was removed from another workspace recently and stays reserved for it until" followed by a date | A verified domain stays reserved for the workspace that removed it for 30 days. | Add it in that workspace, or here after the date. There is no way to shorten this. |
+| "This domain is still being removed. Try again in a minute." | You, or someone in your workspace, removed it moments ago. | Wait a few minutes. |
+| "This domain is already being added. Try again in a couple of minutes." | An earlier attempt to add it is still running. | Wait two minutes, then reload the tab. |
+
+## Ask for help
+
+If the domain is still stuck, write to [support](/help/support) with:
+
+- the domain and the app's name;
+- the status on the card and the full red message, if there is one;
+- the output of the `nslookup` command above.
+
+Never send a password or a variable's value.
+
+## Related
+
+- [Use your own domain](/apps/custom-domains)
+- [An app's LiveHQ address](/apps/addresses)
+- [The app is unavailable](/help/app-unavailable)
+- [Troubleshooting](/help/troubleshooting)

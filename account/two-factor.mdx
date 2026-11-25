@@ -1,0 +1,132 @@
+---
+title: "Turn on two-factor sign-in"
+description: "Add an authenticator app or a passkey to your LiveHQ account, save your recovery codes, and learn which actions ask you to confirm again."
+---
+
+Two-factor sign-in adds a second step after your password: a 6-digit code from an app on your phone, or a passkey. Your LiveHQ account can deploy code to your servers, so a stolen password should not be enough to get in.
+
+Everything on this page is in the console under **Settings**, in the section **Sign-in security**. It is available on every plan.
+
+## Before you start
+
+- **An authenticator app** on your phone (the console names Google Authenticator, 1Password and Authy; any app that shows 6-digit codes works), or **a device that can hold a passkey**: Face ID, Touch ID, Windows Hello or a security key.
+- **A fresh sign-in.** You can add your first method only within 15 minutes of signing in. Later the console answers "For your security, sign in again, then add your sign-in method within 15 minutes." Press **Sign in again** beside it and start over.
+
+## Set up an authenticator app
+
+<Steps>
+  <Step title="Open Sign-in security">
+    Open **Settings** in the sidebar and find **Sign-in security**. The first line reads "Two-factor sign-in is off".
+  </Step>
+  <Step title="Start the setup">
+    Beside **Authenticator app**, press **Set up**. A QR code appears.
+  </Step>
+  <Step title="Add LiveHQ to your app">
+    Scan the QR code with your authenticator app. If you cannot scan it, type the key shown after "Can't scan? Enter this key instead", or press **Copy key**.
+  </Step>
+  <Step title="Confirm with a code">
+    Type the 6-digit code your app shows into **Code** and press **Turn on**. You have 10 minutes, in the browser where you started the setup.
+  </Step>
+  <Step title="Save your recovery codes">
+    A box titled **Save your recovery codes now** shows 10 codes. This is the only time they are shown. Press **Copy all** or **Download** (the file is `livehq-recovery-codes.txt`), store them somewhere safe that is not your phone, then press **I saved them**.
+  </Step>
+</Steps>
+
+## What happens next
+
+- The first line now reads "Two-factor sign-in is on".
+- Every other browser and device signed in to your account is signed out. The one you used stays signed in.
+- LiveHQ emails you "An authenticator app was added to your LiveHQ account". Every later change to how you sign in is emailed too: see [Emails LiveHQ sends](/help/emails).
+
+## Add a passkey
+
+Under **Passkeys**, the name field is filled in with your device ("Mac", "iPhone", "Windows"). Change it if you like, press **Add a passkey** and follow your browser's prompt.
+
+- A passkey works as the second step, and it works alone: **Sign in with a passkey** on the sign-in page needs no password.
+- If the passkey is your first method, you get recovery codes at the same moment.
+- You can keep up to 10 passkeys. To remove one, press **Remove** beside it, then **Remove** again.
+- A browser that cannot use passkeys shows "This browser can't use passkeys."
+
+## Sign in with two-factor on
+
+After your password, the sign-in page asks "Enter the 6-digit code from your authenticator app." Type it and press **Continue**. The same page offers **Use a passkey instead**, **Use a recovery code** and **Start over**.
+
+## Recovery codes
+
+Each of the 10 codes signs you in once. The **Recovery codes** row counts them: "7 of 10 left."
+
+**Make new codes** replaces all of them. The old codes stop working, your other sessions are signed out and you are emailed. Removing your last method (the authenticator app and every passkey) turns two-factor sign-in off and deletes the codes.
+
+## Sign out other sessions
+
+In the **Other sessions** row, **Sign out other sessions** ends every other browser and device signed in to your account and says how many. LiveHQ does the same by itself when you add your first method, remove a method or make new codes.
+
+## Require it for a whole workspace
+
+An **Owner** or **Admin** can press **Require two-factor** in the row **Require it for everyone**. Your own account must have it on first. **Stop requiring** undoes it. Other roles see "Required" or "Optional".
+
+A member without two-factor sign-in then sees only one screen, **Set up two-factor sign-in**: "Your workspace requires a second step when you sign in, so a stolen password alone can't reach your servers." They add a method there, or press **Sign out**. Once a method is added the console opens normally. While the rule is on, a member cannot remove their last method.
+
+## Actions that ask you to confirm again
+
+With two-factor sign-in on, risky actions open a dialog titled **Confirm it's you**. Enter a code from your app or a recovery code and press **Confirm**, or press **Use a passkey**. You are not asked again for 15 minutes. Signing in with your second step counts too, so nothing asks during the first 15 minutes after you sign in.
+
+| Area | Actions that ask |
+| --- | --- |
+| Servers | **Create enrollment code** (connecting a server); **Restart server**; turning password logins off; locking, keeping the lock and unlocking; switching private SSH and creating an SSH command; changing security update settings, installing updates now, approving or postponing a restart, updating Docker; **Export everything**; **Remove server** |
+| Apps | Running a command in the app; adding or removing a server the app runs on; choosing servers under **Prepare servers** |
+| Databases | Showing a connection URL; listing, adding or changing users; rotating a password; public endpoint settings; connecting or disconnecting an app; Studio in write mode; restoring in place; downloading or deleting a backup; deleting a database |
+| Billing (**Owner**) | Changing from Pro to Teams (an upgrade from Free is confirmed on Stripe's page instead); buying extra servers, custom domains or members; resuming a subscription set to cancel; keeping a plan whose downgrade is scheduled; **Save spend limits** |
+| Workspace | Requiring two-factor for everyone, or no longer requiring it; inviting an **Admin**, making a member one or restoring a removed one; removing a member; **Transfer ownership** |
+| Your account | Adding or removing a sign-in method; connecting or disconnecting Google or GitHub; **Make new codes**; **Sign out other sessions** |
+
+Without two-factor sign-in these actions do not ask, with two exceptions that need it turned on: spend limits ("Spend limits need two-factor sign-in on your account, because raising one commits money without another confirmation.") and transferring ownership.
+
+## If you lose your phone
+
+1. Sign in with your password, press **Use a recovery code** and type one of your codes. A passkey works too.
+2. In **Sign-in security**, press **Remove** beside **Authenticator app**, then **Remove** again. If the console asks you to confirm, a recovery code works there as well.
+3. Press **Set up** and add the app on your new phone.
+
+If the authenticator app was your only method, removing it turns two-factor sign-in off, so finish step 3 within 15 minutes of signing in; you get 10 new recovery codes. If you also have a passkey, two-factor sign-in stays on: press **Make new codes** afterwards to replace the old ones. In a workspace that requires two-factor sign-in, add a passkey before you remove the app.
+
+<Warning>
+With no authenticator app, no recovery code and no passkey, you cannot sign in. The console has no form that resets the second step, and no automatic recovery by email. Write to `support@livehq.dev` from the account's email address: recovery is not self-service, so expect it to take time. Your servers, apps and databases keep running meanwhile. Keep your recovery codes somewhere safe, and add a passkey as a second way in.
+</Warning>
+
+## If you forget your password
+
+The console has no "forgot password" link and no page to change a password. If you forget yours:
+
+- **You added a passkey:** press **Sign in with a passkey** on the sign-in page. It needs no password.
+- **You connected Google or GitHub:** press **Continue with Google** or **Continue with GitHub**. See [Sign in with Google or GitHub](/account/sign-in-providers).
+- **Neither:** you cannot sign in, and you cannot reset the password yourself. Write to `support@livehq.dev` from the account's email address.
+
+Add a passkey while you can still sign in, so a forgotten password does not lock you out.
+
+## If something goes wrong
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| "For your security, sign in again, then add your sign-in method within 15 minutes." | You signed in more than 15 minutes ago | Press **Sign in again**, then add the method |
+| "That code isn't right. Check your phone's clock, then try the newest code." | The code is old, or the phone's clock is off | Set the phone's time to automatic and use the next code |
+| "That setup expired. Start setting up your authenticator app again." | More than 10 minutes passed, or you confirmed in another browser | Press **Set up** again and scan the new QR code |
+| "An authenticator app is already set up. Remove it first to use another one." | One app per account | Remove it, then set up the new one |
+| "Too many wrong codes. Try again in 15 minutes." | 10 wrong codes in a row | Wait, then use a fresh code |
+| "The passkey request was cancelled or timed out." | The browser prompt was closed | Press the button again |
+| "None of your passkeys works on this address. Use your authenticator app instead." | Passkeys belong to the console address they were made on | Type a code, or add a passkey on this address |
+| "This passkey is the only way you sign in. Add another way to sign in first." | Your account has no password and no connected Google or GitHub account | Add another passkey or [connect a provider](/account/sign-in-providers) first |
+
+## Limits
+
+- 10 recovery codes, each used once. 10 passkeys per account. One authenticator app.
+- 10 wrong codes lock the second step for 15 minutes.
+- Wrong passwords are counted per email address: after 20 from one IP address in 15 minutes, password sign-in for that email address closes to that IP address until the 15 minutes end; after 100 from everyone together, it closes for everyone. Passkey sign-in is not closed.
+- The console has no "forgot password" and no password change today: see [If you forget your password](#if-you-forget-your-password).
+- After your password, you have 5 minutes and 5 tries to pass the second step. After that the page says "This sign-in step expired. Start again."
+
+## Related
+
+- [Sign in with Google or GitHub](/account/sign-in-providers)
+- [Members and roles](/account/members-and-roles)
+- [How LiveHQ keeps your server safe](/start/security-model)

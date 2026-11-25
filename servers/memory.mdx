@@ -1,0 +1,79 @@
+---
+title: "How memory is shared on a server"
+description: "How LiveHQ shares a server's memory between apps, databases and builds, what stops first when the server runs out, and how to read the Capacity tab."
+---
+
+Everything on a server shares its memory: your apps, your databases, the build of the next deployment and LiveHQ's own services. This page explains the rules, so a full server does not surprise you.
+
+## The rules
+
+1. **A limit is a cap, not a reservation.** An app's or a database's memory limit is the most it may use. No memory is set aside for it. The limits on a server may add up to more than its memory, and a single limit may be larger than the server's memory.
+2. **Work never waits for memory.** A deployment, a build, a database or a restart begins with whatever memory is idle at that moment.
+3. **Each app and database stays under its own limit.** One that reaches its limit is stopped and restarted, however much the server has free. See [An app runs out of memory](/help/out-of-memory).
+4. **If the whole server runs out, the newest work stops first.** What was already serving visitors is the last to go.
+
+## What stops first when the server runs out
+
+When memory runs out, Linux stops one process to free some. LiveHQ tells it which to pick, in this order:
+
+| Order | What is stopped | What you see |
+| --- | --- | --- |
+| 1 | A build that is running | The deployment fails once with an out-of-memory reason. Nothing that was running is touched |
+| 2 | A new release that has not taken over yet. For about a minute after a deployment, the old release kept for rollback is in the same group | The deployment fails once with an out-of-memory reason, or the short rollback window is lost |
+| 3 | Apps and databases that are serving, the one using the most memory first | It is restarted automatically. The app's restart history says it was stopped for memory |
+| 4 | LiveHQ's own services, such as the agent and the tunnel | They restart by themselves |
+
+LiveHQ also watches a build each second and stops it when the server is about to run dry. That fails one deployment quickly instead of stalling the whole server for minutes.
+
+<Warning>
+On a server that is already full, a running app or database can still be the one that stops. Databases are restarted too, and connections to them drop for a moment. Leave real headroom on a server that holds a database you care about.
+</Warning>
+
+## Builds and swap
+
+Builds run on your own server, one at a time, and are often the hungriest thing on it.
+
+- A build may use the server's memory up to the build maximum, described below. After a build that succeeded, the idle builder stays for ten minutes so the next deployment starts faster. It then holds a few tens of MiB, and it is the first thing stopped if the server needs them.
+- **Only builds can use swap.** Swap is disk space that stands in for memory, slowly. Apps and databases never use it.
+- **Small servers get a swap file.** On a server with less than 2 GiB of memory and no swap of its own, LiveHQ creates one for builds: 2 GiB, or 1 GiB on a small disk. The first deployment reads **Preparing the server** for a few minutes while the file is written, once.
+- A build that swaps is slower, and a large build can still fail on a small server. The deployment then says so.
+
+To opt out, delete `/var/lib/livehq-swap/swapfile` on the server. LiveHQ does not put it back, and builds then get only the memory that is free.
+
+## The Capacity tab
+
+Open the server, then **Health**, then **Capacity**. The **Memory** card shows:
+
+| Part | Meaning |
+| --- | --- |
+| **Free right now** | The server's memory split into **In use now** and **Spare now**, as measured a moment ago |
+| **Memory limits** | The limits of **Apps and databases** plus what **LiveHQ services in use** take, against the server's memory. The rest reads **Not assigned**, or **Above the server's memory** when the limits add up to more. That is allowed |
+| The notes under the bars | The rules above in the console's words, and one line about swap, such as "Swap for builds: 2.00 GiB (1.90 GiB free)." |
+| "Builds: spare resources. One build runs at a time." | The current build maximum |
+
+The Deploy page shows the same two bars for the server you pick, under "Starts with whatever memory is idle". The **Storage** card on the Capacity tab is about [disk space](/servers/disk-cleanup).
+
+## Change the build maximum
+
+Owners and admins can press **Build resources** on the **Memory** card.
+
+- **Use spare resources** lets a build use the memory that is idle and share spare CPU at a lower priority than your apps, up to 16 cores and 64 GiB. New servers start this way.
+- Without it, set **Build memory maximum (MiB)**, from 512 to 65536, and **Build CPU maximum (cores)**, from 0.1 to 16. Press **Save build budget**.
+
+A lower maximum keeps a build from taking most of the server, but a build that needs more than its maximum fails. The maximum is separate from each app's own limit, and running apps and databases keep theirs.
+
+## If something goes wrong
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| A deployment fails with an out-of-memory reason | The server ran out while it built or started the release | Stop an app or database you do not need, deploy when the server is quiet, or resize the server. Then redeploy. Lowering a limit frees nothing by itself: a limit is only a cap. See [An app runs out of memory](/help/out-of-memory) |
+| A deployment reads **Queued behind another build** | One build runs at a time on a server | Wait. It starts by itself |
+| "No swap for builds." with a reason | The server did not take a swap file, or its disk is too full | Builds use only free memory. Free disk space, or use a server with 2 GiB or more |
+| The card talks about work waiting for memory, or says **Update this server's agent** | The server's agent is older than these rules | See [Update the agent](/servers/update-agent) |
+
+## Related
+
+- [What server you need](/servers/requirements)
+- [Read the Monitor charts](/servers/monitor)
+- [Resources and limits of an app](/apps/resources)
+- [An app runs out of memory](/help/out-of-memory)

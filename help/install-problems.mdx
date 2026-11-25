@@ -1,0 +1,105 @@
+---
+title: "The install command fails"
+sidebarTitle: "Install problems"
+description: "What each message of the LiveHQ installer means and what to do: enrollment codes, the wrong computer, unsupported systems, Docker conflicts and plan limits."
+---
+
+The install command stops at the first thing it cannot do safely, says why, and leaves the server as it found it. Find the last message in your terminal below.
+
+Two things hold for every case:
+
+- **Running the command again does no harm.** The installer picks up where it stopped.
+- **Nothing is removed.** The installer never uninstalls a package, a container or a configuration of yours.
+
+Most of the installer's own errors start with `LiveHQ setup:`.
+
+## The enrollment code
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| `This enrollment code is wrong, used or expired. Create a new one in the console and run the installer again.` | A code works once and for 30 minutes | In the console, create a new code. Paste the install command again, then the new code |
+| `That doesn't look like an enrollment code. Copy it from the console's Connect a server page.` | What was pasted is not a code: four groups of four letters and digits | Use the console's copy button, then paste. Nothing shows as you paste |
+| `Enrollment did not finish. Rerun this installer to resume the same enrollment; nothing you typed is saved.` | The last line after any failure of this step, a refused code included. The reason is on the line above it | Fix that reason, then paste the install command again |
+| Nothing appears when you paste the code | Normal. The terminal hides it | Press Enter |
+| The terminal asks for a password before anything else | It is the server's own `sudo` password, asked because you are not `root` | Type the password you signed in to the server with. It is not your LiveHQ password |
+
+## The command ran on the wrong computer
+
+The command must run on the server, inside an SSH session, not on your own computer.
+
+| What you see | What it means |
+| --- | --- |
+| `Run this installer on your Linux server, through SSH.` | It ran on a Mac or another system that is not Linux |
+| `apt-get: command not found`, sometimes after your Mac asked for its own password | It ran in the Terminal of a Mac |
+| A message that `sh` is not recognized | It ran in PowerShell on Windows |
+
+Nothing was installed on your computer. Open the server first: the terminal's last line then starts with a name such as `root@`, followed by the server's name. Then paste the command again. [Open your server](/start/open-your-server) shows how.
+
+## The system
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| `Use Ubuntu 22.04/24.04/26.04 or Debian 12/13. No host changes were made.` | The server runs another system or version | At your hosting company, rebuild the server with Ubuntu 24.04. See [What server you need](/servers/requirements) |
+| `This installer supports Intel/AMD x86-64 and ARM64 servers.` | Another processor type | Choose a plan with one of those two |
+| `This server must run systemd.` | The server does not start with systemd, which is common on container-type plans | Use a whole virtual server |
+| `This host cannot enforce application memory, CPU and process limits. Use a full Linux VM with cgroup support.` | The server cannot limit what each app uses, also typical of container-type plans | Use a whole virtual server |
+| `Download the installer to a file and run it in an interactive SSH terminal.` | The command was piped or run by a script, so it cannot ask for the code | Paste it into a normal SSH session |
+| `The installer download is incomplete or changed. Download it again; no agent was installed.` or a checksum line that says `FAILED` | The download was cut short | Paste the command again |
+| A line that a tool `could not complete` a step, then `Fix the reported host/network issue and rerun the same installer; existing state is preserved.` | A download or a package install failed, often the network or another package manager running | Wait a minute and paste the command again |
+
+## Docker
+
+The installer adds Docker when the server has none, and reuses a Docker Engine that is recent enough. It never upgrades or replaces a Docker you installed.
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| `The existing Docker Engine is older than LiveHQ supports. It has been preserved; an operator must review its upgrade before this server can be connected.` | Docker is older than version 28.3.3 | Upgrade Docker yourself, then run the command again. On a server with nothing to keep, a fresh server is simpler |
+| `Existing runtime packages need an operator review:` and a list. `Nothing was uninstalled.` | Container packages from the system, such as `containerd`, `runc` or `podman-docker`, are installed, but Docker itself is not. Docker's own packages would collide with them | Remove the listed packages yourself if nothing uses them, then run the command again |
+| `A different Docker installation already owns the local socket. It was preserved.` | Docker was installed another way, for example as a snap | Remove that installation, or use a fresh server |
+| `Docker data exists without its executable. Preserve and recover that installation before connecting LiveHQ.` | Docker was removed but its data is still there | Reinstall Docker, or use a fresh server |
+| `LiveHQ requires system Docker with seccomp; the existing runtime was preserved.` | Docker runs in rootless mode or without its standard protections | Use the standard system Docker |
+
+On a server you rented only for LiveHQ, the quickest fix for all of these is to rebuild the server with a clean Ubuntu 24.04 and run the command again.
+
+## The plan and the workspace
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| In the console, when you create a code: "The Free plan includes 1 server, and it is in use. Remove a server you no longer use, or upgrade to Pro: 3 servers included, up to 10." | The plan's servers are all in use. A server you installed again from scratch counts as a new one while the old one is still in the workspace | [Remove the old server](/servers/remove), or change plan. See [Plans](/account/plans) |
+| "Server access required." in the console | Your role cannot connect servers | Ask an owner or admin |
+| `This server belongs to a different workspace. Its enrollment was preserved.` | The server was connected from another workspace, and the installer will not move it | Use the command from that workspace. To use the server in a new workspace, rebuild it at your hosting company, which erases it, then install again |
+| `This server already has different enrollment details. Its identity was preserved.` | The server is already connected under another name | Use the server's existing name in the console, or copy the command from its **Updates** tab |
+
+## The installer finished but the console keeps waiting
+
+The terminal ended with `LiveHQ is installed and running.` and the console still says **Waiting for your server**.
+
+1. Check the name. The console page recognises the server by the name that was on the page when you copied the command. Keep that name on the page.
+2. Wait a minute or two. The agent and the tunnel connect one after the other.
+3. Look for the server in the sidebar under **Servers**. If it is there and reads **Connected**, the install worked and you can deploy.
+4. If it is not there, look at the agent on the server:
+
+   ```bash
+   sudo journalctl -u livehq-agent -n 100 --no-pager
+   ```
+
+If you removed this server in the console earlier, it cannot reconnect: the installer finds the machine's old enrollment and asks for no code, but that enrollment no longer exists in your workspace. See [Add it back later](/servers/remove#add-it-back-later).
+
+If the terminal ended with `The agent has not started. Inspect journalctl -u livehq-agent; rerunning setup preserves its state.`, run that same command and paste the install command again.
+
+## Other messages
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| `Copy the complete setup command from LiveHQ → Connect server.` | Part of the command is missing | Copy it again with the console's button |
+| `another LiveHQ setup is already running; wait for it to finish` | The installer is running in another window | Wait for it |
+| `LiveHQ is completing a deployment, database operation or update. Retry this installer after that operation finishes.` | On a server that is already connected, work is under way | Wait, then run it again |
+| `Could not verify LiveHQ backend readiness. Retry after the API is available; the existing agent was preserved.` | The server could not reach LiveHQ, or LiveHQ was not ready | Check the server's internet access and try again in a few minutes |
+
+Still stuck? Write to [support@livehq.dev](mailto:support@livehq.dev) with the last 20 lines of the terminal. Leave out passwords and codes.
+
+## Related
+
+- [Connect a server](/servers/connect)
+- [What server you need](/servers/requirements)
+- [Step 3: Install LiveHQ](/start/install-livehq)

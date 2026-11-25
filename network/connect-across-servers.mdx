@@ -1,0 +1,92 @@
+---
+title: "Connect an app to a database on another server"
+description: "Connect an app on one server to a PostgreSQL or Redis database on another, read the path it takes, and fix a slow or broken one."
+---
+
+An app on `prod-eu-1` can use a database on `prod-eu-2`. LiveHQ links the two servers over its [private network](/network/overview), and the database stays closed to the internet.
+
+## Before you start
+
+- Both servers are in the same workspace. That needs Pro or Teams, because Free includes one server: see [Plans](/account/plans).
+- The database is running, and the app has been deployed once.
+- You are an Owner, Admin or Developer. If your account has [two-factor sign-in](/account/two-factor), the console asks you to confirm with it.
+- If the console says **Update this server's agent**, see [Update the agent](/servers/update-agent).
+
+## Steps
+
+<Steps>
+  <Step title="Open the database's connections">
+    Open the database, then **Connections**. In the **Apps** card, press **Connect an app**.
+  </Step>
+  <Step title="Pick the app">
+    The list shows every app in the workspace with its server's name. Pick the app. An app on the database's own server reads "same server".
+  </Step>
+  <Step title="Check the variable name">
+    Keep `DATABASE_URL` (`REDIS_URL` for Redis) unless your code reads the connection URL from another variable.
+  </Step>
+  <Step title="Connect">
+    Press **Connect and deploy**. LiveHQ creates a database user for the app, seals its private URL into the app's variables in your browser, and deploys the app. [Connect an app to a database](/databases/connect-an-app) explains each step.
+
+    In PostgreSQL that user can change rows, not tables. If the app creates or alters its tables when it starts, see [If your app runs migrations](/databases/connect-an-app#if-your-app-runs-migrations).
+  </Step>
+  <Step title="Read the path">
+    Back in the **Apps** card, the app's line shows its path. It starts as **Private network · connecting**, which takes about a minute, and should become **Private network · direct**.
+  </Step>
+</Steps>
+
+## Get a direct path
+
+If the path reads **Private network · through LiveHQ (slower)**, the connection works, but a firewall keeps the two servers from reaching each other directly.
+
+<Steps>
+  <Step title="Read the hint">
+    Under the path, the console names both servers, their public addresses and the port, for example "Open UDP port 51820 between them for a direct path."
+  </Step>
+  <Step title="Open the port on both servers">
+    On each server, allow incoming UDP on that port from the other server's public address. Do it in your hosting company's firewall, and in a firewall on the server if you run one.
+  </Step>
+  <Step title="Check again">
+    Press **Check again**. The console says "Both servers try their direct path again now. This takes about ten seconds." and then reloads the path.
+  </Step>
+</Steps>
+
+The servers also try the direct path again by themselves every 10 minutes.
+
+## If something goes wrong
+
+**Check again** is in the database's **Apps** card, on its **Connections** tab. It shows next to a path that is through LiveHQ, not connected, or waiting for a LiveHQ update. The **Databases** card on the app's page shows the path without the button.
+
+| The path says | What it means | What to do |
+| --- | --- | --- |
+| **Private network · connecting** | The servers are setting up the link. | Wait about a minute. |
+| **Private network · through LiveHQ (slower)** | The connection works through LiveHQ's edge. | Open the UDP port the hint names, then **Check again**. |
+| **Private network · not connected** | "prod-eu-1 and prod-eu-2 haven't reached each other in the last few minutes." The app cannot reach the database now. | Check that both servers are online: see [The server is offline](/help/server-offline). Then **Check again**. |
+| **Waiting for prod-eu-2's agent update** | That server's agent is too old for the private network. | [Update the agent](/servers/update-agent) on the server it names. |
+| **Waiting for a LiveHQ update** | The servers cannot reach each other directly, and LiveHQ's relay is not ready yet. | Open the UDP port the hint names, then **Check again**. |
+| **Waiting for the app's first deploy** | The app is not on a server yet. | [Deploy the app](/apps/deploy). |
+| **Unavailable: IPv6 is turned off on prod-eu-2** | The private network needs IPv6 in the server's operating system. | Turn IPv6 back on for that server. It needs no public IPv6 address. |
+| **Unavailable: the kernel has no WireGuard module on prod-eu-2** | The server's kernel cannot run the private network. | Use the standard kernel of your Ubuntu or Debian release. |
+| **Unavailable:** with another reason | The server could not set up its side of the link. | Write to [support](/help/support) with the exact words. |
+
+Before you connect, the console can also refuse. The first two lines appear in the dialog, the third under the **Apps** card, where **Connect an app** is greyed out:
+
+| The console says | What to do |
+| --- | --- |
+| "Update prod-eu-2's LiveHQ agent to connect apps across servers (Health → Updates)." | [Update the agent](/servers/update-agent) on that server. |
+| "Update prod-eu-1's LiveHQ agent to connect its apps to Redis (Health → Updates)." | Update the agent on the app's server. |
+| "Available once the database is running." | Start the database, then connect. |
+
+If the path is good and the app still cannot connect, see [Database connection problems](/help/database-connection).
+
+## Limits
+
+- Only apps you connected can use the link. A connection URL pasted by hand into an app on another server does not work: connect the app instead. The one exception is an app that [runs on several servers](/apps/several-servers): its other servers also reach the databases on its **Primary**.
+- The path through LiveHQ is limited to about 20 Mbit/s for each pair of servers.
+- A server accepts at most 128 database connections at once from one other server, and 512 from all other servers together. The apps on one server can hold at most 512 connections to databases on other servers. The console does not show these limits or what they refused. Keep your apps' connection pools below them.
+- An app on several servers has one path per server. The console shows each on its own line, such as "prod-eu-2 · Private network · direct".
+
+## Related
+
+- [How the private network works](/network/overview)
+- [Connect an app to a database](/databases/connect-an-app)
+- [Database sizes and limits](/databases/sizes-and-limits)

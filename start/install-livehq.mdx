@@ -1,0 +1,103 @@
+---
+title: "Step 3: Install LiveHQ"
+sidebarTitle: "3. Install LiveHQ"
+description: "Paste one line into your server's terminal to install LiveHQ and connect the server to your workspace, then enter a one-time code."
+---
+
+One line does it. LiveHQ checks the server, installs what your apps need, and connects the server to your workspace: the place in LiveHQ that holds your servers and apps. Nothing already on the server is removed.
+
+## Before you start
+
+- You are still inside the server from [step 2](/start/open-your-server): the terminal's last line starts with `root@` (or `ubuntu@`).
+- You have a LiveHQ account and are signed in to the console on the same computer. No account yet? [Create one](https://console.livehq.dev/signup): it is free.
+
+<Warning>
+The install line must run **on the server**, not on your own computer. If the terminal's last line starts with your own computer's name, go back to [step 2](/start/open-your-server) and connect again first.
+</Warning>
+
+## Steps
+
+<Steps>
+  <Step title="Open the install page of the console's guide">
+    Open [console.livehq.dev/start/install](https://console.livehq.dev/start/install). The page is titled **Install LiveHQ on it.**
+
+    If the console shows another page of its guide instead, press **I already have a server** or **Continue where you left off**. On the page titled **Open your server.**, type your server's IP address, do not paste its line again (you are already inside the server), and press **I'm in**.
+
+    If you know your way around, the classic **Connect a server** page does the same thing: see [Connect a server](/servers/connect).
+  </Step>
+  <Step title="Give your server a name">
+    The name is a label, so that you recognise the server in LiveHQ. You can keep the suggestion, `my-first-server`. Then press **Get my install line**.
+  </Step>
+  <Step title="Paste the install line into the terminal">
+    Press **Copy the install line**, click in the terminal window, paste, and press Enter (Return on a Mac).
+
+    The line is long and looks technical: use the button, do not type it. It downloads LiveHQ's installer from LiveHQ's own site and checks that it has not been altered before running it.
+
+    On Windows, PowerShell asks before pasting several lines: choose **Paste anyway**.
+  </Step>
+  <Step title="When it asks for a code, paste the one from the console">
+    The installer prints its progress. Many other lines scroll by between these: downloads and installs. The first ones take a few minutes, and you have nothing to do until it asks for the code.
+
+    ```text
+    [1/5] Preparing server setup…
+    [2/5] Preparing the application runtime…
+    [3/5] Installing the LiveHQ agent…
+    [4/5] Connecting your LiveHQ workspace…
+    Enrollment code from the LiveHQ console (hidden):
+    ```
+
+    At that last line, go to the console, press **Copy the code**, paste it into the terminal and press Enter. **Nothing appears when you paste it.** That is normal.
+
+    A code works once, for 30 minutes. If it ran out, press **Make a new code**.
+  </Step>
+  <Step title="Wait for the console to notice">
+    The installer finishes with:
+
+    ```text
+    Server enrolled. Its machine identity will renew independently of your account login.
+    [5/5] Enabling automatic startup…
+    LiveHQ is installed and running. Return to the console; it confirms the agent and OriginLink connection.
+    ```
+
+    "Enrolled" means the server now belongs to your workspace. "OriginLink" is LiveHQ's name for the encrypted connection your server opens to LiveHQ, which carries visitors to your apps.
+
+    The page in the console changes by itself to "my-first-server is connected." You can close the terminal window: you will not need it again.
+  </Step>
+</Steps>
+
+## What the installer changes on your server
+
+- It installs **Docker**, the standard tool that runs each app in its own box, if the server does not have it.
+- It installs **LiveHQ's agent**, a small program that starts with the server and carries out what you ask in the console.
+- It opens no new door (port) into your server from the internet, and your LiveHQ password is never typed there. The door you came in by, SSH with a password, stays open until you close it: the [last step](/start/first-app#what-you-can-do-next) links to that.
+
+From then on LiveHQ keeps itself and the system's security updates up to date. When an update needs a restart, the server restarts at a planned time, at most once a week (Sunday at 03:00 UTC unless you change it), and you are told a day before. You can change this, or switch it off, on the server's page: see [Security updates and restarts](/servers/system-updates).
+
+## If something goes wrong
+
+<AccordionGroup>
+  <Accordion title="It says “Use Ubuntu 22.04/24.04/26.04 or Debian 12/13”">
+    The server was created with another system. Nothing was changed on it. At your hosting company, rebuild or recreate the server with **Ubuntu 24.04**, then [open it again](/start/open-your-server). Your computer will then say `REMOTE HOST IDENTIFICATION HAS CHANGED`: the fix is on that page.
+  </Accordion>
+  <Accordion title="It asks for a password before anything else">
+    That is the server's own password (the one you signed in with), asked because you are not signed in as `root`, the server's main account. Type it and press Enter. Nothing shows as you type.
+  </Accordion>
+  <Accordion title="“This enrollment code is wrong, used or expired”">
+    A code works once and for 30 minutes. Press **Make a new code** under the code in the console. If the terminal is back at the line starting with `root@`, paste the install line again first, then the new code. Nothing is broken on the server.
+  </Accordion>
+  <Accordion title="The window closed, or I lost the connection">
+    [Open the server again](/start/open-your-server), then paste the install line again. Running it twice does no harm.
+  </Accordion>
+  <Accordion title="The console is still waiting five minutes after the terminal finished">
+    Look at the terminal's last lines. If they show an error, paste the install line again. If they end with `LiveHQ is installed and running.`, see [Install problems](/help/install-problems).
+  </Accordion>
+  <Accordion title="The console says a server with that name is not answering">
+    A server of that name is already in the workspace. If you deleted it at your hosting company, remove it from LiveHQ first: open the server in the console, choose **Health**, and press **Remove server** at the bottom of the **Overview** tab. See [Remove a server](/servers/remove).
+  </Accordion>
+</AccordionGroup>
+
+Still stuck? Write to [support@livehq.dev](mailto:support@livehq.dev), say which step you are on and copy what the terminal shows. Leave out passwords and codes.
+
+## Next
+
+[Step 4: Put your first app online](/start/first-app)

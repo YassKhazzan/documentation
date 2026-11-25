@@ -1,0 +1,97 @@
+---
+title: "Choose who can open an app"
+description: "Set an app to Only me, Anyone with the link or password protection in Settings & access, and see what visitors get for each choice."
+---
+
+Every app has an access setting. LiveHQ's edge enforces it before a request reaches your server, so a visitor who is not allowed in never touches your app.
+
+A new app starts private. On the Deploy form the two choices are named **Private** and **Public**; **Private** is preselected. After the first deployment you change the setting on the app's page, where the same two choices are named **Only me** and **Anyone with the link**, and a third is added: a password.
+
+## The choices
+
+| Choice | Who gets in | What a visitor sees first |
+| --- | --- | --- |
+| **Only me** | You, signed in with your LiveHQ account. In a Teams workspace: its owners, and the member who created the app. | A LiveHQ page that asks for an email address and sends a sign-in link to people who have access |
+| **Anyone with the link** | Everyone. No sign-in, no password. | Your app |
+| **Password protection** | Anyone who has the app's password | A LiveHQ page that asks for the password, then your app |
+
+These three choices are the same on every plan. The console has no control today for inviting one person to one app. See [Share a private app with people](/apps/sharing).
+
+## Change the setting
+
+Owners, admins and developers can change it. Viewers see the setting with its buttons switched off.
+
+<Steps>
+  <Step title="Open the card">
+    Open the app, then **Settings & access**. Find the card **Who can open this app?**
+  </Step>
+  <Step title="Pick a choice">
+    Press **Only me** or **Anyone with the link**. There is no save button: the console answers "Access settings updated."
+
+    For a password, press **Enable password protection** in the row below.
+  </Step>
+</Steps>
+
+## Password protection
+
+<Steps>
+  <Step title="Generate the password">
+    Press **Enable password protection**. LiveHQ creates the password; you cannot choose your own.
+  </Step>
+  <Step title="Copy it now">
+    The password appears once, under **Copy before leaving this page**. Copy it, store it somewhere safe, then press **Hide password**. LiveHQ keeps only what it needs to check the password, not the password, so it cannot show it to you again.
+  </Step>
+  <Step title="Give it to the people you choose">
+    Send them the app's address and the password, in two separate messages if you can.
+  </Step>
+</Steps>
+
+What a visitor does: they open the address and see a page titled "Welcome to storefront" with the line "Enter the password shared by the app owner." They type it under **App password** and press **Open app**. The app then stays open in that browser for 12 hours.
+
+A password opens the app and nothing else. It creates no LiveHQ account and gives no way into the console, the server or the database.
+
+- **Lost the password, or want to shut people out?** Press **Generate replacement password**. The old password stops working and everyone who used it is signed out.
+- **Turn the password off.** Press **Only me** or **Anyone with the link**.
+
+## When a change takes effect
+
+Within seconds, at the edge. No redeployment and no restart.
+
+- Changing the choice, or replacing the password, ends the visitor sessions opened under the old setting. Open connections such as WebSockets are closed.
+- While an app is not public, its responses are marked private so shared caches do not keep them. When you move an app away from **Anyone with the link**, LiveHQ also asks for copies cached earlier to be cleared. That runs in the background and can take a few minutes.
+
+## Open your own private app
+
+Press **Open app** at the top of the app's page. The console signs you in on the way, so the app opens directly in a new tab.
+
+If you type the address into a browser where you have no session, you get the sign-in page instead. Enter your LiveHQ email address and press **Email me a sign-in link**. The page answers "If that address has access, a sign-in link is on its way." whether or not it does.
+
+Each address has its own session. Being signed in at `storefront.livehq.app` does not sign you in at `www.example.com`.
+
+## What private access does not do
+
+- **It is for browsers.** A script, a mobile app, a webhook or another server cannot pass **Only me** or a password. If another service must call your app, set it to **Anyone with the link** and check an API key or a signed token in your own code.
+- **It is one setting for the whole app.** You cannot protect one path and leave the rest public. A firewall rule can block or challenge a path: see [Write firewall rules](/apps/firewall/rules).
+- **Private apps pause when LiveHQ is down.** LiveHQ checks every visitor of a private app, so it cannot open during a LiveHQ outage. Public apps can keep serving for up to 72 hours. See [What happens during an outage](/help/outages).
+- **Other sites cannot write to it.** On a private app, LiveHQ refuses form posts and WebSocket connections that the browser reports as coming from another site, or from another app on `livehq.app`. Serve the pages and the API they call from one app or one custom domain.
+
+The [app firewall](/apps/firewall/overview) runs before the access check, so it protects the sign-in and password pages too.
+
+## If something goes wrong
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| Your own app shows "Use the email address that has access." | You opened the address directly in a browser with no session for it. | Use **Open app** in the console, or ask for the sign-in link with your LiveHQ email address. |
+| "You do not have access to this app." after **Open app** | The app is **Only me** and you are neither an owner of the workspace nor the member who created the app. | Ask an owner to open it, or to choose another access setting. |
+| A visitor is asked for the password again | A session lasts 12 hours, or the password was replaced, or the setting changed. | They enter the current password. |
+| "That password is not correct. Try again." | The password is wrong, or it was replaced. After 20 attempts in an hour from one address, counting password tries and sign-in link requests on any app together, LiveHQ refuses more until the hour has passed. | Check the password. If it is lost, press **Generate replacement password**. |
+| No sign-in link arrives | The address has no access, the email is in spam, or three links were already sent to it in 15 minutes. | Check the address and the spam folder, then wait 15 minutes. |
+| An API client receives a web page in place of your app's answer | The app is private. | See "It is for browsers" above. |
+| "Allow pop-ups for LiveHQ to open your app in a new tab." | The browser blocked the tab **Open app** needs. | Allow pop-ups for the console. |
+
+## Related
+
+- [Share a private app with people](/apps/sharing)
+- [An app's LiveHQ address](/apps/addresses)
+- [App firewall](/apps/firewall/overview)
+- [What happens during an outage](/help/outages)

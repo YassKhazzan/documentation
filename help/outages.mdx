@@ -1,0 +1,127 @@
+---
+title: "What happens during an outage"
+description: "What keeps working and what stops when LiveHQ's control plane, LiveHQ's edge or your own server is down, and how to check your outage protection."
+---
+
+Three different things can fail, and each one affects your apps differently. This page says what your visitors get in each case, what you can and cannot do meanwhile, and what is never touched: the apps, databases and files on your own server.
+
+LiveHQ does not promise that it is always up. Read this page before you decide what to run on it.
+
+## The three failures at a glance
+
+| What is down | Public apps | Private apps | Your server and its data |
+| --- | --- | --- | --- |
+| **LiveHQ's control plane** (the console and the service behind it) | Keep serving for up to 72 hours, when their server holds a permit for them | Pause | Untouched; everything keeps running |
+| **LiveHQ's edge** | Not reachable through their addresses | Not reachable | Untouched; everything keeps running |
+| **Your server** | Nothing serves | Nothing serves | Down until the server is back |
+
+Two words used here:
+
+- A **public app** is one anyone with the link can open: **Public** when you deploy, **Anyone with the link** in the app's access settings. Every other choice (only you, a password, people you invite) makes it a **private app**.
+- The **control plane** is the part of LiveHQ that stores your settings and takes your decisions: the console and the service behind it. **LiveHQ's edge** is the part that carries your visitors' requests to your server.
+
+## 1. LiveHQ's control plane is down
+
+**Public apps keep serving.** Your server holds a signed permit for each public app and shows it to LiveHQ's edge. While the edge cannot reach the control plane, it serves the app on that permit, with the same firewall rules as before. A permit lasts up to 72 hours from its last renewal, and renews about once an hour while LiveHQ is up. After 72 hours without LiveHQ, public apps pause too.
+
+**Private apps pause.** LiveHQ checks every visitor of a private app, and it never opens one without that check. Visitors cannot get in until the control plane is back.
+
+**Your server keeps running.** Containers and databases are not stopped. If an app crashes or the server restarts, the agent starts your apps again from what it last knew, without asking LiveHQ.
+
+**What you cannot do until it is back:**
+
+- Open the console, or sign in.
+- Deploy, redeploy, roll back, or change any setting.
+- Sign visitors in to a private app.
+- Use Studio, or private SSH.
+- Add a custom domain or get a certificate for one.
+- Reach a database on another server through LiveHQ's relay. Direct links between your servers keep working.
+
+**What is not covered by a permit:**
+
+- An app made public or deployed within the last hour: "A new app gets its permit within the hour."
+- A server whose agent is too old. If the console says **Update this server's agent**, see [Update the agent](/servers/update-agent).
+- An app that was stopped when its permits were last renewed.
+- Every app of a workspace that has used 75% or more of the period's bandwidth, paused or not. LiveHQ gives no permit from that point and takes back the ones the server holds at the next renewal. The row below then reads **Starting**, and does not name bandwidth as the reason.
+- An app whose server is in a planned restart.
+
+When the control plane returns, everything goes back to normal by itself.
+
+### Check your outage protection
+
+Open the server, then **Health**. On the **Overview** tab, the **Status** card has a row named **Outage protection**.
+
+| The row shows | What the console says |
+| --- | --- |
+| **On** · "All 4 public apps · until Thu 14:02" | "If LiveHQ's control plane is down, public apps keep serving for up to 3 days. Private apps need LiveHQ to check visitors and pause." |
+| **On** · "No public apps yet" | "A public app deployed here gets its permit within the hour.", then the same sentence as above. |
+| **Partial** · "3 of 4 public apps · until Thu 14:02" | "A new app gets its permit within the hour.", then the same sentence as above. The apps without a permit would pause. |
+| **Starting** | "Getting this server's first permits, within the hour. Until then, public apps pause during a LiveHQ outage." The server holds no permit yet. The row also stays on **Starting** for as long as no app on the server can get one: no public app is running there, or the workspace is at 75% or more of its bandwidth. |
+| **Off** | "LiveHQ turned outage protection off. During a LiveHQ outage, public apps pause like private apps." |
+| **Error** · "Last renewed 2h ago" (or "Not renewed yet") | "Renewing its permits fails; the agent keeps trying." The sentence then says which applies: the permits it still holds keep public apps serving until a named time, or, with none left, public apps pause during an outage. |
+| **Expired** · "Last renewed 4 days ago" | "Its permits ran out. They renew when the server reconnects to LiveHQ; until then, public apps pause during an outage." |
+| **Update this server's agent** | "This server's agent is older than outage protection. Update it so its public apps keep serving during LiveHQ outages." |
+
+The time after "until" is when the earliest permit runs out if nothing renews it.
+
+### The note on an app's Overview
+
+An app with an address says where it stands, in the side panel of its **Overview**. The note shows only while the app has a running release, is not stopped, and its server's **Outage protection** reads **On**, **Partial** with at least one permit, or **Error** with permits still held. In every other state there is no note:
+
+| The note | Meaning |
+| --- | --- |
+| "Keeps serving during LiveHQ outages" | The app is public and its server holds its permit |
+| "Keeps serving during LiveHQ outages once its permit arrives" | The app is public; the permit comes within the hour |
+| "Pauses during LiveHQ outages" | The app is private: "LiveHQ checks every visitor of a private app, so it can't open while LiveHQ is down." |
+
+Background services have no address, so they show no note: they keep running on the server either way.
+
+## 2. LiveHQ's edge is unreachable
+
+Every request to your apps passes through LiveHQ's edge. Your server opens no web ports, so there is no second way in. If the edge cannot be reached:
+
+- Your apps cannot be opened at `storefront.livehq.app` or at a custom domain such as `www.example.com`, public or private.
+- Your server, its apps, its databases and its data are untouched. Everything keeps running.
+- Private SSH is unavailable, because it travels through the edge. On a locked server with SSH closed, the way in is your hosting provider's web console.
+- The server reconnects by itself when the edge is back. You do nothing.
+
+Permits do not help here: they cover the control plane being down, not the edge.
+
+## 3. Your server is down
+
+If the server is off, restarting, or cut from the network, nothing on it serves until it is back.
+
+- Visitors see a LiveHQ page titled "This app is offline": "The server that runs this app isn't connected to LiveHQ right now. This page tries again automatically."
+- After 5 minutes of silence LiveHQ emails "prod-eu-1 stopped responding", and "prod-eu-1 is back online" when it reconnects. See [Emails LiveHQ sends](/help/emails).
+- When the server is back, its apps restart on their own. The server's page shows their state.
+- An app that also runs on a second server can keep serving from that one. See [running an app on several servers](/apps/several-servers).
+
+What to do: [A server is offline](/help/server-offline).
+
+<Note>
+A planned restart for security updates is a short version of this. Visitors see "Back in a moment": "This app's server is restarting to finish its security updates. This page tries again automatically." You are emailed a day before. See [System updates](/servers/system-updates).
+</Note>
+
+## What a visitor sees
+
+| Case | What the visitor gets |
+| --- | --- |
+| Control plane down, public app with a permit | The app, as usual |
+| Control plane down, public app without a permit | The app for a short while, then a LiveHQ page, "This app can't be reached right now", which tries again by itself |
+| Control plane down, private app | No way in until LiveHQ is back |
+| Edge unreachable | An error from their browser or network, not a LiveHQ page |
+| Server down | "This app is offline", which tries again by itself |
+| Server restarting for security updates | "Back in a moment", which tries again by itself |
+
+## Before an outage
+
+- Check that **Outage protection** reads **On** for every server that runs a public app, and update an agent that asks for it.
+- Know which apps are private: they pause when the control plane is down.
+- Keep your hosting provider's sign-in at hand. It is the way in to a server when LiveHQ cannot help.
+- Take an export now and then, so you hold your settings, variables and data yourself. See [Take your data with you](/help/export).
+
+## Related
+
+- [How LiveHQ works](/start/how-livehq-works)
+- [An app is unavailable](/help/app-unavailable)
+- [Known limits](/help/known-limits)

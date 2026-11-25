@@ -1,0 +1,100 @@
+---
+title: "Sign in with Google or GitHub"
+description: "Create a LiveHQ account with Google or GitHub, connect one to an account you already have, or disconnect it again."
+---
+
+You can sign in to the console with your Google or GitHub account instead of a password. The provider replaces the password step only: an account with [two-factor sign-in](/account/two-factor) is still asked for its second step.
+
+<Note>
+The buttons show only for a provider LiveHQ has turned on. If the sign-in page has no **Continue with Google** or **Continue with GitHub** button, that provider is not offered right now: sign in with your email address and password, or with a passkey.
+</Note>
+
+## Create an account with Google or GitHub
+
+<Steps>
+  <Step title="Press the button">
+    On the sign-in or sign-up page, press **Continue with Google** or **Continue with GitHub**.
+  </Step>
+  <Step title="Approve at the provider">
+    LiveHQ asks the provider who you are and for your email address: your account's ID and address at Google, your username and email addresses at GitHub. It asks for no access to your mail, files or repositories, and keeps no token from the provider. The address must be one the provider has verified.
+  </Step>
+  <Step title="Name your workspace">
+    Back in the console the page reads "Create your workspace." and shows the address the provider confirmed. Type a **Workspace name** and press **Create workspace**. Nothing exists before you send this form; **Use a different account** drops it.
+  </Step>
+</Steps>
+
+The new account has no password. It signs in with that provider, and with a passkey once you add one.
+
+## An account you already have is not opened by its email address
+
+LiveHQ never matches an account by email address. If you made your account with a password and then press **Continue with Google** with the same address, you are not signed in to it. The console answers:
+
+"A LiveHQ account already uses (your address). Sign in to it the way you usually do, then connect Google under Settings → Security."
+
+The reason: an email address does not prove who holds an account today, so only someone already signed in to an account may attach a provider to it. Sign in with your password, then connect the provider as below.
+
+## Connect a provider to your account
+
+<Steps>
+  <Step title="Open Sign-in security">
+    Open **Settings** in the sidebar and find **Sign-in security**. It has a **Google** row and a **GitHub** row for each provider LiveHQ offers.
+  </Step>
+  <Step title="Connect">
+    Press **Connect** in the row. With two-factor sign-in on, the console asks you to confirm it's you first. With it off, you must have signed in during the last 15 minutes; otherwise press **Sign in again** in the message and repeat.
+  </Step>
+  <Step title="Approve at the provider">
+    You come back to **Sign-in security**. The row now reads "Signs you in as (address) · connected (date)".
+  </Step>
+</Steps>
+
+LiveHQ emails you "Google sign-in was connected to your LiveHQ account" (or GitHub). One LiveHQ account holds one Google account and one GitHub account, and a Google or GitHub account can be connected to one LiveHQ account only.
+
+## Disconnect a provider
+
+Press **Disconnect** in its row, then **Disconnect** again. Your other sessions are signed out and you are emailed.
+
+## Keep one way to sign in
+
+An account always keeps at least one way in, so some removals are refused.
+
+| Your account has | What you cannot remove |
+| --- | --- |
+| A password | Nothing is refused: the password stays |
+| No password, one provider, no passkey | That provider: "Google is the only way you sign in. Add a passkey or connect another account first." |
+| No password, no provider, one passkey | That passkey: "This passkey is the only way you sign in. Add another way to sign in first." |
+
+A password cannot be added to an account created with a provider. Add a passkey or connect the second provider so you have a spare way in.
+
+## Invitations to a workspace
+
+Inviting people needs the Teams plan: see [Members and roles](/account/members-and-roles).
+
+- **Your account signs in without a password** (Google, GitHub or a passkey). The link in the invitation email opens a page titled "Sign in to join". Press **Sign in and join**, sign in to the console, and press **Join Acme Studio** on the page that opens. You must be signed in as the invited address; otherwise the page says "This invitation is for (address). Sign out, then sign in as that account to accept it." No password is added to your account.
+- **You have no LiveHQ account yet.** Open the link in the invitation email and choose a password there. You cannot create the account with a provider while the invitation waits: "(address) has a workspace invitation waiting. Open the link in the invitation email to join, then connect Google under Settings → Security."
+
+## If something goes wrong
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| No **Continue with** button | LiveHQ has not turned that provider on | Use your password or a passkey |
+| "You cancelled signing in with Google." | You closed or refused the provider's page | Press the button again |
+| "This sign-in expired. Start again." | The trip to the provider took more than 10 minutes, or came back in another browser | Start again in one browser |
+| "Google hasn't verified this account's email address. Verify it with Google, then try again." For GitHub: "Your GitHub account has no verified primary email address. Verify one on GitHub, then try again." | LiveHQ accepts verified addresses only | Verify the address at the provider. For GitHub, the primary address must be verified |
+| "A LiveHQ account already uses (address)…" | An account exists for that address | Sign in to it your usual way, then connect the provider |
+| "LiveHQ already knows (address) from an app shared with it or an invitation, so a new account can't be created for it with Google yet." | Someone shared an app with that address, or invited it to a workspace | Use another address, or write to `support@livehq.dev` |
+| "That Google account is already connected to another LiveHQ account. Disconnect it there first." | One provider account, one LiveHQ account | Disconnect it in the other account |
+| "Google is already connected. Disconnect it first to use another account." | One Google account per LiveHQ account | Disconnect, then connect the other one |
+| "This account can't sign in." | The LiveHQ account is closed or suspended | Write to `support@livehq.dev` |
+
+## Limits
+
+- Signing in with GitHub is separate from [connecting GitHub](/apps/github) to read your repositories. One does not grant the other.
+- Visitors of a shared app do not sign in with Google or GitHub. They keep emailed links and passwords: see [sharing an app](/apps/sharing).
+- LiveHQ does not follow a change of email address at the provider: your LiveHQ address stays as it was.
+- There is no company single sign-on (SAML).
+
+## Related
+
+- [Turn on two-factor sign-in](/account/two-factor)
+- [Emails LiveHQ sends](/help/emails)
+- [How LiveHQ keeps your server safe](/start/security-model)

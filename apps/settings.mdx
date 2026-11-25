@@ -1,0 +1,127 @@
+---
+title: "Stop, restart, rename or delete an app"
+description: "What each card on an app's Settings & access tab does: the stop, restart and roll back controls, the health check, the name and deleting the app."
+---
+
+An app's **Settings & access** tab holds the controls you use rarely and should understand before you press them. This page covers every card on it except **Who can open this app?**, which has [its own page](/apps/access).
+
+Open the app, then **Settings & access**. For a background service the tab is named **Settings**.
+
+| Card | What it is for | Who sees it |
+| --- | --- | --- |
+| **App controls** | Stop, start, restart or roll back the running release. | Owners, admins, developers |
+| **Who can open this app?** | Access: see [App access](/apps/access). | Everyone; viewers cannot change it |
+| **Health check** | The request LiveHQ uses to tell that the app still answers. | Everyone |
+| **General** | The app's name and its facts. | Owners, admins, developers |
+| **Danger zone** | Delete the app. | Owners, admins, developers |
+
+## App controls
+
+"Stop, restart or roll back this app. Releases, variables and data are kept."
+
+| Tile | What it does | What visitors notice |
+| --- | --- | --- |
+| **Stop app** | Stops the app until you start it again. It stays stopped after a server restart. | A page that says "This app is stopped". |
+| **Start app** | Runs the app again with its current release. No new build. | The app answers again once it is healthy. |
+| **Restart** | Restarts the container with the same release and settings. | Open connections are interrupted. Requests fail for the seconds the app needs to start. |
+| **Roll back** | Returns to the release before the current one. See [Roll back](/apps/rollback). | The previous version. |
+
+**Stop app**, **Restart** and **Roll back** ask you to confirm. **Start app** runs at once.
+
+After you confirm, the card reports progress: "Waiting for the server to complete this action…", then "Action completed.".
+
+Good to know:
+
+- **Stopping deletes nothing.** Releases, variables, addresses and history stay. The app's status becomes **Stopping**, then **Stopped**.
+- **Restart is not Redeploy.** A restart runs the same build with the same variables. To pick up new code or changed variables, [redeploy](/apps/redeploy).
+- **Restart also ends a pause.** When LiveHQ has stopped restarting an app that kept stopping, **Restart** or **Start app** makes it try again. Fix the cause first, or it will pause again.
+- **Roll back** needs a second successful deployment. Until then the tile reads "Available after a second successful deployment."
+
+## Health check
+
+"How LiveHQ knows this app is still answering." The card shows the request, such as `GET /`, and the rule:
+
+> LiveHQ checks GET / every 5 seconds (3 s timeout); after 3 failures in a row it restarts the app. Restarts pause after 5 in 10 minutes.
+
+An answer with an HTTP status from 200 to 399 counts as healthy. Anything else, or no answer within 3 seconds, counts as a failure. The same path decides whether a new release may go live.
+
+Choose a path that answers quickly and does not need a sign-in. `/` is the default. A dedicated path such as `/healthz` that returns 200 is better when your home page is slow, or when it answers a visitor who is not signed in with an error such as 401 or 403: that fails the check.
+
+### Change the health check path
+
+<Steps>
+  <Step title="Press Change the health check path">
+    The deploy form opens for this app.
+  </Step>
+  <Step title="Open Build and health settings">
+    Set **Health check path** to a page that returns 200.
+  </Step>
+  <Step title="Deploy">
+    The path belongs to a release, so it changes with a new deployment. The running release keeps serving until the new one passes its check on the new path.
+  </Step>
+</Steps>
+
+The link shows for owners, admins and developers, on apps deployed from GitHub. A background service has no path: it uses a health command, set on its **Service** card.
+
+## General
+
+- **Display name** is how the app appears in LiveHQ, up to 120 characters. Type a new one and press **Save name**. Renaming does not change the app's address or restart anything. To change the address, see [Addresses](/apps/addresses).
+- **App ID** is the app's permanent identifier. **Copy** it when you write to support.
+- **Server** and **Created** are facts you cannot edit here.
+
+## Deploy on push
+
+The switch is not on this tab. **Deploy on push** sits at the top of the app's **Deployments** tab, and under **Push deployments** in the details on **Overview**. On, every push to the app's branch deploys by itself; off, you deploy with **Redeploy**. See [Connect GitHub](/apps/github).
+
+## Danger zone: delete the app
+
+<Warning>
+Deleting an app cannot be undone. Its addresses stop working, and its deployment history, variables and saved settings are gone.
+</Warning>
+
+<Steps>
+  <Step title="Press Delete application…">
+    A dialog named after the app opens, such as "Delete storefront?".
+  </Step>
+  <Step title="Type the app's name">
+    The button stays off until the name matches exactly.
+  </Step>
+  <Step title="Press Delete storefront">
+    The app leaves the console at once and you return to **Applications**.
+  </Step>
+</Steps>
+
+What deleting removes, in the console's words: "This removes the application and its addresses, then everything it left on prod-eu-1: containers, images, build files and saved settings. Independent PostgreSQL databases stay available."
+
+| Removed | Kept |
+| --- | --- |
+| The app, its LiveHQ address and its custom domains | Every database, with its data and backups |
+| Its containers, images, build files and saved settings on the server | Your GitHub repository and its code |
+| Its variables, deployment history and logs | Other apps on the server |
+
+A database is never deleted with an app, even one the app was connected to. To remove a database, see [Stop or delete a database](/databases/stop-and-delete).
+
+The server removes the app's files once work in progress and open connections have finished, so disk space comes back a little after the app disappears from the console.
+
+## A background service's Settings tab
+
+A [background service](/apps/background-services) has the same cards under its own names: **Service controls** (with **Stop service** and **Start service**), **General** and **Danger zone** (with **Delete service…**). It has no access card and no health check card. A **Service** card holds how a new release takes over, its health command and what it deploys after; only owners and admins change it.
+
+## If something goes wrong
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| The tiles are greyed out | The app has no release yet, or another action is still running. **Restart** is also off while the app is stopped. | Deploy the app, or wait for the action to finish. |
+| "Wait for an active release before using this action." | The app has never gone live. | [Deploy it](/apps/deploy). |
+| "Action failed. Check the server and retry." or a sentence from the server | The server could not carry the action out. | Check that the server is **Connected**, then try again. See [A server is offline](/help/server-offline). |
+| "Action cancelled because the resource changed." | A deployment or another action changed the app first. | Look at the app's state, then repeat the action if you still want it. |
+| "Update this server’s LiveHQ agent to use these controls." | The agent on the server is too old. | [Update the agent](/servers/update-agent). |
+| "The server stops the app; update its agent so deleting also removes the app’s images and files." | With an old agent, deleting leaves the app's files on the server. | [Update the agent](/servers/update-agent) before you delete. |
+| You do not see **App controls**, **General** or **Danger zone** | Your role is Viewer. | Ask an owner or admin. See [Members and roles](/account/members-and-roles). |
+
+## Related
+
+- [App access](/apps/access)
+- [Roll back](/apps/rollback)
+- [What an app's status means](/apps/status)
+- [Why LiveHQ restarted an app](/apps/restarts)

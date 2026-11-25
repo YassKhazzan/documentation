@@ -1,0 +1,134 @@
+---
+title: "Step 4: Put your first app online"
+sidebarTitle: "4. Your first app"
+description: "Connect GitHub, deploy a project to your server and open it at its secure address. Includes a one-file website for people with no project yet."
+---
+
+LiveHQ takes your project from GitHub, the site where developers keep their code, builds it on your server and gives it a secure address. Putting an app online this way is called deploying.
+
+## Before you start
+
+Your server is connected: the console's guide showed "is connected." at the end of [step 3](/start/install-livehq). Press **Put an app online** there, or open [console.livehq.dev/start/app](https://console.livehq.dev/start/app).
+
+## Steps
+
+<Steps>
+  <Step title="Say whether you have a project on GitHub">
+    The guide asks **Do you have a project on GitHub?**
+
+    If you have one, press **Yes, I have one** and go to the next step.
+
+    If not, press **Not yet** and make a one-page website in two minutes. It is enough to see everything work, and you can replace it with a real project later. GitHub calls a project a repository.
+
+    1. Open [github.com/new](https://github.com/new). If it asks you to create a free account first, do that, then open the page again.
+    2. In **Repository name** type `my-first-site`. Switch on the option that adds a **README**, so the project is not empty. Press **Create repository**.
+    3. On the page that opens, press **Add file**, then **Create new file**.
+    4. In the file name box at the top type `index.html`. Paste the page below into the large empty area.
+    5. Press **Commit changes...**, then **Commit changes** again in the box that opens. That saves the file.
+
+    ```html index.html
+    <!doctype html>
+    <html lang="en">
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>My first site</title>
+        <style>
+          body {
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            background: #0c0b14;
+            color: #f5f3fb;
+            font-family: system-ui, sans-serif;
+            text-align: center;
+          }
+          h1 { font-size: 2.5rem; margin: 0 0 0.5rem; }
+          p { color: #b9a6ff; margin: 0; }
+        </style>
+      </head>
+      <body>
+        <main>
+          <h1>Hello, world.</h1>
+          <p>This page is live on my own server.</p>
+        </main>
+      </body>
+    </html>
+    ```
+  </Step>
+  <Step title="Let LiveHQ see that project">
+    Once you have answered, the guide shows **Connect GitHub**. Press it. GitHub asks which repositories LiveHQ may read:
+
+    1. Choose **Only select repositories**.
+    2. Open **Select repositories** and pick your project.
+    3. Press the green **Install** button. It may read **Install & Authorize**.
+
+    You come back to the console by yourself. LiveHQ sees only the repositories you shared with it.
+
+    Connecting GitHub is for the workspace's owner and admins.
+  </Step>
+  <Step title="Deploy it">
+    Press **Go to the Deploy page**. A project is already chosen under **Source**: check that it is yours, or pick yours in its list.
+
+    One choice on that page is yours. Under **Access & build**, **Private** is preselected: only you can open the app, after signing in with LiveHQ. Choose **Public** if anyone with the link should be able to open it. You can change it later, on the app's page, where the same two choices are named **Only me** and **Anyone with the link**.
+
+    Press **Deploy application**. On a narrow window the button reads **Deploy**. LiveHQ fills in the rest.
+  </Step>
+  <Step title="Watch it go live">
+    The console opens the app's page. LiveHQ builds the project on your server: the first build takes a few minutes, and you can watch it happen there.
+
+    When the app reads **Live**, press **Open app**. Its address looks like `my-first-site.livehq.app`.
+
+    A strip named **Setup guide** on that page leads back to the guide: **Back to the guide** while the app is building, **See what's next** once it is live.
+  </Step>
+</Steps>
+
+## If your app is private
+
+A private app opens only for you, after you sign in with LiveHQ. To let others open it:
+
+1. Open the app's page, then **Settings & access**.
+2. Under **Who can open this app?**, choose **Anyone with the link**.
+
+More choices are on [App access](/apps/access).
+
+## If something goes wrong
+
+| What you see | What to do |
+| --- | --- |
+| Your project is not in the list under **Source** | LiveHQ sees only what you shared. Open **GitHub** in the console, press **Manage repository access**, add the project on GitHub's page, then press **Sync repositories** in the console. |
+| "Your app didn't start yet." | Nothing is broken on your server. The app's page says why, in plain words, and has a button to deploy it again. See [A build failed](/help/build-failed) and [An app won't start](/help/app-wont-start). |
+| GitHub says the app is private or cannot be installed | Write to [support@livehq.dev](mailto:support@livehq.dev) with a copy of GitHub's message. |
+| Viewers can't deploy | Ask the workspace's owner for another role. See [People and roles](/account/members-and-roles). |
+
+## Which kinds of project work
+
+Websites and web apps: a plain web page (one `index.html` file), Next.js, React, Vue, Python, Rust, or anything that has a Dockerfile. LiveHQ looks at the files and works out how to run them. See [How LiveHQ builds an app](/apps/builds).
+
+## What you can do next
+
+<Columns cols={2}>
+  <Card title="Deploy again when you push" icon="code-branch" href="/apps/redeploy">
+    Put a new version online with one click, or by itself each time you push to GitHub.
+  </Card>
+  <Card title="Add a database" icon="database" href="/databases/overview">
+    PostgreSQL or Redis next to your app.
+  </Card>
+  <Card title="Use your own domain" icon="globe" href="/apps/custom-domains">
+    Put the app at an address like `www.example.com`. Needs Pro or Teams.
+  </Card>
+  <Card title="Protect your account" icon="shield-halved" href="/account/two-factor">
+    Turn on two-factor sign-in. It takes a minute.
+  </Card>
+  <Card title="Close your server" icon="lock" href="/servers/security">
+    Your server still accepts password sign-in from the internet. Its Security tab closes that door.
+  </Card>
+  <Card title="Deploy your real project" icon="rocket" href="/apps/deploy">
+    Every choice on the Deploy page, explained.
+  </Card>
+</Columns>
+
+<Note>
+Your server keeps costing money at your hosting company for as long as it exists. To stop one day: [remove it in LiveHQ](/servers/remove), then delete or cancel it at the hosting company.
+</Note>

@@ -1,0 +1,85 @@
+---
+title: "Stop, start and delete a database"
+sidebarTitle: "Stop, start and delete"
+description: "Stop a database without losing its data, start it again, or delete it for good together with its backups."
+---
+
+Stopping a database turns it off and keeps its data. Deleting it removes the data and every backup, and cannot be undone. Owners, Admins and Developers can do both.
+
+## Stop a database
+
+<Steps>
+  <Step title="Open Overview">
+    Open the database. The **Lifecycle** card is on **Overview**.
+  </Step>
+  <Step title="Stop it">
+    Press **Stop database**. The console asks "Stop shop-db? Applications using its connection URL will lose database access until you start it again."
+  </Step>
+  <Step title="Confirm">
+    Press **Confirm**. The status changes to **Stopped**.
+  </Step>
+</Steps>
+
+While a database is stopped:
+
+- Its data stays on the server's disk. Its memory is free for other things.
+- Apps that use it get connection errors. LiveHQ does not stop or change those apps. An app that exits when it cannot reach its database is restarted like any crashing app: see [Why LiveHQ restarted an app](/apps/restarts).
+- Connection URLs, users and Studio are unavailable, and **Back up now** is greyed out. The console says "Available once the database is running." or asks you to start the database.
+- Existing backups stay, and **Restore as new** still works. **Restore** in place does not: "Start the database before restoring it."
+
+## Start it again
+
+Press **Start database** in the **Lifecycle** card. The console asks "Start shop-db with its existing data?" Press **Confirm**. When the status reads **Ready**, apps can connect again with the same URLs and passwords. Apps reconnect on their own if they retry; otherwise redeploy or restart them.
+
+## Delete a database
+
+<Warning>
+Deleting is permanent. It removes the database's data, its backups on the server and offsite, its users and its public address. After that there is nothing left to restore from.
+</Warning>
+
+Before you delete, decide whether you need a copy:
+
+- To keep the data in LiveHQ, press **Restore as new** on a backup first. See [Restore a database](/databases/restore).
+- To keep a file of your own, an Owner or Admin can download an offsite backup, and must export the server's backup keys to be able to open it. Do both before you delete. See [Back up a database](/databases/backups) and [Take your data with you](/help/export).
+
+<Steps>
+  <Step title="Open Settings">
+    Open the database, then **Settings**, and scroll to **Delete database**.
+  </Step>
+  <Step title="Start the deletion">
+    Press **Delete database…**.
+  </Step>
+  <Step title="Type the name">
+    Under **Type shop-db to confirm**, type the database's name exactly.
+  </Step>
+  <Step title="Delete">
+    Press **Permanently delete shop-db**. If your account has two-factor sign-in on, the console asks for your second factor first.
+  </Step>
+</Steps>
+
+Your server then removes the database. Until it has finished, the status reads **Deletion unfinished** and **Settings** says "Deleting this database": this finishes on its own once the server picks it up.
+
+What is not removed:
+
+- **Your apps and their variables.** An app that still has the old URL in `DATABASE_URL` or `REDIS_URL` keeps running and fails to connect. Remove the variable or point it at another database, then redeploy.
+- **Files you downloaded.**
+
+Once the server has finished, the database no longer counts toward your plan. A stopped database still counts.
+
+## If something goes wrong
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| "The deletion didn't finish" in **Settings**, with a reason | The server reported a problem, so it may still hold the data. | Press **Try deleting again**. Anything already removed is skipped. |
+| "Deleting this database" for a long time | The server has not picked the deletion up, usually because it is offline. | Bring the server online. See [A server is offline](/help/server-offline). |
+| The delete card says to delete the backups first, or to update the server's agent | The agent on that server is too old to remove a database's backups with it. | If the console says **Update this server's agent**, see [Update the agent](/servers/update-agent). |
+| **Permanently delete** stays greyed out | The name you typed does not match exactly. | Type it as shown, with the same capitals and dashes. |
+| "This database is suspended by your workspace plan." | The workspace has more databases than its plan allows, and this one was stopped by the plan. Its data is kept. | See [Plans](/account/plans). |
+| The status reads **Failed** and the button reads **Retry setup** | The database did not start. | Press **Retry setup** and **Confirm**. It uses the existing data. |
+| You cannot remove a server | A server cannot be removed while a database is on it. | Delete its databases first. To keep one, restore a backup of it as new on another server before you delete it. See [Remove a server](/servers/remove). |
+
+## Related
+
+- [Restore a database](/databases/restore)
+- [Back up a database](/databases/backups)
+- [Remove a server](/servers/remove)

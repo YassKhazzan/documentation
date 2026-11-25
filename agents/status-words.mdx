@@ -1,0 +1,208 @@
+---
+title: "Status words"
+description: "Every status word the LiveHQ console shows for apps, deployments, servers, databases, domains and more, with what each means and what to do next."
+---
+
+These are the exact words on the console's pills, cards and banners. When someone tells you a status, find it here first. Each section links to the page with the detail.
+
+## Web app
+
+Detail: [What an app's status means](/apps/status).
+
+| Status | Meaning | Next step |
+| --- | --- | --- |
+| **Draft** | Created, never gone live. | Deploy it. |
+| **Deploying** | The first deployment is queued, building or starting. | Follow it under **Deployments**. |
+| **Failed** | The first deployment failed. Nothing is running. | Read the reason on the deployment. |
+| **Live** | The server reports the release healthy, the edge is connected to the server, and the address points at that release. | None. |
+| **Running** | Healthy on the server; the address does not point at this release yet. Normal for a moment after a deployment. | Wait a minute. |
+| **Recovering** | The agent is starting the release again. | Wait, then read the restart history. |
+| **Unavailable** | LiveHQ cannot say the app is serving: no report for 150 seconds, the server reports it unhealthy, or the edge is not connected to the server. | [An app is Unavailable](/help/app-unavailable). |
+| **Stopping** | A stop was asked and is not confirmed yet. | Wait a few seconds. |
+| **Stopped** | Stopped by a person. Stays stopped after a server restart. | **Start app** under **Settings & access**. |
+| **Suspended** | The plan no longer covers this app. | **Billing**. |
+
+Banners that replace the heading: "Your app ran out of memory." and "Your app keeps stopping." (LiveHQ paused restarts after 5 in 10 minutes).
+
+**Live** rests on the server's own report and on the edge's connection to the server. LiveHQ does not test an app's address from the internet.
+
+## Background service
+
+A service has no address and is never **Live**.
+
+| Status | Meaning |
+| --- | --- |
+| **Running** | Its health command passes, or, with none, it has not exited. |
+| **Starting** | Started; waiting for its health command or for it to stay up. |
+| **Checking** | The new release must stay healthy for 60 seconds before it takes over. |
+| **Replacing** | The new release is taking over from the old one. |
+| **Waiting** | A push deployment waits for the app it deploys after. |
+| **Stopping**, **Stopped** | Asked to stop; stopped. |
+| **Unhealthy** | Its health command fails. LiveHQ restarts it at most once every 5 minutes, unless that was switched off in its settings. |
+| **Keeps stopping** | It exited 5 times in 10 minutes. LiveHQ stopped restarting it. |
+| **Failed** | The latest deployment failed and no earlier release is running. |
+| **Draft**, **Deploying**, **Suspended** | As for a web app. |
+| **No report** | No current health report from the server. |
+
+Detail: [Background services](/apps/background-services).
+
+## What the server reports for an app
+
+The small line on an app's Overview reads `Desired: … · Agent: …`.
+
+| `Agent` value | Meaning |
+| --- | --- |
+| `healthy` | The release answers its health check. |
+| `recovering` | The agent is starting it again. |
+| `transitioning` | One release is taking over from another. |
+| `unhealthy` | It fails its health check. |
+| `crash_loop` | LiveHQ restarted it 5 times in 10 minutes; restarts are paused. |
+| `needs_attention` | The agent tried to start it again and could not. |
+| `stopped` | Stopped, as asked. |
+| `unknown` | No current report. |
+
+## Deployment
+
+Detail: [Follow a deployment](/apps/deployments).
+
+Status words in an app's history: **Queued**, **In progress**, **Live**, **Deployed**, **Failed**, **Cancelled**, and for a background service **Re-queued**. On the **Deployments** page in the sidebar, a deployment the server has taken reads **Preparing**.
+
+| Step shown while it runs | Meaning |
+| --- | --- |
+| **Queued** | Waiting for the server to take it. |
+| **Preparing build** | The server downloads the commit and works out how to build it. |
+| **Building application** | Install and build commands run. |
+| **Exporting image**, **Verifying & loading image** | The image is handed to Docker. |
+| **Starting application** | The new release starts beside the serving one. |
+| **Checking application health** | Waiting for the health check to pass. |
+| **Publishing** | The address is switched to the new release. |
+| **Live** | The new release serves. LiveHQ watches it for a minute. |
+| **Deployment complete** | The minute has passed and the old release is stopped. The history then reads **Deployed**. |
+
+Between steps the headline can also read **Preparing deployment**, or **Waiting for build retry** after a step failed and before it is tried again.
+
+A background service reads **Starting service**, then **Waiting for its health check** when it has a health command, then **Checking it stays healthy**. It ends with **Switching over** (overlap) or **Taking over** (stop first) in place of **Publishing**.
+
+| A waiting deployment says | Why |
+| --- | --- |
+| **Queued behind another build** | One build runs at a time per server. |
+| **Waiting for disk space** | Free disk is under the reserve. |
+| **Preparing the server** | Once, on a server under 2 GiB: the swap file for builds is being written. |
+| **Waiting for the server's clock** | The server's clock is not confirmed. |
+| **Waiting for capacity** | An old agent that waits for memory. The agent needs an update. |
+
+A build output card reads **In progress**, **Complete**, **Failed** or **Interrupted**.
+
+## Server
+
+| Status | Meaning |
+| --- | --- |
+| **Connected** | The agent checks in: LiveHQ has a fresh heartbeat. Shown on Home and on the server's **Health** page. It does not say the tunnel is up. |
+| **Offline** | No fresh heartbeat from the agent. After 5 minutes LiveHQ emails "… stopped responding". |
+| **Edge disconnected** | Shown only in the server list of the Deploy page, for a web app: the server's tunnel to the edge is down, so a web app there cannot be reached. |
+
+The tunnel has its own line on the server's **Health** → **Overview**, named **OriginLink**.
+
+Detail: [Find your way around a server](/servers/server-pages), [A server is offline](/help/server-offline).
+
+### Security checklist rows
+
+| Row | Values |
+| --- | --- |
+| **Private SSH** | **Off**, **On · not used yet**, **On**, **Needs an agent update** |
+| **Password logins** | **Allowed**, **Off**, **Not reported** |
+| **Closed to the internet** | **Open**, **Testing**, **Locked · SSH still open**, **Locked · SSH from your addresses**, **Locked · SSH only through LiveHQ**, **Needs the installer** |
+| **Public databases** | Only while LiveHQ's check of the server's ports from outside finds a database's public port open: "shop-db is reachable", or "2 are reachable" |
+| **System updates** | With LiveHQ installing updates: **Automatic**, **Installing automatically**, **Restart planned**. With that switched off: **Up to date**, "2 security updates waiting", **Restart needed**. On a release past its end of support: **Support ended** |
+
+Detail: [The Security tab](/servers/security).
+
+### Agent update
+
+**Requested** → **Preparing** → **Installing** → **Confirming**. "Update waiting" means the server is busy and continues by itself. **Request update again** appears when a request expired or stalled. Detail: [Update the agent](/servers/update-agent).
+
+### Outage protection
+
+| Value | Meaning |
+| --- | --- |
+| **On** | Public apps keep serving for up to 72 hours if LiveHQ's control plane is down. |
+| **Partial** | Some public apps have no permit yet. A new app gets one within the hour. |
+| **Starting** | The server holds no permit yet: it is getting its first ones, or no app on it can get one (no public app, or the workspace has used 75% or more of its bandwidth). |
+| **Off** | LiveHQ turned it off. Public apps would pause like private ones. |
+| **Error** | Renewing fails; the agent keeps trying. |
+| **Expired** | The permits ran out. They renew when the server reconnects. |
+| **Update this server's agent** | The agent is older than outage protection. |
+
+Detail: [What happens during an outage](/help/outages).
+
+## App on several servers
+
+Each server's row on the **Servers and load balancing** card reads **Serving**, **Deploying**, **Down** or **Removing**. The first server is the **Primary**; the others are **Replica**. The app is **Live** while at least one server serves it. Detail: [Several servers](/apps/several-servers).
+
+## Database
+
+| Status | Meaning |
+| --- | --- |
+| **Provisioning** | The server is setting it up. |
+| **Ready** | Running and answered its last health check. URLs, Studio, users and backups need this. |
+| **Degraded** | Running or restarting, but did not answer its last health check. |
+| **Stopped** | Not running: stopped by a person, or suspended by the plan. Data is kept. |
+| **Failed** | Setup did not finish, or it kept crashing and the agent stopped restarting it. |
+| **Deletion unfinished** | A deletion was asked and the server has not finished. Shown on the database's own page. |
+
+Detail: [Databases, explained](/databases/overview).
+
+## Private network path
+
+Shown for each app connected to a database, on the database's **Connections** tab.
+
+| Path | Meaning |
+| --- | --- |
+| **Same server** | App and database are on one server. |
+| **Private network · direct** | The two servers talk directly. |
+| **Private network · through LiveHQ (slower)** | They cannot reach each other directly; encrypted traffic passes through LiveHQ's edge. |
+| **Private network · connecting** | The link is being set up. About a minute. |
+| **Private network · not connected** | The servers have not reached each other in the last few minutes. |
+| **Waiting for …'s agent update** | That server's agent is too old. |
+| **Waiting for a LiveHQ update** | The direct path is closed and the relay is not ready. |
+| **Waiting for the app's first deploy** | The app is not on a server yet. |
+| **Unavailable: …** | The server cannot join; the reason follows. |
+
+Detail: [Private network](/network/overview).
+
+## Custom domain
+
+| Status on the card | Meaning | Next step |
+| --- | --- | --- |
+| **Waiting for DNS** | LiveHQ has not seen the DNS record. | Create or correct the CNAME, then **Check status**. |
+| **Issuing certificate** | The record is verified; the certificate is on its way. | Wait. |
+| **Connected** | The domain serves the app. | None. |
+| **Needs attention** | The certificate provider reported a problem, shown in red. | [A domain won't go live](/help/domain-not-live). |
+| **Paused** | Held back by something outside its setup, such as billing. | **Billing**. |
+| **Removing** | Being removed. | Wait. |
+
+Detail: [Custom domains](/apps/custom-domains).
+
+## What visitors see
+
+| Page title | When |
+| --- | --- |
+| A LiveHQ sign-in page | The app is private and the visitor is not signed in. |
+| "This app is paused for now" | The workspace used its bandwidth. |
+| "This app is stopped" | Someone stopped the app. |
+| "This app is offline" | The app's server is not connected to LiveHQ. |
+| "This app can't be reached right now" | The edge could not pass the request to the app. |
+| "This app is taking too long" | The app did not answer in time. |
+| "This app is busy" | The app or its server is at its limit of requests in progress. |
+| "Back in a moment" | The server is restarting to finish security updates. |
+| "There's no app at this address" | No app has this address. |
+| "This page couldn't be opened" | Any other request the edge could not complete. |
+| "This request was blocked" | The app's firewall refused the request. |
+| "Too many requests" | A firewall rate limit refused the request. |
+| A browser check | The app's firewall asks the visitor to prove they use a real browser. |
+
+## Related
+
+- [Reference](/agents/reference)
+- [Limits](/agents/limits)
+- [Glossary](/help/glossary)

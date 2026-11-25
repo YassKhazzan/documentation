@@ -1,0 +1,80 @@
+---
+title: "Remove a server"
+description: "Take a server out of your workspace to free its place in your plan, and know what it needs first and what stays on the machine."
+---
+
+Removing a server takes it out of your workspace and frees its place in your plan. LiveHQ stops managing the machine. The machine itself keeps running and nothing on it is deleted.
+
+Remove a server when you have replaced it, when you deleted it at your hosting company, or when you installed LiveHQ on it again from scratch and the old entry still holds a place.
+
+<Warning>
+Removing a server does not stop its bill. To stop paying for it, delete or cancel the server at your hosting company.
+</Warning>
+
+## Before you start
+
+- **The Owner or Admin role.**
+- **No apps and no databases left on the server.** Their data lives on that server, so LiveHQ refuses to remove it while any remain. Delete them first, or move what you want to keep: see [Stop or delete a database](/databases/stop-and-delete) and [Export](/help/export).
+- **A machine you plan to keep using?** Do two things while the console can still reach it:
+  - **Unlock it.** A kept [lock](/servers/lock-down) stays on the machine, and private SSH stops working once the server is removed. On the **Security** tab, press **Unlock**.
+  - **Turn LiveHQ's security updates off.** While they are on, the system's own automatic installer is switched off. On the **Security updates** card, open **Settings**, choose **Off** and save, so the system looks after its own updates again. See [Security updates](/servers/system-updates).
+
+## Steps
+
+<Steps>
+  <Step title="Open the server's Overview">
+    Open the server, then **Health**. The **Overview** tab ends with the **Remove server** card.
+  </Step>
+  <Step title="Press Remove…">
+    The button is greyed out while apps remain on the server, with the note "Delete its 2 apps and any databases on it first: their data lives on this server."
+  </Step>
+  <Step title="Type the server's name and confirm">
+    In the dialog **Remove prod-eu-1**, type the server's exact name, then press **Remove server**. If two-factor sign-in is on for your account, the console may first ask you to confirm it's you.
+  </Step>
+</Steps>
+
+## What happens next
+
+- The console returns to Home. The server is gone from the sidebar and its place in your plan is free at once.
+- The server's connection to LiveHQ ends: its tunnel is closed and its agent can no longer reach LiveHQ.
+- If the server was an extra server of an app that runs on [several servers](/apps/several-servers), LiveHQ stops sending that app's visitors to it. The app keeps running on its other servers.
+- The removal is recorded in the workspace's audit log, which Teams workspaces can read.
+- The same machine cannot be connected again as it is. See [Add it back later](#add-it-back-later).
+
+## What stays on the machine
+
+LiveHQ deletes nothing on the machine and has no uninstall command today.
+
+| Stays | Note |
+| --- | --- |
+| Docker and anything you ran with it | Untouched |
+| The LiveHQ agent and its files in `/opt/livehq-agent` and `/var/lib/livehq-agent` | The services still start with the machine but can no longer reach LiveHQ |
+| A lock you kept, and the SSH keys-only setting | They stay in force. To lift the lock afterwards, run `sudo /opt/livehq-agent/current/livehq-agent firewall unlock` on the machine |
+| The swap file LiveHQ made on a small server | `/var/lib/livehq-swap/swapfile` |
+
+If you will not use the machine again, deleting it at your hosting company is the clean end.
+
+## Add it back later
+
+The dialog says: "To add it back later, run the installer on it again." On a machine that still holds LiveHQ's files, that does not reconnect it today:
+
+- With the same server name, the installer finds the machine's old enrollment, asks for no enrollment code and enrolls nothing. The identity it kept was removed with the server, so the console keeps saying **Waiting for your server**.
+- With another server name, the installer stops with `This server already has different enrollment details. Its identity was preserved.`
+
+To use the machine with LiveHQ again, rebuild it at your hosting company, which erases it, then follow [Connect a server](/servers/connect). It joins as a new server, with no apps or databases. To keep what is on the machine, write to [support](/help/support) first.
+
+## If something goes wrong
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| **Remove…** is greyed out | Apps still run on the server | Delete them first |
+| "prod-eu-1 still runs 1 database. Delete them first: their data lives on this server." | A database is still on the server | Open **Databases** and delete the ones on this server |
+| **Remove server** in the dialog stays greyed out, or you read "Type the server's name exactly to remove it." | The name does not match exactly | Type it as shown in bold in the dialog, with the same capitals |
+| There is no **Remove server** card | Your role is Developer or Viewer | Ask an owner or admin |
+| Apps or databases will not delete because the machine no longer exists | The server cannot carry out the deletion | Write to [support](/help/support) with the server's name |
+
+## Related
+
+- [Connect a server](/servers/connect)
+- [Plans](/account/plans)
+- [Export](/help/export)

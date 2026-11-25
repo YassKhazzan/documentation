@@ -1,0 +1,99 @@
+---
+title: "A server is offline"
+description: "What to check when the console shows a server as Offline or LiveHQ emails that it stopped responding, and how to restart the LiveHQ agent."
+---
+
+A server reads **Offline** when its agent, the LiveHQ program on the server, has stopped checking in with LiveHQ. This page helps you find out whether the server is down, cut off from the network, or only its agent has stopped.
+
+## What you see
+
+| Where | What it says |
+| --- | --- |
+| Home, under **Needs attention** | "prod-eu-1 is offline", with "Apps on it keep their last state, but LiveHQ can't reach its agent. Check the VPS and its network." |
+| The sidebar and the server's page | The server's light is off and its status reads **Offline** instead of **Connected** |
+| **Health**, **Overview** tab | "The server has not sent a fresh online heartbeat. It may be restarting, disconnected or stopped." |
+| **Monitor** | "This server has not sent a fresh heartbeat. Charts resume when it reconnects." |
+| Email, after 5 minutes of silence | Subject "prod-eu-1 stopped responding": "LiveHQ last heard from prod-eu-1 at 14:02 UTC, 6 minutes ago. Its apps may be unreachable." |
+| Email, when it is back | Subject "prod-eu-1 is back online" |
+
+The emails go to the workspace's owners and admins, once per silence. If you restarted or switched off the server on purpose, you can ignore them. LiveHQ sends no "stopped responding" email during the first 10 minutes of a restart you asked for in the console.
+
+## First: are your apps still up?
+
+Open one of your apps' addresses in a browser.
+
+- **The app opens.** The server is running and the tunnel that carries visitors works. Only the agent has stopped: you cannot deploy or change anything until it is back, but visitors are fine. Go to [Restart the agent](#restart-the-agent).
+- **The app does not open.** The server is down, cut off, or out of resources. Go on with the checks below.
+
+On the server's **Overview** tab, the **Status** card shows the same two things apart: **Agent**, and **OriginLink**, which is the console's name for the encrypted tunnel.
+
+## Check the server at your hosting company
+
+Sign in at the company you rent the server from.
+
+1. **Is the server running?** A server can be stopped, suspended for an unpaid bill, or moved for maintenance. Start it if it is stopped.
+2. **Did it finish starting?** Open the company's web console for the server, the screen that works without SSH. An error or a login prompt that never appears means the system did not start.
+3. **Is there an incident?** Look at the company's status page.
+4. **Still nothing?** Restart the server from the hosting company's own page.
+
+When the server is up again, the agent starts by itself and the console shows **Connected** shortly afterwards. Your apps and databases start again on their own, except the ones you had stopped.
+
+## Restart the agent
+
+If the server runs but stays **Offline**, open a terminal on it, with SSH or the hosting company's web console, and look at the agent:
+
+```bash
+sudo systemctl status livehq-agent
+sudo journalctl -u livehq-agent -n 100 --no-pager
+```
+
+The first command says whether the agent is running. The second shows its last 100 log lines, with the reason if it stopped. Then restart it:
+
+```bash
+sudo systemctl restart livehq-agent
+```
+
+Restarting the agent does not stop your apps or databases. Avoid it in the middle of a deployment.
+
+LiveHQ's services on a server are:
+
+| Service | What it does |
+| --- | --- |
+| `livehq-agent` | The agent: carries out what you ask in the console and reports to LiveHQ |
+| `livehq-traffic` | Keeps the encrypted tunnel that carries visitors to your apps |
+| `livehq-updater` | Installs new versions of the agent |
+
+If apps do not open although the server runs, check the tunnel and Docker the same way:
+
+```bash
+sudo systemctl status livehq-traffic docker
+```
+
+## If the agent runs but the console still says Offline
+
+| Check | Command | What to look for |
+| --- | --- | --- |
+| The server can reach the internet | `curl -sI https://www.livehq.dev` | A first line with `HTTP`. No answer means the network or an outgoing firewall rule blocks it |
+| The disk is not full | `df -h /` | Under 100% in the **Use%** column. See [A disk is full](/help/disk-full) |
+| Memory is left | `free -m` | Some memory under **available** |
+| The clock is right | `timedatectl` | "System clock synchronized: yes". A clock that is far off makes LiveHQ drop the server's reports |
+| The agent's own view | `sudo /opt/livehq-agent/current/livehq-agent status` | What the agent itself reports about its state |
+
+The console prints the last command, and the log command above, on the server's **Overview** tab under **Inspect over SSH**.
+
+## Special cases
+
+| Situation | What to do |
+| --- | --- |
+| You restarted the server from the console and it did not return after 10 minutes | See [Restart a server](/servers/restart) |
+| You locked the server and cannot get in with SSH | See [If you are locked out](/servers/lock-down#if-you-are-locked-out) |
+| You deleted the server at your hosting company | It stays **Offline** for good. [Remove it](/servers/remove) to free its place in your plan |
+| Every server shows **Offline** at once, or the console itself has trouble | The problem may be on LiveHQ's side. Public apps keep serving for up to 72 hours. See [When LiveHQ is down](/help/outages) |
+
+If the server runs, reaches the internet and the agent still cannot connect, write to [support@livehq.dev](mailto:support@livehq.dev) with the server's name and the last lines of the `journalctl` command. Leave out passwords and codes.
+
+## Related
+
+- [Restart a server](/servers/restart)
+- [An app is unavailable](/help/app-unavailable)
+- [Emails LiveHQ sends](/help/emails)

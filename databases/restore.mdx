@@ -1,0 +1,111 @@
+---
+title: "Restore a database"
+description: "Put a database back to one of its backups in place, undo that restore within 7 days, or restore a backup as a separate new database."
+---
+
+Restoring brings back a database as it was when a backup was taken. You can restore **in place**, which replaces the data of the database you are using, or **as new**, which creates a second database and leaves the first one alone.
+
+<Warning>
+A restore brings back the moment of the backup, not a moment you choose. Everything written after that backup is replaced. An in-place restore keeps the replaced data for 7 days so you can undo it.
+</Warning>
+
+## Which one to use
+
+| | **Restore** (in place) | **Restore as new** |
+| --- | --- | --- |
+| What changes | The data of this database | Nothing in this database. A new one appears. |
+| Address, users, passwords | Stay the same. Apps need no change. | The new database gets its own address and password, and only the default user. Apps that should use it need the new URL. |
+| Where | On the database's own server | Any of your servers, for a backup with an offsite copy. A backup that is only **On this server** restores on that server. |
+| Undo | **Undo restore** for 7 days | Delete the new database |
+| Counts as a database in your plan | No | Yes |
+| Good for | "Put it back the way it was this morning." | Looking at old data, moving to another server, testing a restore |
+
+Both work on every plan for backups you already have. Owners, Admins and Developers can restore. With two-factor sign-in on, the console may ask for your second factor before an in-place restore.
+
+## Restore in place
+
+<Steps>
+  <Step title="Choose the backup">
+    Open the database, then **Backups**. Find the backup by its time and press **Restore** on its row.
+  </Step>
+  <Step title="Read the confirmation">
+    The console says which backup replaces the data, for example "Replace shop-db's data with the backup from Nov 6, 2026, 10:00 PM? Changes made after it are replaced. LiveHQ keeps the current data for 7 days so you can undo."
+  </Step>
+  <Step title="Confirm">
+    Press **Restore shop-db**. The tab shows "Restore in progress. Connections pause for a moment when the data switches."
+  </Step>
+  <Step title="Check your data, then choose">
+    When it finishes, a banner reads "Restored from the backup of …" with two buttons. Check your app, then press **Keep restored data** or **Undo restore**.
+  </Step>
+</Steps>
+
+### Undo it, or keep it
+
+The banner says until when the data from before the restore is kept.
+
+- **Undo restore** puts that data back. Changes made since the restore are discarded, and connections pause for a moment.
+- **Keep restored data** asks "Delete the safety copy now? The restore can no longer be undone afterwards." Press **Delete safety copy**. This frees the disk space.
+- If you choose neither, the kept data is deleted on its own after 7 days.
+
+Another in-place restore of the same database is blocked until you choose, or until the 7 days are over.
+
+### What it needs
+
+From the start of the restore until you keep or undo it, your server holds two copies of the data. Make sure the disk has room for a second copy of the database. See [A full disk](/help/disk-full).
+
+## Restore as new
+
+<Steps>
+  <Step title="Choose the backup">
+    Open the database, then **Backups**, and press **Restore as new** on the backup's row.
+  </Step>
+  <Step title="Name it and pick a server">
+    Under **Restore into a new database**, set **New database name** (it starts as `shop-db-restored`) and choose **Restore on server**.
+  </Step>
+  <Step title="Create it">
+    Press **Create restored database**. The console opens the new database's page.
+  </Step>
+</Steps>
+
+The existing database stays unchanged. The new one gets the CPU and memory size of the original, its own address and its own `livehq` password. Named users are not copied, in PostgreSQL or in Redis: a backup holds the data, not the users. Create them again under **Users**.
+
+To move an app to the restored database, [connect it](/databases/connect-an-app) to the new one, or save the new URL in the app's variables and redeploy.
+
+## Why a backup cannot be restored in place
+
+When **Restore** is greyed out, its tooltip gives the reason:
+
+| Reason shown | What to do |
+| --- | --- |
+| "Only verified backups can be restored." | The backup did not finish or did not pass its check. Choose another one. |
+| "Update this server's LiveHQ agent to restore in place." | If the console says **Update this server's agent**, see [Update the agent](/servers/update-agent). **Restore as new** still works. |
+| "A restore of this database is running." | Wait for it to finish. |
+| "Keep or undo the current restore first." | Use the banner's **Keep restored data** or **Undo restore**. |
+| "Start the database before restoring it." | The database must read **Ready**. Start it on Overview. |
+| "This backup is not on this server and has no off-site copy." | The backup's file is on another server only. Use **Restore as new** on that server. |
+
+## What your apps experience
+
+- **While the backup loads (in place):** nothing. The database keeps serving its current data.
+- **At the switch, and at an undo:** PostgreSQL closes open connections and pauses for a moment. Redis restarts on the restored data, so apps are disconnected for a few seconds.
+- **After:** the address, users and passwords are the same. Apps reconnect on their own if they retry after a lost connection.
+- **Restore as new:** nothing changes for the existing database.
+
+A scheduled backup waits while a restore of the same database runs.
+
+## If something goes wrong
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| The restore reads **Failed** in **Recent operations** | The server could not finish. If it failed before the switch, your current data is untouched. | Read the reason. Free disk space if that is the cause, then restore again. |
+| "No server can run databases right now. Bring a server online, then restore." | No server in the workspace can take a restore as new. | Bring a server online. For Redis, the server's agent may also need an update. |
+| "This backup is only on its own server, which is unavailable." | The backup has no offsite copy and its server is offline. | Bring that server back. Turn on offsite copies for next time. |
+| A dialog says your plan's limit is reached | **Restore as new** creates a database, and the plan is full. | Delete a database you no longer need, or see [Plans](/account/plans). |
+| The database page says "The original server is unavailable. Restore an off-site backup to another server." | The database's server is no longer in the workspace, and offsite copies exist. | Press **Restore as new** on a backup and choose another server. |
+| Data you expected is missing after the restore | It was written after the backup you chose. | Press **Undo restore** to get the replaced data back, within 7 days. |
+
+## Related
+
+- [Back up a database](/databases/backups)
+- [Stop, start and delete a database](/databases/stop-and-delete)
+- [Database connection problems](/help/database-connection)

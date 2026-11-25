@@ -1,0 +1,77 @@
+---
+title: "Workspaces and their settings"
+description: "What a workspace holds, how to switch between workspaces, what the Settings page shows, and how to search and change the theme."
+---
+
+A workspace is the place everything in LiveHQ belongs to: your servers, apps, databases, the GitHub connection, the plan and the people. You get one when you sign up, and you can be a member of others.
+
+## What a workspace holds
+
+- **Servers, apps and databases.** Everyone in the workspace sees all of them. Their role decides what they may change: see [People and roles](/account/members-and-roles).
+- **One plan.** Limits and prices are per workspace: see [Plans](/account/plans).
+- **One GitHub connection**, under **GitHub** in the sidebar.
+
+You create your first workspace when you sign up: the form asks for a **Workspace name**. You join another one when its owner or an admin invites you, which needs the Teams plan on their side.
+
+<Note>
+The console cannot create a second workspace for an account that already has one, rename a workspace or delete one. If you need one of these, write to [support](/help/support).
+</Note>
+
+## Switch workspace
+
+At the top of the sidebar, press the workspace's name. Your role shows under it. The menu lists your **Workspaces**; pick one to switch.
+
+The same menu has **Workspace settings** and, for Owners and Admins, **People**.
+
+The console remembers the workspace you chose in this browser. In another browser it opens the first one on your list that you can use.
+
+## The Settings page
+
+Open **Settings** in the sidebar, or **Workspace settings** in the workspace menu. Owners and Admins see two tabs, **Workspace** and **People**. Everyone else sees the **Workspace** page only.
+
+| Section | What is there | Who can change it |
+| --- | --- | --- |
+| **Workspace details** | **Name**, **Workspace ID** with a copy button, **Your role** and **Signed in as**. | Nobody: it is read-only. |
+| **Sign-in security** | Two-factor sign-in for your own account, and **Require it for everyone** for the workspace. | You, for your account. Owners and Admins for the workspace rule: **Require two-factor** or **Stop requiring**. |
+| **Plan & usage** | The workspace's plan, and **Open billing**. | Owners and Admins see the button. |
+| **VPS preview scope** | A fixed summary of what this version of LiveHQ covers. | Nobody. For the current list, see [Known limits](/help/known-limits). |
+
+Before you can require two-factor sign-in for everyone, turn it on for your own account. See [Two-factor sign-in](/account/two-factor).
+
+Other workspace-wide pages are in the sidebar: **GitHub** for everyone, **Billing** and **People** for Owners and Admins.
+
+## Search
+
+Press **Search or jump to…** in the sidebar, or ⌘K on a Mac and Ctrl+K elsewhere. Type part of a name, move with the arrow keys and press Enter. Esc closes it.
+
+| Group | What you find |
+| --- | --- |
+| **Create** | **Deploy from GitHub**, **Deploy a background service**, **Create a PostgreSQL database**, **Create a Redis database**, **Connect a server**. Only the ones your role allows. |
+| **Applications** | Every app and background service, by name. |
+| **Servers** | Each server by name, plus "Monitor prod-eu-1" and "prod-eu-1 health" for its Monitor and Health pages. |
+| **Go to** | The console's main pages, such as **Deployments**, **Databases** and **Settings**. |
+| **Preferences** | The three themes. |
+
+Search does not list databases one by one. Open **Databases** and pick one there.
+
+## Theme
+
+At the bottom of the sidebar, press your email address. Choose **System theme**, **Light theme** or **Dark theme**. The sun or moon button next to it switches between light and dark in one press.
+
+The theme is kept in this browser, not in your account. **Sign out** is in the same menu.
+
+## If something goes wrong
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| "No active workspace." | Your account is signed in but has no active membership. | Ask the workspace's owner to restore your access. |
+| "Acme Studio's Teams plan has ended" | The workspace left Teams, so only its owner can use it. You keep your membership. | Pick another workspace under **Your other workspaces**, or ask the owner. See [People and roles](/account/members-and-roles#when-a-teams-plan-ends). |
+| A workspace is missing from the menu | You were removed from it, or the invitation was never accepted. | Ask its owner or an admin to invite you again. |
+| You do not see **Billing** or **People** | Your role is Developer or Viewer. | Ask an Owner or Admin. |
+
+## Related
+
+- [People and roles](/account/members-and-roles)
+- [Plans and limits](/account/plans)
+- [Two-factor sign-in](/account/two-factor)
+- [A tour of the console](/start/console-tour)

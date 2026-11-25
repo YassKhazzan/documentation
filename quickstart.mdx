@@ -1,47 +1,80 @@
 ---
 title: "Quickstart"
-description: "Begin with a guide on the fastest path to a successful outcome"
+description: "Connect a Linux server you already have, connect GitHub and deploy your first app with LiveHQ, on one page."
 ---
 
-Describe how someone begins using your product. What is the first thing they need to do? Are there any prerequisites?
+This page is for people who have a server and know how to open it with SSH. If you have never rented a server, take the [step-by-step path](/start/rent-a-server) instead: it explains every screen.
 
-A quickstart should take someone from zero to using your product. They'll get a quick win and a sense of what they can accomplish.
+## Before you start
 
-## Prerequisites
+- **A Linux server** with Ubuntu 22.04, 24.04 or 26.04, or Debian 12 or 13, and SSH access as `root` or as a user with `sudo`. Intel/AMD and ARM both work. 2 vCPU and 4 GB of memory is a comfortable start. See [What server you need](/servers/requirements).
+- **A GitHub account** with the repository you want to deploy.
+- **A LiveHQ account.** Create one at [console.livehq.dev/signup](https://console.livehq.dev/signup). The Free plan covers one server and three apps.
 
-Before you begin, you must have:
+<Note>
+The installer adds Docker if the server does not have it, and the LiveHQ agent. From then on LiveHQ installs the system's security updates and may restart the server at a planned weekly time. You can change that on the server's [Security tab](/servers/system-updates).
+</Note>
 
-- Requirement one (for example, Node.js 18+, a free account, an API key)
-- Requirement two (for example, a compatible device, a compatible browser, a compatible operating system)
-
-## Get started
+## Steps
 
 <Steps>
-  <Step title="Install">
-    Describe how to install your product or sign up.
+  <Step title="Connect your server">
+    In the console, open **Connect a server**. With a new workspace, Home offers it under **I've done this before**.
 
-    ```bash
-    npm install your-package
-    ```
+    1. Type a **Server name**, such as `prod-eu-1`.
+    2. Press **Create enrollment code**. Leave the code on screen.
+    3. Copy the command under **Run this command on your VPS.** and paste it into an SSH session on the server.
+    4. When the terminal asks `Enrollment code from the LiveHQ console (hidden):`, press **Copy code** in the console and paste the code. Nothing shows as you paste: that is normal.
+
+    The installer prints five numbered steps and ends with `LiveHQ is installed and running.` The console page then changes from **Waiting for your server** to "prod-eu-1 is ready."
+
+    A code works once, for 30 minutes. More detail: [Connect a server](/servers/connect).
   </Step>
-  <Step title="Configure">
-    Describe any setup or configuration needed before first use.
+  <Step title="Connect GitHub">
+    Open **GitHub** in the sidebar and press **Connect GitHub**. On GitHub's page choose **Only select repositories**, pick your repository and press **Install**. You come back to the console by yourself.
 
-    ```bash
-    your-cli init
-    ```
+    Only owners and admins of the workspace can do this. More detail: [Connect GitHub](/apps/github).
   </Step>
-  <Step title="Run it">
-    Show the first thing a user does to see it working.
+  <Step title="Deploy">
+    Press **New**, then **GitHub repository**, and pick your repository. The Deploy page opens with the repository under **Source** and your server already chosen.
 
-    ```bash
-    your-cli start
-    ```
+    Check two things before you press **Deploy application**:
+
+    - **The port.** LiveHQ sets a `PORT` variable and sends traffic to it. An app that listens on a fixed port needs that port typed as **App port**, under **Build and health settings**.
+    - **Who can open the app.** Under **Access & build**, **Private** is preselected: only you can open the app, after signing in with LiveHQ. Choose **Public** if anyone with the link should open it.
+
+    More detail: [Deploy an app](/apps/deploy).
+  </Step>
+  <Step title="Watch it go live">
+    The app's page shows the build as it happens. The build runs on your server, so the first one takes a few minutes while it downloads your dependencies. When the release answers its health check, the deployment reads **Live** and the app gets its address, such as `storefront.livehq.app`, with HTTPS.
+
+    Press **Open app**. The top bar's own **Live** is something else: it means the console is receiving fresh data.
   </Step>
 </Steps>
 
-<Tip>
-  Give people a way to get help. This could be a link to a support page, a chat with a customer support agent, or a forum for your product.
+## What to do next
 
-  Example: Need help? Reach out to us at [support@yourcompany.com](mailto:support@yourcompany.com).
-</Tip>
+<Columns cols={2}>
+  <Card title="Add a database" icon="database" href="/databases/overview">
+    PostgreSQL 17 or Redis 8 on the same server, connected to your app in one step.
+  </Card>
+  <Card title="Use your own domain" icon="globe" href="/apps/custom-domains">
+    Put the app at `www.example.com`. Needs Pro or Teams.
+  </Card>
+  <Card title="Close the server" icon="lock" href="/servers/security">
+    Private SSH, keys only, and no port answering from the internet.
+  </Card>
+  <Card title="Turn on two-factor sign-in" icon="shield-halved" href="/account/two-factor">
+    Protect the account that controls your server.
+  </Card>
+</Columns>
+
+## If something goes wrong
+
+| What you see | What to do |
+| --- | --- |
+| The installer says `Use Ubuntu 22.04/24.04/26.04 or Debian 12/13` | The server runs another system. Nothing was changed on it. Rebuild it with a supported one. |
+| `This enrollment code is wrong, used or expired` | A code works once, for 30 minutes. Reload the console page, type the server name again, press **Create enrollment code**, and run the command again with the new code. See [Install problems](/help/install-problems). |
+| The deployment fails while building | Open the deployment and read the last lines of the build output. See [A build failed](/help/build-failed). |
+| The build passes but the app does not start | Usually the port. The app's page says why and offers a fix. See [An app won't start](/help/app-wont-start). |
+| The app opens for you and nobody else | It is **Private**. Change it under **Settings & access**. See [App access](/apps/access). |
