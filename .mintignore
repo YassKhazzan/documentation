@@ -8,6 +8,9 @@ scripts/
 # The owner's list of things to confirm before publishing
 BEFORE_PUBLISHING.md
 
+# The style guide for people and agents who edit the docs
+AGENTS.md
+
 # Draft content
 drafts/
 *.draft.mdx

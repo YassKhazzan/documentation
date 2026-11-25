@@ -25,7 +25,7 @@ The docs have a search server that speaks the Model Context Protocol (MCP). Your
 The server's address is this site's address followed by `/mcp`:
 
 ```text
-https://docs.livehq.dev/mcp
+https://livehq.mintlify.app/mcp
 ```
 
 <Tabs>
@@ -37,7 +37,7 @@ https://docs.livehq.dev/mcp
   </Tab>
   <Tab title="Claude Code">
     ```bash
-    claude mcp add --transport http livehq-docs https://docs.livehq.dev/mcp
+    claude mcp add --transport http livehq-docs https://livehq.mintlify.app/mcp
     ```
   </Tab>
   <Tab title="Cursor">
@@ -47,7 +47,7 @@ https://docs.livehq.dev/mcp
     {
       "mcpServers": {
         "livehq-docs": {
-          "url": "https://docs.livehq.dev/mcp"
+          "url": "https://livehq.mintlify.app/mcp"
         }
       }
     }
@@ -61,7 +61,7 @@ https://docs.livehq.dev/mcp
       "servers": {
         "livehq-docs": {
           "type": "http",
-          "url": "https://docs.livehq.dev/mcp"
+          "url": "https://livehq.mintlify.app/mcp"
         }
       }
     }
@@ -72,7 +72,7 @@ https://docs.livehq.dev/mcp
 
     ```toml
     [mcp_servers.livehq-docs]
-    url = "https://docs.livehq.dev/mcp"
+    url = "https://livehq.mintlify.app/mcp"
     ```
   </Tab>
 </Tabs>
@@ -83,14 +83,14 @@ Tools that read web pages can start from one of these:
 
 | Address | What it is |
 | --- | --- |
-| `https://docs.livehq.dev/llms.txt` | A list of every page with a one-line description. |
-| `https://docs.livehq.dev/llms-full.txt` | The whole documentation in one file. |
+| `https://livehq.mintlify.app/llms.txt` | A list of every page with a one-line description. |
+| `https://livehq.mintlify.app/llms-full.txt` | The whole documentation in one file. |
 | Any page's address followed by `.md` | That page as Markdown. |
 
 A prompt that works well:
 
 <Prompt description="Give your AI tool the LiveHQ docs before you ask for help.">
-Read https://docs.livehq.dev/llms.txt, then the pages /agents/reference, /agents/order-of-operations, /agents/status-words and /agents/limits. LiveHQ has no API and no CLI: I do everything in its web console. Use the exact button and tab names from the docs, and tell me when you are not sure. Do not ask me for passwords, codes, connection URLs or variable values.
+Read https://livehq.mintlify.app/llms.txt, then the pages /agents/reference, /agents/order-of-operations, /agents/status-words and /agents/limits. LiveHQ has no API and no CLI: I do everything in its web console. Use the exact button and tab names from the docs, and tell me when you are not sure. Do not ask me for passwords, codes, connection URLs or variable values.
 </Prompt>
 
 ## 4. Install the skill
@@ -98,7 +98,7 @@ Read https://docs.livehq.dev/llms.txt, then the pages /agents/reference, /agents
 The docs publish a skill file that describes what a person can do with LiveHQ and how. Coding agents that support skills can install it:
 
 ```bash
-npx skills add https://docs.livehq.dev
+npx skills add https://livehq.mintlify.app
 ```
 
 ## Working safely with an AI tool

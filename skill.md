@@ -28,20 +28,20 @@ You cannot operate LiveHQ yourself: it has no API and no CLI. You help the perso
 
 ## Read the documentation first
 
-The documentation is at https://docs.livehq.dev. Add `.md` to any page address for
-Markdown, or read https://docs.livehq.dev/llms.txt for the index.
+The documentation is at https://livehq.mintlify.app. Add `.md` to any page address for
+Markdown, or read https://livehq.mintlify.app/llms.txt for the index.
 
 Start with these four pages:
 
-- https://docs.livehq.dev/agents/reference.md — the objects, where each thing is in the
+- https://livehq.mintlify.app/agents/reference.md — the objects, where each thing is in the
   console, roles, how apps and databases run.
-- https://docs.livehq.dev/agents/order-of-operations.md — what must exist before what, and
+- https://livehq.mintlify.app/agents/order-of-operations.md — what must exist before what, and
   the steps of each common job.
-- https://docs.livehq.dev/agents/status-words.md — every status the console shows.
-- https://docs.livehq.dev/agents/limits.md — every number: plans, sizes, time limits.
+- https://livehq.mintlify.app/agents/status-words.md — every status the console shows.
+- https://livehq.mintlify.app/agents/limits.md — every number: plans, sizes, time limits.
 
-Then https://docs.livehq.dev/help/known-limits.md and
-https://docs.livehq.dev/help/troubleshooting.md.
+Then https://livehq.mintlify.app/help/known-limits.md and
+https://livehq.mintlify.app/help/troubleshooting.md.
 
 ## Rules
 
@@ -88,4 +88,4 @@ LiveHQ does not check an app from outside the server.
 Free: 1 server, 3 apps, 3 databases, 10 GB of bandwidth a month, no custom domains, no
 backups. Pro, $15 a month: 3 servers, 30 apps, 30 databases, 5 custom domains, 2 TB,
 backups. Teams, $49 a month: 10 servers, 100 apps, 100 databases, 10 custom domains, 5 TB,
-5 members with roles. Details: https://docs.livehq.dev/account/plans.md
+5 members with roles. Details: https://livehq.mintlify.app/account/plans.md
